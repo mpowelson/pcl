@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MESH_PROCESSING_H_
+#define PCL_MESH_PROCESSING_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/point_cloud.h>
@@ -56,8 +57,8 @@ namespace pcl
   class CloudSurfaceProcessing : public PCLBase<PointInT>
   {
     public:
-      typedef shared_ptr<CloudSurfaceProcessing<PointInT, PointOutT> > Ptr;
-      typedef shared_ptr<const CloudSurfaceProcessing<PointInT, PointOutT> > ConstPtr;
+      typedef boost::shared_ptr<CloudSurfaceProcessing<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const CloudSurfaceProcessing<PointInT, PointOutT> > ConstPtr;
 
       using PCLBase<PointInT>::input_;
       using PCLBase<PointInT>::indices_;
@@ -70,7 +71,7 @@ namespace pcl
       {};
       
       /** \brief Empty destructor */
-      ~CloudSurfaceProcessing () {}
+      virtual ~CloudSurfaceProcessing () {}
 
       /** \brief Process the input cloud and store the results
         * \param[out] output the cloud where the results will be stored
@@ -93,13 +94,13 @@ namespace pcl
   class PCL_EXPORTS MeshProcessing
   {
     public:
-      using Ptr = shared_ptr<MeshProcessing>;
-      using ConstPtr = shared_ptr<const MeshProcessing>;
+      typedef boost::shared_ptr<MeshProcessing> Ptr;
+      typedef boost::shared_ptr<const MeshProcessing> ConstPtr;
 
-      using PolygonMeshConstPtr = PolygonMesh::ConstPtr;
+      typedef PolygonMesh::ConstPtr PolygonMeshConstPtr;
 
       /** \brief Constructor. */
-      MeshProcessing () {}
+      MeshProcessing () : input_mesh_ () {}
 
       /** \brief Destructor. */
       virtual ~MeshProcessing () {}
@@ -148,3 +149,6 @@ namespace pcl
 }
 
 #include "pcl/surface/impl/processing.hpp"
+
+#endif  /* PCL_MESH_PROCESSING_H_ */
+

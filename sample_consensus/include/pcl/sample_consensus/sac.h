@@ -38,14 +38,12 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_H_
+#define PCL_SAMPLE_CONSENSUS_H_
 
 #include <pcl/sample_consensus/boost.h>
 #include <pcl/sample_consensus/sac_model.h>
-#include <pcl/pcl_base.h>
-
 #include <ctime>
-#include <memory>
 #include <set>
 
 namespace pcl
@@ -57,16 +55,15 @@ namespace pcl
   template <typename T>
   class SampleConsensus
   {
-    using SampleConsensusModelPtr = typename SampleConsensusModel<T>::Ptr;
+    typedef typename SampleConsensusModel<T>::Ptr SampleConsensusModelPtr;
 
     private:
       /** \brief Constructor for base SAC. */
       SampleConsensus () {};
 
     public:
-      using Ptr = shared_ptr<SampleConsensus<T> >;
-      using ConstPtr = shared_ptr<const SampleConsensus<T> >;
-
+      typedef boost::shared_ptr<SampleConsensus> Ptr;
+      typedef boost::shared_ptr<const SampleConsensus> ConstPtr;
 
       /** \brief Constructor for base SAC.
         * \param[in] model a Sample Consensus model
@@ -74,16 +71,19 @@ namespace pcl
         */
       SampleConsensus (const SampleConsensusModelPtr &model, bool random = false) 
         : sac_model_ (model)
+        , model_ ()
+        , inliers_ ()
+        , model_coefficients_ ()
         , probability_ (0.99)
         , iterations_ (0)
         , threshold_ (std::numeric_limits<double>::max ())
         , max_iterations_ (1000)
-        , threads_ (-1)
+        , rng_alg_ ()
         , rng_ (new boost::uniform_01<boost::mt19937> (rng_alg_))
       {
          // Create a random number generator object
          if (random)
-           rng_->base ().seed (static_cast<unsigned> (std::time (nullptr)));
+           rng_->base ().seed (static_cast<unsigned> (std::time (0)));
          else
            rng_->base ().seed (12345u);
       };
@@ -97,16 +97,19 @@ namespace pcl
                        double threshold, 
                        bool random = false)
         : sac_model_ (model)
+        , model_ ()
+        , inliers_ ()
+        , model_coefficients_ ()
         , probability_ (0.99)
         , iterations_ (0)
         , threshold_ (threshold)
         , max_iterations_ (1000)
-        , threads_ (-1)
+        , rng_alg_ ()
         , rng_ (new boost::uniform_01<boost::mt19937> (rng_alg_))
       {
          // Create a random number generator object
          if (random)
-           rng_->base ().seed (static_cast<unsigned> (std::time (nullptr)));
+           rng_->base ().seed (static_cast<unsigned> (std::time (0)));
          else
            rng_->base ().seed (12345u);
       };
@@ -138,7 +141,7 @@ namespace pcl
 
       /** \brief Get the distance to model threshold, as set by the user. */
       inline double 
-      getDistanceThreshold () const { return (threshold_); }
+      getDistanceThreshold () { return (threshold_); }
 
       /** \brief Set the maximum number of iterations.
         * \param[in] max_iterations maximum number of iterations
@@ -148,7 +151,7 @@ namespace pcl
 
       /** \brief Get the maximum number of iterations, as set by the user. */
       inline int 
-      getMaxIterations () const { return (max_iterations_); }
+      getMaxIterations () { return (max_iterations_); }
 
       /** \brief Set the desired probability of choosing at least one sample free from outliers.
         * \param[in] probability the desired probability of choosing at least one sample free from outliers
@@ -159,18 +162,7 @@ namespace pcl
 
       /** \brief Obtain the probability of choosing at least one sample free from outliers, as set by the user. */
       inline double 
-      getProbability () const { return (probability_); }
-
-      /** \brief Set the number of threads to use or turn off parallelization.
-        * \param[in] nr_threads the number of hardware threads to use (0 sets the value automatically, a negative number turns parallelization off)
-        * \note Not all SAC methods have a parallel implementation. Some will ignore this setting.
-        */
-      inline void
-      setNumberOfThreads (const int nr_threads = -1) { threads_ = nr_threads; }
-
-      /** \brief Get the number of threads, as set by the user. */
-      inline int
-      getNumberOfThreads () const { return (threads_); }
+      getProbability () { return (probability_); }
 
       /** \brief Compute the actual model. Pure virtual. */
       virtual bool 
@@ -198,7 +190,7 @@ namespace pcl
         unsigned int refine_iterations = 0;
         bool inlier_changed = false, oscillating = false;
         std::vector<int> new_inliers, prev_inliers = inliers_;
-        std::vector<std::size_t> inliers_sizes;
+        std::vector<size_t> inliers_sizes;
         Eigen::VectorXf new_model_coefficients = model_coefficients_;
         do
         {
@@ -244,7 +236,7 @@ namespace pcl
           }
 
           // Check the values of the inlier set
-          for (std::size_t i = 0; i < prev_inliers.size (); ++i)
+          for (size_t i = 0; i < prev_inliers.size (); ++i)
           {
             // If the value of the inliers changed, then we are still optimizing
             if (prev_inliers[i] != new_inliers[i])
@@ -285,8 +277,8 @@ namespace pcl
         * \param[out] indices_subset the resultant output set of randomly selected indices
         */
       inline void
-      getRandomSamples (const IndicesPtr &indices,
-                        std::size_t nr_samples, 
+      getRandomSamples (const boost::shared_ptr <std::vector<int> > &indices, 
+                        size_t nr_samples, 
                         std::set<int> &indices_subset)
       {
         indices_subset.clear ();
@@ -299,19 +291,19 @@ namespace pcl
         * \param[out] model the resultant model
         */
       inline void 
-      getModel (std::vector<int> &model) const { model = model_; }
+      getModel (std::vector<int> &model) { model = model_; }
 
       /** \brief Return the best set of inliers found so far for this model. 
         * \param[out] inliers the resultant set of inliers
         */
       inline void 
-      getInliers (std::vector<int> &inliers) const { inliers = inliers_; }
+      getInliers (std::vector<int> &inliers) { inliers = inliers_; }
 
       /** \brief Return the model coefficients of the best model found so far. 
         * \param[out] model_coefficients the resultant model coefficients, as documented in \ref sample_consensus
         */
       inline void 
-      getModelCoefficients (Eigen::VectorXf &model_coefficients) const { model_coefficients = model_coefficients_; }
+      getModelCoefficients (Eigen::VectorXf &model_coefficients) { model_coefficients = model_coefficients_; }
 
     protected:
       /** \brief The underlying data model used (i.e. what is it that we attempt to search for). */
@@ -338,14 +330,11 @@ namespace pcl
       /** \brief Maximum number of iterations before giving up. */
       int max_iterations_;
 
-      /** \brief The number of threads the scheduler should use, or a negative number if no parallelization is wanted. */
-      int threads_;
-
       /** \brief Boost-based random number generator algorithm. */
       boost::mt19937 rng_alg_;
 
       /** \brief Boost-based random number generator distribution. */
-      std::shared_ptr<boost::uniform_01<boost::mt19937> > rng_;
+      boost::shared_ptr<boost::uniform_01<boost::mt19937> > rng_;
 
       /** \brief Boost-based random number generator. */
       inline double
@@ -355,3 +344,5 @@ namespace pcl
       }
    };
 }
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_H_

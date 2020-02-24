@@ -56,8 +56,8 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace pcl::console;
 
-using PointT = PointXYZ;
-using CloudT = PointCloud<PointT>;
+typedef PointXYZ PointT;
+typedef PointCloud<PointT> CloudT;
 
 float default_leaf_size = 0.01f;
 
@@ -90,21 +90,31 @@ getVoxelActors (pcl::PointCloud<pcl::PointXYZ>& voxelCenters,
 {
   vtkSmartPointer < vtkAppendPolyData > treeWireframe = vtkSmartPointer<vtkAppendPolyData>::New ();
   
+  size_t i;
   double s = voxelSideLen/2.0;
   
-  for (const auto &point : voxelCenters.points)
+  for (i = 0; i < voxelCenters.points.size (); i++)
   {
-    double x = point.x;
-    double y = point.y;
-    double z = point.z;
+    double x = voxelCenters.points[i].x;
+    double y = voxelCenters.points[i].y;
+    double z = voxelCenters.points[i].z;
     
+#if VTK_MAJOR_VERSION < 6
+    treeWireframe->AddInput (getCuboid (x - s, x + s, y - s, y + s, z - s, z + s));
+#else
     treeWireframe->AddInputData (getCuboid (x - s, x + s, y - s, y + s, z - s, z + s));
+#endif
+
   }
 
   vtkSmartPointer < vtkLODActor > treeActor = vtkSmartPointer<vtkLODActor>::New ();
   
   vtkSmartPointer < vtkDataSetMapper > mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+#if VTK_MAJOR_VERSION < 6
+  mapper->SetInput (treeWireframe->GetOutput ());
+#else
   mapper->SetInputData (treeWireframe->GetOutput ());
+#endif
 
   treeActor->SetMapper (mapper);
   
@@ -119,12 +129,20 @@ displayBoundingBox (Eigen::Vector3f& min_b, Eigen::Vector3f& max_b,
                     vtkSmartPointer<vtkActorCollection> coll)
 {
   vtkSmartPointer < vtkAppendPolyData > treeWireframe = vtkSmartPointer<vtkAppendPolyData>::New ();
+#if VTK_MAJOR_VERSION < 6
+  treeWireframe->AddInput (getCuboid (min_b[0], max_b[0], min_b[1], max_b[1], min_b[2], max_b[2]));
+#else
   treeWireframe->AddInputData (getCuboid (min_b[0], max_b[0], min_b[1], max_b[1], min_b[2], max_b[2]));
+#endif
 
   vtkSmartPointer < vtkActor > treeActor = vtkSmartPointer<vtkActor>::New ();
 
   vtkSmartPointer < vtkDataSetMapper > mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+#if VTK_MAJOR_VERSION < 6
+  mapper->SetInput (treeWireframe->GetOutput ());
+#else
   mapper->SetInputData (treeWireframe->GetOutput ());
+#endif
   treeActor->SetMapper (mapper);
 
   treeActor->GetProperty ()->SetRepresentationToWireframe ();
@@ -209,7 +227,7 @@ int main (int argc, char** argv)
   occ_centroids->height = 1;
   occ_centroids->is_dense = false;
   occ_centroids->points.resize (occluded_voxels.size ());
-  for (std::size_t i = 0; i < occluded_voxels.size (); ++i)
+  for (size_t i = 0; i < occluded_voxels.size (); ++i)
   {
     Eigen::Vector4f xyz = vg.getCentroidCoordinate (occluded_voxels[i]);
     PointT point;
@@ -225,7 +243,7 @@ int main (int argc, char** argv)
   cloud_centroids->is_dense = false;
   cloud_centroids->points.resize (input_cloud->points.size ());
 
-  for (std::size_t i = 0; i < input_cloud->points.size (); ++i)
+  for (size_t i = 0; i < input_cloud->points.size (); ++i)
   {
     float x = input_cloud->points[i].x;
     float y = input_cloud->points[i].y;
@@ -265,7 +283,7 @@ int main (int argc, char** argv)
   vtkActor* a;
   coll->InitTraversal ();
   a = coll->GetNextActor ();
-  while(a!=nullptr)
+  while(a!=0)
     {
       renderer->AddActor (a);
       a = coll->GetNextActor ();

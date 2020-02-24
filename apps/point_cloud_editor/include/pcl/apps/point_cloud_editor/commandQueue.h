@@ -39,7 +39,8 @@
 /// in order to both execute them and undo them in the proper order.
 /// @author Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef COMMAND_QUEUE_H_
+#define COMMAND_QUEUE_H_
 
 #include <deque>
 #include <pcl/apps/point_cloud_editor/localTypes.h>
@@ -73,7 +74,7 @@ class CommandQueue
     /// @param command_ptr a shared pointer pointing to a command object whose
     /// execute function will be invoked by this object.
     void
-    execute (const CommandPtr&);
+    execute (CommandPtr);
 
     /// @brief Undoes the last command by popping the tail of the queue, invoke
     /// the undo function of the command.
@@ -118,3 +119,4 @@ class CommandQueue
     /// The depth limit of the command queue.
     unsigned int depth_limit_;
 };
+#endif // COMMAND_QUEUE_H_

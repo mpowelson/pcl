@@ -12,10 +12,11 @@ pcl::visualization::PCLVisualizer viewer ("Curve Fitting 3D");
 void
 PointCloud2Vector2d (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::on_nurbs::vector_vec3d &data)
 {
-  for (const auto &p : *cloud)
+  for (unsigned i = 0; i < cloud->size (); i++)
   {
-    if (!std::isnan (p.x) && !std::isnan (p.y) && !std::isnan (p.z))
-      data.emplace_back (p.x, p.y, p.z);
+    pcl::PointXYZ &p = cloud->at (i);
+    if (!pcl_isnan (p.x) && !pcl_isnan (p.y) && !pcl_isnan (p.z))
+      data.push_back (Eigen::Vector3d (p.x, p.y, p.z));
   }
 }
 

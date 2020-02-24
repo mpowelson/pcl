@@ -118,9 +118,9 @@ TEST(PCL_OctreeGPU, exactNeighbourSearch)
     pcl::gpu::NeighborIndices result_device(data.tests_num, k);    
 
     //prepare output buffers on host
-    std::vector<vector<  int> > result_host(data.tests_num);   
-    std::vector<vector<float> >  dists_host(data.tests_num);    
-    for(std::size_t i = 0; i < data.tests_num; ++i)
+    vector<vector<  int> > result_host(data.tests_num);   
+    vector<vector<float> >  dists_host(data.tests_num);    
+    for(size_t i = 0; i < data.tests_num; ++i)
     {
         result_host[i].reserve(k);
         dists_host[i].reserve(k);
@@ -132,29 +132,29 @@ TEST(PCL_OctreeGPU, exactNeighbourSearch)
         octree_device.nearestKSearchBatch(queries_device, k, result_device);
     }
 
-    std::vector<int> downloaded, downloaded_cur;
+    vector<int> downloaded, downloaded_cur;
     result_device.data.download(downloaded);
                  
     {
         pcl::ScopeTime time("1nn-cpu");
-        for(std::size_t i = 0; i < data.tests_num; ++i)
+        for(size_t i = 0; i < data.tests_num; ++i)
             octree_host.nearestKSearch(data.queries[i], k, result_host[i], dists_host[i]);
     }
 
     //verify results    
-    for(std::size_t i = 0; i < data.tests_num; ++i)    
+    for(size_t i = 0; i < data.tests_num; ++i)    
     {           
-        //std::cout << i << std::endl;
-        std::vector<int>&   results_host_cur = result_host[i];
-        std::vector<float>&   dists_host_cur = dists_host[i];
+        //cout << i << endl;
+        vector<int>&   results_host_cur = result_host[i];
+        vector<float>&   dists_host_cur = dists_host[i];
                 
         int beg = i * k;
         int end = beg + k;
 
         downloaded_cur.assign(downloaded.begin() + beg, downloaded.begin() + end);
         
-        std::vector<PriorityPair> pairs_host;
-        std::vector<PriorityPair> pairs_gpu;
+        vector<PriorityPair> pairs_host;
+        vector<PriorityPair> pairs_gpu;
         for(int n = 0; n < k; ++n)
         {
             PriorityPair host;

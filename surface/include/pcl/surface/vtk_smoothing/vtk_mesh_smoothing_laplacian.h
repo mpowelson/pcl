@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef VTK_MESH_SMOOTHING_LAPLACIAN_H_
+#define VTK_MESH_SMOOTHING_LAPLACIAN_H_
 
 #include <pcl/surface/processing.h>
 #include <pcl/surface/vtk_smoothing/vtk.h>
@@ -53,7 +54,9 @@ namespace pcl
     public:
       /** \brief Empty constructor that sets the values of the algorithm parameters to the VTK defaults */
       MeshSmoothingLaplacianVTK ()
-        : num_iter_ (20)
+        : MeshProcessing ()
+        , vtk_polygons_ ()
+        , num_iter_ (20)
         , convergence_ (0.0f)
         , relaxation_factor_ (0.01f)
         , feature_edge_smoothing_ (false)
@@ -179,7 +182,7 @@ namespace pcl
 
     protected:
       void
-      performProcessing (pcl::PolygonMesh &output) override;
+      performProcessing (pcl::PolygonMesh &output);
 
     private:
       vtkSmartPointer<vtkPolyData> vtk_polygons_;
@@ -194,3 +197,4 @@ namespace pcl
       bool boundary_smoothing_;
   };
 }
+#endif /* VTK_MESH_SMOOTHING_LAPLACIAN_H_ */

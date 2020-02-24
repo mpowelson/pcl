@@ -40,9 +40,10 @@
  *
  */
 
-#pragma once
+#ifndef SIGNAL_MULTIPLEXER_H_
+#define SIGNAL_MULTIPLEXER_H_
 
-#include <QPointer>
+#include <pcl/apps/cloud_composer/qt.h>
 
 namespace pcl
 {
@@ -53,7 +54,7 @@ namespace pcl
       Q_OBJECT
 
       public:
-        SignalMultiplexer(QObject *parent = nullptr);
+        SignalMultiplexer(QObject *parent = 0);
 
         /**
                 Use this connect function instead of QObject::connect() to connect
@@ -147,3 +148,21 @@ namespace pcl
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif // SIGNAL_MULTIPLEXER_H_

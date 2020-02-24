@@ -34,9 +34,12 @@
   *  POSSIBILITY OF SUCH DAMAGE.
   *
   */
-
-#pragma once
+#ifndef PCL_VISUALIZATION_VTK_RENDER_WINDOW_FIX_H_
+#define PCL_VISUALIZATION_VTK_RENDER_WINDOW_FIX_H_
 
 #include <vtkRenderWindowInteractor.h>
 
 vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ();
+
+#endif    // PCL_VISUALIZATION_VTK_RENDER_WINDOW_FIX_H_
+

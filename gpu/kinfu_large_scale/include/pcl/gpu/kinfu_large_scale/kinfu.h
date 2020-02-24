@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_KINFU_KINFUTRACKER_HPP_
+#define PCL_KINFU_KINFUTRACKER_HPP_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/point_types.h>
@@ -72,13 +73,13 @@ namespace pcl
         public:
 
           /** \brief Pixel type for rendered image. */
-          using PixelRGB = pcl::gpu::kinfuLS::PixelRGB;
+          typedef pcl::gpu::kinfuLS::PixelRGB PixelRGB;
 
-          using View = DeviceArray2D<PixelRGB>;
-          using DepthMap = DeviceArray2D<unsigned short>;
+          typedef DeviceArray2D<PixelRGB> View;
+          typedef DeviceArray2D<unsigned short> DepthMap;
 
-          using PointType = pcl::PointXYZ;
-          using NormalType = pcl::Normal;
+          typedef pcl::PointXYZ PointType;
+          typedef pcl::Normal NormalType;
 
           void 
           performLastScan (){perform_last_scan_ = true; PCL_WARN ("Kinfu will exit after next shift\n");}
@@ -169,7 +170,7 @@ namespace pcl
           getLastEstimatedPose () const;
 
           /** \brief Returns number of poses including initial */
-          std::size_t
+          size_t
           getNumberOfPoses () const;
 
           /** \brief Returns TSDF volume storage */
@@ -254,13 +255,13 @@ namespace pcl
           enum { LEVELS = 3 };
 
           /** \brief ICP Correspondences  map type */
-          using CorespMap = DeviceArray2D<int>;
+          typedef DeviceArray2D<int> CorespMap;
 
           /** \brief Vertex or Normal Map type */
-          using MapArr = DeviceArray2D<float>;
+          typedef DeviceArray2D<float> MapArr;
           
-          using Matrix3frm = Eigen::Matrix<float, 3, 3, Eigen::RowMajor>;
-          using Vector3f = Eigen::Vector3f;
+          typedef Eigen::Matrix<float, 3, 3, Eigen::RowMajor> Matrix3frm;
+          typedef Eigen::Vector3f Vector3f;
           
           /** \brief helper function that converts transforms from host to device types
             * \param[in] transformIn1 first transform to convert
@@ -451,9 +452,11 @@ namespace pcl
           bool has_shifted_;
           
         public:
-          PCL_MAKE_ALIGNED_OPERATOR_NEW
+          EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
       };
     }
   }
 };
+
+#endif /* PCL_KINFU_KINFUTRACKER_HPP_ */

@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_HARRIS_KEYPOINT_2D_H_
+#define PCL_HARRIS_KEYPOINT_2D_H_
 
 #include <pcl/keypoints/keypoint.h>
 #include <pcl/common/intensity.h>
@@ -53,20 +54,20 @@ namespace pcl
   class HarrisKeypoint2D : public Keypoint<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<HarrisKeypoint2D<PointInT, PointOutT, IntensityT> >;
-      using ConstPtr = shared_ptr<const HarrisKeypoint2D<PointInT, PointOutT, IntensityT> >;
+      typedef boost::shared_ptr<HarrisKeypoint2D<PointInT, PointOutT, IntensityT> > Ptr;
+      typedef boost::shared_ptr<const HarrisKeypoint2D<PointInT, PointOutT, IntensityT> > ConstPtr;
 
-      using PointCloudIn = typename Keypoint<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Keypoint<PointInT, PointOutT>::PointCloudOut;
-      using KdTree = typename Keypoint<PointInT, PointOutT>::KdTree;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename Keypoint<PointInT, PointOutT>::KdTree KdTree;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
       using Keypoint<PointInT, PointOutT>::name_;
       using Keypoint<PointInT, PointOutT>::input_;
       using Keypoint<PointInT, PointOutT>::indices_;
       using Keypoint<PointInT, PointOutT>::keypoints_indices_;
 
-      enum ResponseMethod {HARRIS = 1, NOBLE, LOWE, TOMASI};
+      typedef enum {HARRIS = 1, NOBLE, LOWE, TOMASI} ResponseMethod;
 
       /** \brief Constructor
         * \param[in] method the method to be used to determine the corner responses
@@ -134,9 +135,9 @@ namespace pcl
 
     protected:
       bool 
-      initCompute () override;
+      initCompute ();
       void 
-      detectKeypoints (PointCloudOut &output) override;
+      detectKeypoints (PointCloudOut &output);
       /** \brief gets the corner response for valid input points*/
       void 
       responseHarris (PointCloudOut &output) const;
@@ -168,7 +169,7 @@ namespace pcl
       Eigen::MatrixXf derivatives_rows_;
       Eigen::MatrixXf derivatives_cols_;
       /// intermediate holder for computed responses
-      typename pcl::PointCloud<PointOutT>::Ptr response_;
+      boost::shared_ptr<pcl::PointCloud<PointOutT> > response_;
       /// comparator for responses intensity
       bool 
       greaterIntensityAtIndices (int a, int b) const
@@ -193,3 +194,5 @@ namespace pcl
 }
 
 #include <pcl/keypoints/impl/harris_2d.hpp>
+
+#endif // #ifndef PCL_HARRIS_KEYPOINT_2D_H_

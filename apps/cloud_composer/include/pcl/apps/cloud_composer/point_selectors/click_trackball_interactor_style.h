@@ -35,16 +35,21 @@
  *
  */
 
-#pragma once
+#ifndef CLICK_TRACKBALL_STYLE_INTERACTOR_H_
+#define CLICK_TRACKBALL_STYLE_INTERACTOR_H_
 
 #include <pcl/apps/cloud_composer/point_selectors/interactor_style_switch.h>
+#include <pcl/apps/cloud_composer/qt.h>
+
+
+
 
 namespace pcl
 {
   namespace cloud_composer
   {
       
-    class ClickTrackballStyleInteractor : public vtkInteractorStyleTrackballActor
+    class PCL_EXPORTS ClickTrackballStyleInteractor : public vtkInteractorStyleTrackballActor
     {     
       public:
         static ClickTrackballStyleInteractor* New();
@@ -52,7 +57,7 @@ namespace pcl
         
         ClickTrackballStyleInteractor ();
         
-        ~ClickTrackballStyleInteractor ();
+        virtual ~ClickTrackballStyleInteractor ();
                
         /** \brief Pass a pointer to the actor map
           * \param[in] actors the actor map that will be used with this style
@@ -71,18 +76,18 @@ namespace pcl
         setRendererCollection (vtkSmartPointer<vtkRendererCollection> &rens) { renderers_ = rens; }
 
         /** \brief Function called on left mouse button release, ie, end of rectangular drag */
-        void
-        OnLeftButtonDown () override;
+        virtual void
+        OnLeftButtonDown ();
         
         /** \brief Function called on left mouse button release, ie, end of rectangular drag */
-        void
-        OnLeftButtonUp () override;
+        virtual void
+        OnLeftButtonUp ();
         
-        void
-        OnRightButtonDown () override;
+        virtual void
+        OnRightButtonDown ();
         
-        void
-        OnRightButtonUp () override;
+        virtual void
+        OnRightButtonUp ();
 
         /** \brief Event emitted once a valid selection has been made */
         int manipulation_complete_event_;
@@ -111,3 +116,7 @@ namespace pcl
   }
   
 }
+
+#endif // CLICK_TRACKBALL_STYLE_INTERACTOR_H_
+        
+        

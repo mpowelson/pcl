@@ -5,9 +5,11 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_LOCAL_RECOGNIZER_H_
+#define REC_FRAMEWORK_LOCAL_RECOGNIZER_H_
 
-#include <flann/util/matrix.h>
+//#include <opencv2/opencv.hpp>
+#include <flann/flann.h>
 #include <pcl/common/common.h>
 #include <pcl/apps/3d_rec_framework/pc_source/source.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/local/local_estimator.h>
@@ -38,11 +40,11 @@ namespace pcl
       class PCL_EXPORTS LocalRecognitionPipeline
       {
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
-        using ConstPointInTPtr = typename pcl::PointCloud<PointInT>::ConstPtr;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
+        typedef typename pcl::PointCloud<PointInT>::ConstPtr ConstPointInTPtr;
 
-        using DistT = Distance<float>;
-        using ModelT = Model<PointInT>;
+        typedef Distance<float> DistT;
+        typedef Model<PointInT> ModelT;
 
         /** \brief Directory where the trained structure will be saved */
         std::string training_dir_;
@@ -51,16 +53,16 @@ namespace pcl
         PointInTPtr input_;
 
         /** \brief Model data source */
-        std::shared_ptr<Source<PointInT>> source_;
+        typename boost::shared_ptr<Source<PointInT> > source_;
 
         /** \brief Computes a feature */
-        std::shared_ptr<LocalEstimator<PointInT, FeatureT>> estimator_;
+        typename boost::shared_ptr<LocalEstimator<PointInT, FeatureT> > estimator_;
 
         /** \brief Point-to-point correspondence grouping algorithm */
-        std::shared_ptr<CorrespondenceGrouping<PointInT, PointInT>> cg_algorithm_;
+        typename boost::shared_ptr<CorrespondenceGrouping<PointInT, PointInT> > cg_algorithm_;
 
         /** \brief Hypotheses verification algorithm */
-        std::shared_ptr<HypothesisVerification<PointInT, PointInT>> hv_algorithm_;
+        typename boost::shared_ptr<HypothesisVerification<PointInT, PointInT> > hv_algorithm_;
 
         /** \brief Descriptor name */
         std::string descr_name_;
@@ -87,15 +89,15 @@ namespace pcl
 
         bool use_cache_;
         std::map<std::pair<std::string, int>, Eigen::Matrix4f,
-                 std::less<>,
+                 std::less<std::pair<std::string, int> >,
                  Eigen::aligned_allocator<std::pair<const std::pair<std::string, int>, Eigen::Matrix4f> > > poses_cache_;
         std::map<std::pair<std::string, int>, typename pcl::PointCloud<PointInT>::Ptr> keypoints_cache_;
 
         float threshold_accept_model_hypothesis_;
         int ICP_iterations_;
 
-        std::shared_ptr<std::vector<ModelT>> models_;
-        std::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>> transforms_;
+        boost::shared_ptr<std::vector<ModelT> > models_;
+        boost::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > > transforms_;
 
         int kdtree_splits_;
         float VOXEL_SIZE_ICP_;
@@ -116,8 +118,8 @@ namespace pcl
 
           flann::Matrix<float> flann_data (new float[models.size () * models[0].descr.size ()], models.size (), models[0].descr.size ());
 
-          for (std::size_t i = 0; i < data.rows; ++i)
-            for (std::size_t j = 0; j < data.cols; ++j)
+          for (size_t i = 0; i < data.rows; ++i)
+            for (size_t j = 0; j < data.cols; ++j)
             {
               flann_data.ptr ()[i * data.cols + j] = models[i].descr[j];
             }
@@ -133,7 +135,7 @@ namespace pcl
         public:
           ModelT model_;
           typename pcl::PointCloud<PointInT>::Ptr correspondences_pointcloud; //points in model coordinates
-          std::shared_ptr<std::vector<float> > feature_distances_;
+          boost::shared_ptr<std::vector<float> > feature_distances_;
           pcl::CorrespondencesPtr correspondences_to_inputcloud; //indices between correspondences_pointcloud and scene cloud
         };
 
@@ -157,7 +159,7 @@ namespace pcl
           pcl::visualization::PointCloudColorHandlerCustom<PointInT> random_handler_sampled (cloud_sampled, 0, 0, 255);
           vis_corresp_.addPointCloud<PointInT> (cloud_sampled, random_handler_sampled, "sampled");
 
-          for (std::size_t kk = 0; kk < correspondences.size (); kk++)
+          for (size_t kk = 0; kk < correspondences.size (); kk++)
           {
             pcl::PointXYZ p;
             p.getVector4fMap () = oh.correspondences_pointcloud->points[correspondences[kk].index_query].getVector4fMap ();
@@ -240,13 +242,13 @@ namespace pcl
           use_cache_ = u;
         }
 
-        std::shared_ptr<std::vector<ModelT>>
+        boost::shared_ptr<std::vector<ModelT> >
         getModels ()
         {
           return models_;
         }
 
-        std::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>>
+        boost::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > >
         getTransforms ()
         {
           return transforms_;
@@ -256,12 +258,12 @@ namespace pcl
          * \brief Sets the model data source_
          */
         void
-        setDataSource (std::shared_ptr<Source<PointInT>>& source)
+        setDataSource (typename boost::shared_ptr<Source<PointInT> > & source)
         {
           source_ = source;
         }
 
-        std::shared_ptr<Source<PointInT>>
+        typename boost::shared_ptr<Source<PointInT> >
         getDataSource ()
         {
           return source_;
@@ -271,7 +273,7 @@ namespace pcl
          * \brief Sets the local feature estimator
          */
         void
-        setFeatureEstimator (std::shared_ptr<LocalEstimator<PointInT, FeatureT>>& feat)
+        setFeatureEstimator (typename boost::shared_ptr<LocalEstimator<PointInT, FeatureT> > & feat)
         {
           estimator_ = feat;
         }
@@ -280,7 +282,7 @@ namespace pcl
          * \brief Sets the CG algorithm
          */
         void
-        setCGAlgorithm (std::shared_ptr<CorrespondenceGrouping<PointInT, PointInT>>& alg)
+        setCGAlgorithm (typename boost::shared_ptr<CorrespondenceGrouping<PointInT, PointInT> > & alg)
         {
           cg_algorithm_ = alg;
         }
@@ -289,7 +291,7 @@ namespace pcl
          * \brief Sets the HV algorithm
          */
         void
-        setHVAlgorithm (std::shared_ptr<HypothesisVerification<PointInT, PointInT>>& alg)
+        setHVAlgorithm (typename boost::shared_ptr<HypothesisVerification<PointInT, PointInT> > & alg)
         {
           hv_algorithm_ = alg;
         }
@@ -348,3 +350,5 @@ namespace pcl
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_LOCAL_RECOGNIZER_H_ */

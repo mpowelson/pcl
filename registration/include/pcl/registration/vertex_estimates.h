@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VERTEX_ESTIMATES_H_
+#define PCL_VERTEX_ESTIMATES_H_
 
 #include <pcl/point_cloud.h>
 
@@ -69,3 +70,5 @@ namespace pcl
     };
   }
 }
+
+#endif // PCL_VERTEX_ESTIMATES_H_

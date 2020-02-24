@@ -1,29 +1,35 @@
-#pragma once
+#ifndef PCL_OUTOFCORE_OUTOFCORE_CLOUD_H_
+#define PCL_OUTOFCORE_OUTOFCORE_CLOUD_H_
 
-#include <condition_variable>
-#include <cstdint>
-#include <memory>
-#include <mutex>
-#include <thread>
+#include <stdint.h>
 
 // PCL
-#include <pcl/pcl_macros.h>
+//#include <pcl/common/time.h>
+//#include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
 // PCL - outofcore
 #include <pcl/outofcore/outofcore.h>
 #include <pcl/outofcore/outofcore_impl.h>
+//#include <pcl/outofcore/impl/monitor_queue.hpp>
 #include <pcl/outofcore/impl/lru_cache.hpp>
 
 // PCL
 #include "camera.h"
+//#include <pcl/outofcore/visualization/object.h>
 
 // VTK
 #include <vtkActor.h>
 #include <vtkActorCollection.h>
 #include <vtkAppendPolyData.h>
 #include <vtkDataSetMapper.h>
+//#include <vtkCamera.h>
+//#include <vtkCameraActor.h>
+//#include <vtkHull.h>
+//#include <vtkPlanes.h>
 #include <vtkPolyData.h>
+//#include <vtkPolyDataMapper.h>
+//#include <vtkProperty.h>
 #include <vtkSmartPointer.h>
 
 //class Camera;
@@ -32,28 +38,28 @@ class OutofcoreCloud : public Object
 {
     // Typedefs
     // -----------------------------------------------------------------------------
-    using PointT = pcl::PointXYZ;
-//    using octree_disk = pcl::outofcore::OutofcoreOctreeBase<pcl::outofcore::OutofcoreOctreeDiskContainer<PointT>, PointT>;
-//    using octree_disk_node = pcl::outofcore::OutofcoreOctreeBaseNode<pcl::outofcore::OutofcoreOctreeDiskContainer<PointT>, PointT>;
+    typedef pcl::PointXYZ PointT;
+//    typedef pcl::outofcore::OutofcoreOctreeBase<pcl::outofcore::OutofcoreOctreeDiskContainer<PointT>, PointT> octree_disk;
+//    typedef pcl::outofcore::OutofcoreOctreeBaseNode<pcl::outofcore::OutofcoreOctreeDiskContainer<PointT>, PointT> octree_disk_node;
 
-    using OctreeDisk = pcl::outofcore::OutofcoreOctreeBase<>;
-    using OctreeDiskNode = pcl::outofcore::OutofcoreOctreeBaseNode<>;
-//    using OctreeBreadthFirstIterator = pcl::outofcore::OutofcoreBreadthFirstIterator<>;
+    typedef pcl::outofcore::OutofcoreOctreeBase<> OctreeDisk;
+    typedef pcl::outofcore::OutofcoreOctreeBaseNode<> OctreeDiskNode;
+//    typedef pcl::outofcore::OutofcoreBreadthFirstIterator<> OctreeBreadthFirstIterator;
 
-    using OctreeDiskPtr = OctreeDisk::Ptr;
-    using AlignedPointT = Eigen::aligned_allocator<PointT>;
+    typedef boost::shared_ptr<OctreeDisk> OctreeDiskPtr;
+    typedef Eigen::aligned_allocator<PointT> AlignedPointT;
 
 
 
-    using CloudActorMap = std::map<std::string, vtkSmartPointer<vtkActor> >;
+    typedef std::map<std::string, vtkSmartPointer<vtkActor> > CloudActorMap;
 
   public:
 
-//    using CloudDataCache = std::map<std::string, vtkSmartPointer<vtkPolyData> >;
-//    using CloudDataCacheIterator = std::map<std::string, vtkSmartPointer<vtkPolyData> >::iterator;
+//    typedef std::map<std::string, vtkSmartPointer<vtkPolyData> > CloudDataCache;
+//    typedef std::map<std::string, vtkSmartPointer<vtkPolyData> >::iterator CloudDataCacheIterator;
 
 
-    static std::shared_ptr<std::thread> pcd_reader_thread;
+    static boost::shared_ptr<boost::thread> pcd_reader_thread;
     //static MonitorQueue<std::string> pcd_queue;
 
     struct PcdQueueItem
@@ -66,23 +72,27 @@ class OutofcoreCloud : public Object
 
       bool operator< (const PcdQueueItem& rhs) const
       {
-       return coverage < rhs.coverage;
+       if (coverage < rhs.coverage)
+       {
+         return true;
+       }
+       return false;
       }
 
       std::string pcd_file;
       float coverage;
     };
 
-    using PcdQueue = std::priority_queue<PcdQueueItem>;
+    typedef std::priority_queue<PcdQueueItem> PcdQueue;
     static PcdQueue pcd_queue;
-    static std::mutex pcd_queue_mutex;
-    static std::condition_variable pcd_queue_ready;
+    static boost::mutex pcd_queue_mutex;
+    static boost::condition pcd_queue_ready;
 
     class CloudDataCacheItem : public LRUCacheItem< vtkSmartPointer<vtkPolyData> >
     {
     public:
 
-      CloudDataCacheItem (std::string pcd_file, float coverage, vtkSmartPointer<vtkPolyData> cloud_data, std::size_t timestamp)
+      CloudDataCacheItem (std::string pcd_file, float coverage, vtkSmartPointer<vtkPolyData> cloud_data, size_t timestamp)
       {
        this->pcd_file = pcd_file;
        this->coverage = coverage;
@@ -90,8 +100,8 @@ class OutofcoreCloud : public Object
        this->timestamp = timestamp;
       }
 
-      std::size_t
-      sizeOf() const override
+      virtual size_t
+      sizeOf() const
       {
         return item->GetActualMemorySize();
       }
@@ -102,10 +112,10 @@ class OutofcoreCloud : public Object
 
 
 //    static CloudDataCache cloud_data_map;
-//    static std::mutex cloud_data_map_mutex;
-    using CloudDataCache = LRUCache<std::string, CloudDataCacheItem>;
+//    static boost::mutex cloud_data_map_mutex;
+    typedef LRUCache<std::string, CloudDataCacheItem> CloudDataCache;
     static CloudDataCache cloud_data_cache;
-    static std::mutex cloud_data_cache_mutex;
+    static boost::mutex cloud_data_cache_mutex;
 
     static void pcdReaderThread();
 
@@ -150,7 +160,7 @@ class OutofcoreCloud : public Object
         displayDepth = octree_->getDepth ();
       }
 
-      if (display_depth_ != static_cast<std::uint64_t> (displayDepth))
+      if (display_depth_ != static_cast<uint64_t> (displayDepth))
       {
         display_depth_ = displayDepth;
         updateVoxelData ();
@@ -159,19 +169,19 @@ class OutofcoreCloud : public Object
     }
 
     int
-    getDisplayDepth () const
+    getDisplayDepth ()
     {
       return display_depth_;
     }
 
-    std::uint64_t
-    getPointsLoaded () const
+    uint64_t
+    getPointsLoaded ()
     {
       return points_loaded_;
     }
 
-    std::uint64_t
-    getDataLoaded () const
+    uint64_t
+    getDataLoaded ()
     {
       return data_loaded_;
     }
@@ -234,7 +244,7 @@ class OutofcoreCloud : public Object
         value = 100;
 
       lod_pixel_threshold_ += value;
-      std::cout << "Increasing lod pixel threshold: " << lod_pixel_threshold_ << std::endl;
+      std::cout << "Increasing lod pixel threshold: " << lod_pixel_threshold_ << endl;
     }
 
     void
@@ -252,11 +262,11 @@ class OutofcoreCloud : public Object
 
       if (lod_pixel_threshold_ < 100)
         lod_pixel_threshold_ = 100;
-      std::cout << "Decreasing lod pixel threshold: " << lod_pixel_threshold_ << std::endl;
+      std::cout << "Decreasing lod pixel threshold: " << lod_pixel_threshold_ << endl;
     }
 
-    void
-    render (vtkRenderer* renderer) override;
+    virtual void
+    render (vtkRenderer* renderer);
 
   private:
 
@@ -264,9 +274,9 @@ class OutofcoreCloud : public Object
     // -----------------------------------------------------------------------------
     OctreeDiskPtr octree_;
 
-    std::uint64_t display_depth_;
-    std::uint64_t points_loaded_;
-    std::uint64_t data_loaded_;
+    uint64_t display_depth_;
+    uint64_t points_loaded_;
+    uint64_t data_loaded_;
 
     Eigen::Vector3d bbox_min_, bbox_max_;
 
@@ -280,5 +290,7 @@ class OutofcoreCloud : public Object
     vtkSmartPointer<vtkActorCollection> cloud_actors_;
 
   public:
-    PCL_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
+#endif

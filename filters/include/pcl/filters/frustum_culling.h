@@ -35,9 +35,10 @@
  *
  */
 
-#pragma once
 
-#include <pcl/pcl_macros.h>
+#ifndef PCL_FILTERS_FRUSTUM_CULLING_H_
+#define PCL_FILTERS_FRUSTUM_CULLING_H_
+
 #include <pcl/point_types.h>
 #include <pcl/filters/filter_indices.h>
 #include <pcl/common/transforms.h>
@@ -76,14 +77,14 @@ namespace pcl
   template <typename PointT>
   class FrustumCulling : public FilterIndices<PointT>
   {
-    using PointCloud = typename Filter<PointT>::PointCloud;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename Filter<PointT>::PointCloud PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
     public:
 
-      using Ptr = shared_ptr<FrustumCulling<PointT> >;
-      using ConstPtr = shared_ptr<const FrustumCulling<PointT> >;
+      typedef boost::shared_ptr< FrustumCulling<PointT> > Ptr;
+      typedef boost::shared_ptr< const FrustumCulling<PointT> > ConstPtr;
 
 
       using Filter<PointT>::getClassName;
@@ -208,13 +209,13 @@ namespace pcl
         * \param[out] output the resultant point cloud
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
       /** \brief Sample of point indices
         * \param[out] indices the resultant point cloud indices
         */
       void
-      applyFilter (std::vector<int> &indices) override;
+      applyFilter (std::vector<int> &indices);
 
     private:
 
@@ -230,10 +231,12 @@ namespace pcl
       float fp_dist_;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/frustum_culling.hpp>
+#endif
+
 #endif

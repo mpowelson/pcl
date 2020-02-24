@@ -37,9 +37,13 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEARCH_PCL_SEARCH_H_
+#define PCL_SEARCH_PCL_SEARCH_H_
 
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/search/octree.h>
 #include <pcl/search/organized.h>
+
+#endif    // PCL_SEARCH_PCL_SEARCH_H_
+

@@ -40,6 +40,7 @@
 
 #include <pcl/gpu/people/tree.h>
 #include <pcl/gpu/people/label_common.h>
+#include <pcl/gpu/utils/device/limits.hpp>
 #include <pcl/gpu/utils/safe_call.hpp>
 #include <pcl/gpu/utils/texture_binder.hpp>
 #include <stdio.h>
@@ -55,7 +56,7 @@ using pcl::gpu::people::trees::focal;
 using pcl::gpu::people::trees::NUM_LABELS;
 
 using namespace std;
-using uint = unsigned int;
+typedef unsigned int uint;
 
 #ifdef __CDT_PARSER__ // This is an eclipse specific hack, does nothing to the code
 #define __global__
@@ -262,7 +263,7 @@ namespace pcl
       KernelCUDA_SelectLabel<<< grid, block >>>( labels, probabilities );
 
       cudaSafeCall( cudaGetLastError() );
-      cudaSafeCall( cudaDeviceSynchronize() );
+      cudaSafeCall( cudaThreadSynchronize() );
     }
 
     /** \brief This will combine two probabilities according their weight **/
@@ -281,7 +282,7 @@ namespace pcl
       KernelCUDA_CombineProb<<< grid, block >>>( probIn1, weight1, probIn2, weight2, probOut );
 
       cudaSafeCall( cudaGetLastError() );
-      cudaSafeCall( cudaDeviceSynchronize() );
+      cudaSafeCall( cudaThreadSynchronize() );
     }
 
     /** \brief This will combine two probabilities according their weight **/
@@ -298,7 +299,7 @@ namespace pcl
       KernelCUDA_WeightedSumProb<<< grid, block >>>( probIn, weight, probOut );
 
       cudaSafeCall( cudaGetLastError() );
-      cudaSafeCall( cudaDeviceSynchronize() );
+      cudaSafeCall( cudaThreadSynchronize() );
     }
 
     /** \brief This will blur the input labelprobability with the given kernel **/
@@ -335,12 +336,12 @@ namespace pcl
       KernelCUDA_GaussianBlurVer<<< grid, block >>>( probIn, kernel, kernel.size(), probTemp );
       //KernelCUDA_GaussianBlurVer<<< grid, block >>>( probIn, kernel, kernel.size(), probOut );
       cudaSafeCall( cudaGetLastError() );
-      cudaSafeCall( cudaDeviceSynchronize() );
+      cudaSafeCall( cudaThreadSynchronize() );
 
       // CUDA kernel call Horizontal
       KernelCUDA_GaussianBlurHor<<< grid, block >>>( probTemp, kernel, kernel.size(), probOut );
       cudaSafeCall( cudaGetLastError() );
-      cudaSafeCall( cudaDeviceSynchronize() );
+      cudaSafeCall( cudaThreadSynchronize() );
       return 1;
     }
   }

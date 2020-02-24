@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_BILATERAL_H_
+#define PCL_FILTERS_BILATERAL_H_
 
 #include <pcl/filters/filter.h>
 #include <pcl/search/pcl_search.h>
@@ -57,13 +58,13 @@ namespace pcl
   {
     using Filter<PointT>::input_;
     using Filter<PointT>::indices_;
-    using PointCloud = typename Filter<PointT>::PointCloud;
-    using KdTreePtr = typename pcl::search::Search<PointT>::Ptr;
+    typedef typename Filter<PointT>::PointCloud PointCloud;
+    typedef typename pcl::search::Search<PointT>::Ptr KdTreePtr;
 
     public:
 
-      using Ptr = shared_ptr<BilateralFilter<PointT> >;
-      using ConstPtr = shared_ptr<const BilateralFilter<PointT> >;
+      typedef boost::shared_ptr< BilateralFilter<PointT> > Ptr;
+      typedef boost::shared_ptr< const BilateralFilter<PointT> > ConstPtr;
  
 
       /** \brief Constructor. 
@@ -80,7 +81,7 @@ namespace pcl
         * \param[out] output the resultant point cloud message
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
       /** \brief Compute the intensity average for a single point
         * \param[in] pid the point index to compute the weight for
@@ -130,7 +131,7 @@ namespace pcl
         */
       inline double
       kernel (double x, double sigma)
-      { return (std::exp (- (x*x)/(2*sigma*sigma))); }
+      { return (exp (- (x*x)/(2*sigma*sigma))); }
 
       /** \brief The half size of the Gaussian bilateral filter window (e.g., spatial extents in Euclidean). */
       double sigma_s_;
@@ -145,3 +146,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/bilateral.hpp>
 #endif
+
+#endif // PCL_FILTERS_BILATERAL_H_

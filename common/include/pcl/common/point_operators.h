@@ -38,4 +38,7 @@
  *
  */
 
-#pragma once
+#ifndef PCL_COMMON_POINT_OPERATORS_H
+#define PCL_COMMON_POINT_OPERATORS_H
+
+#endif

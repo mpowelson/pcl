@@ -5,17 +5,16 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_MESH_SOURCE_H_
+#define REC_FRAMEWORK_MESH_SOURCE_H_
 
 #include <pcl/apps/3d_rec_framework/pc_source/source.h>
 #include <pcl/apps/render_views_tesselated_sphere.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/apps/3d_rec_framework/utils/vtk_model_sampling.h>
-
+#include <boost/function.hpp>
 #include <vtkTransformPolyDataFilter.h>
-
-#include <functional>
 
 namespace pcl
 {
@@ -30,8 +29,8 @@ namespace pcl
     template<typename PointInT>
       class MeshSource : public Source<PointInT>
       {
-        using SourceT = Source<PointInT>;
-        using ModelT = Model<PointInT>;
+        typedef Source<PointInT> SourceT;
+        typedef Model<PointInT> ModelT;
 
         using SourceT::path_;
         using SourceT::models_;
@@ -44,7 +43,7 @@ namespace pcl
         float radius_sphere_;
         float view_angle_;
         bool gen_organized_;
-        std::function<bool
+        boost::function<bool
         (const Eigen::Vector3f &)> campos_constraints_func_;
 
       public:
@@ -64,7 +63,7 @@ namespace pcl
         }
 
         void
-        setCamPosConstraints (std::function<bool
+        setCamPosConstraints (boost::function<bool
         (const Eigen::Vector3f &)> & bb)
         {
           campos_constraints_func_ = bb;
@@ -106,16 +105,21 @@ namespace pcl
             //load views, poses and self-occlusions
             std::vector < std::string > view_filenames;
             int number_of_views = 0;
-            for (const auto& dir_entry : bf::directory_iterator(trained_dir))
+            bf::directory_iterator end_itr;
+            for (bf::directory_iterator itr (trained_dir); itr != end_itr; ++itr)
             {
               //check if its a directory, then get models in it
-              if (!(bf::is_directory (dir_entry)))
+              if (!(bf::is_directory (*itr)))
               {
                 //check that it is a ply file and then add, otherwise ignore..
                 std::vector < std::string > strs;
                 std::vector < std::string > strs_;
 
-                std::string file = (dir_entry.path ().filename ()).string();
+#if BOOST_FILESYSTEM_VERSION == 3
+                std::string file = (itr->path ().filename ()).string();
+#else
+                std::string file = (itr->path ()).filename ();
+#endif
 
                 boost::split (strs, file, boost::is_any_of ("."));
                 boost::split (strs_, file, boost::is_any_of ("_"));
@@ -124,27 +128,31 @@ namespace pcl
 
                 if (extension == "pcd" && strs_[0] == "view")
                 {
-                  view_filenames.push_back ((dir_entry.path ().filename ()).string());
+#if BOOST_FILESYSTEM_VERSION == 3
+                  view_filenames.push_back ((itr->path ().filename ()).string());
+#else
+                  view_filenames.push_back ((itr->path ()).filename ());
+#endif
 
                   number_of_views++;
                 }
               }
             }
 
-            for (const auto &view_filename : view_filenames)
+            for (size_t i = 0; i < view_filenames.size (); i++)
             {
               std::stringstream view_file;
-              view_file << pathmodel.str () << "/" << view_filename;
+              view_file << pathmodel.str () << "/" << view_filenames[i];
               typename pcl::PointCloud<PointInT>::Ptr cloud (new pcl::PointCloud<PointInT> ());
               pcl::io::loadPCDFile (view_file.str (), *cloud);
 
               model.views_->push_back (cloud);
 
-              std::string file_replaced1 (view_filename);
+              std::string file_replaced1 (view_filenames[i]);
               boost::replace_all (file_replaced1, "view", "pose");
               boost::replace_all (file_replaced1, ".pcd", ".txt");
 
-              std::string file_replaced2 (view_filename);
+              std::string file_replaced2 (view_filenames[i]);
               boost::replace_all (file_replaced2, "view", "entropy");
               boost::replace_all (file_replaced2, ".pcd", ".txt");
 
@@ -210,7 +218,7 @@ namespace pcl
             model.poses_.reset (new std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > ());
             model.self_occlusions_.reset (new std::vector<float> ());
 
-            for (std::size_t i = 0; i < views_xyz_orig.size (); i++)
+            for (size_t i = 0; i < views_xyz_orig.size (); i++)
             {
               model.views_->push_back (views_xyz_orig[i]);
               model.poses_->push_back (poses[i]);
@@ -221,7 +229,7 @@ namespace pcl
             direc << dir << "/" << model.class_ << "/" << model.id_;
             this->createClassAndModelDirectories (dir, model.class_, model.id_);
 
-            for (std::size_t i = 0; i < model.views_->size (); i++)
+            for (size_t i = 0; i < model.views_->size (); i++)
             {
               //save generated model for future use
               std::stringstream path_view;
@@ -247,7 +255,7 @@ namespace pcl
          * \brief Creates the model representation of the training set, generating views if needed
          */
         void
-        generate (std::string & training_dir) override
+        generate (std::string & training_dir)
         {
 
           //create training dir fs if not existent
@@ -255,23 +263,25 @@ namespace pcl
 
           //get models in directory
           std::vector < std::string > files;
-          std::string start;
+          std::string start = "";
           std::string ext = std::string ("ply");
           bf::path dir = path_;
           getModelsInDirectory (dir, start, files, ext);
 
           models_.reset (new std::vector<ModelT>);
 
-          for (const auto &filename : files)
+          for (size_t i = 0; i < files.size (); i++)
           {
             ModelT m;
-            this->getIdAndClassFromFilename (filename, m.id_, m.class_);
+            this->getIdAndClassFromFilename (files[i], m.id_, m.class_);
 
             //check which of them have been trained using training_dir and the model_id_
             //load views, poses and self-occlusions for those that exist
             //generate otherwise
-            std::cout << filename << std::endl;
-            std::string path_model = path_ + '/' + filename;
+            std::cout << files[i] << std::endl;
+            std::stringstream model_path;
+            model_path << path_ << "/" << files[i];
+            std::string path_model = model_path.str ();
             loadOrGenerate (training_dir, path_model, m);
 
             models_->push_back (m);
@@ -280,3 +290,5 @@ namespace pcl
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_MESH_SOURCE_H_ */

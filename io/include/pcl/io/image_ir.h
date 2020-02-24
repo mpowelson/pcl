@@ -33,10 +33,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *
 */
-
-#pragma once
-
-#include <chrono>
+#ifndef PCL_IO_IMAGE_IR_H_
+#define PCL_IO_IMAGE_IR_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/io/boost.h>
@@ -54,16 +52,16 @@ namespace pcl
     class PCL_EXPORTS IRImage
     {
       public:
-        using Ptr = shared_ptr<IRImage>;
-        using ConstPtr = shared_ptr<const IRImage>;
+        typedef boost::shared_ptr<IRImage> Ptr;
+        typedef boost::shared_ptr<const IRImage> ConstPtr;
 
-        using Clock = std::chrono::high_resolution_clock;
-        using Timestamp = std::chrono::high_resolution_clock::time_point;
+        typedef boost::chrono::high_resolution_clock Clock;
+        typedef boost::chrono::high_resolution_clock::time_point Timestamp;
 
         IRImage (FrameWrapper::Ptr ir_metadata);
         IRImage (FrameWrapper::Ptr ir_metadata, Timestamp time);
 
-        ~IRImage () noexcept
+        ~IRImage () throw ()
         {}
 
         void
@@ -78,7 +76,7 @@ namespace pcl
         unsigned
         getFrameID () const;
 
-        std::uint64_t
+        pcl::uint64_t
         getTimestamp () const;
 
         Timestamp
@@ -112,3 +110,5 @@ namespace pcl
 
   } // namespace
 }
+
+#endif // PCL_IO_IMAGE_IR_H_

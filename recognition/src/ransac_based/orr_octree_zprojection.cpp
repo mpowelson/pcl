@@ -44,7 +44,6 @@
  */
 
 #include <pcl/recognition/ransac_based/orr_octree_zprojection.h>
-#include <array>
 #include <vector>
 
 using namespace std;
@@ -68,7 +67,7 @@ pcl::recognition::ORROctreeZProjection::clear ()
     }
 
     delete[] pixels_;
-    pixels_ = nullptr;
+    pixels_ = NULL;
   }
 
   if ( sets_ )
@@ -83,7 +82,7 @@ pcl::recognition::ORROctreeZProjection::clear ()
     }
 
     delete[] sets_;
-    sets_ = nullptr;
+    sets_ = NULL;
   }
 
   full_sets_.clear ();
@@ -98,25 +97,25 @@ pcl::recognition::ORROctreeZProjection::build (const ORROctree& input, float eps
   this->clear();
 
   // Compute the bounding box of the full leaves
-  const std::vector<ORROctree::Node*>& full_leaves = input.getFullLeaves ();
-  std::array<float, 4> full_leaves_bounds;
+  const vector<ORROctree::Node*>& full_leaves = input.getFullLeaves ();
+  vector<ORROctree::Node*>::const_iterator fl_it = full_leaves.begin ();
+  float full_leaves_bounds[4];
 
   if ( full_leaves.empty() )
     return;
 
   // The initialization run
-  full_leaves_bounds[0] = std::numeric_limits<float>::infinity();
-  full_leaves_bounds[1] = -std::numeric_limits<float>::infinity();
-  full_leaves_bounds[2] = std::numeric_limits<float>::infinity();
-  full_leaves_bounds[3] = -std::numeric_limits<float>::infinity();
+  full_leaves_bounds[0] = (*fl_it)->getBounds ()[0];
+  full_leaves_bounds[1] = (*fl_it)->getBounds ()[1];
+  full_leaves_bounds[2] = (*fl_it)->getBounds ()[2];
+  full_leaves_bounds[3] = (*fl_it)->getBounds ()[3];
 
-  for (const auto &leaf : full_leaves)
+  for ( ++fl_it ; fl_it != full_leaves.end () ; ++fl_it )
   {
-    const auto bounds = leaf->getBounds ();
-    if ( bounds[0] < full_leaves_bounds[0] ) full_leaves_bounds[0] = bounds[0];
-    if ( bounds[1] > full_leaves_bounds[1] ) full_leaves_bounds[1] = bounds[1];
-    if ( bounds[2] < full_leaves_bounds[2] ) full_leaves_bounds[2] = bounds[2];
-    if ( bounds[3] > full_leaves_bounds[3] ) full_leaves_bounds[3] = bounds[3];
+    if ( (*fl_it)->getBounds ()[0] < full_leaves_bounds[0] ) full_leaves_bounds[0] = (*fl_it)->getBounds ()[0];
+    if ( (*fl_it)->getBounds ()[1] > full_leaves_bounds[1] ) full_leaves_bounds[1] = (*fl_it)->getBounds ()[1];
+    if ( (*fl_it)->getBounds ()[2] < full_leaves_bounds[2] ) full_leaves_bounds[2] = (*fl_it)->getBounds ()[2];
+    if ( (*fl_it)->getBounds ()[3] > full_leaves_bounds[3] ) full_leaves_bounds[3] = (*fl_it)->getBounds ()[3];
   }
 
   // Make some initializations
@@ -133,59 +132,62 @@ pcl::recognition::ORROctreeZProjection::build (const ORROctree& input, float eps
   num_pixels_y_ = static_cast<int> (extent_y_/pixel_size_ + 0.5f);
   num_pixels_   = num_pixels_x_*num_pixels_y_;
 
+  int i, j;
+
   // Allocate and initialize memory for the pixels and the sets
   pixels_ = new Pixel**[num_pixels_x_];
   sets_ = new Set**[num_pixels_x_];
 
-  for ( int i = 0 ; i < num_pixels_x_ ; ++i )
+  for ( i = 0 ; i < num_pixels_x_ ; ++i )
   {
     pixels_[i] = new Pixel*[num_pixels_y_];
     sets_[i] = new Set*[num_pixels_y_];
 
-    for ( int j = 0 ; j < num_pixels_y_ ; ++j )
+    for ( j = 0 ; j < num_pixels_y_ ; ++j )
     {
-      pixels_[i][j] = nullptr;
-      sets_[i][j] = nullptr;
+      pixels_[i][j] = NULL;
+      sets_[i][j] = NULL;
     }
   }
 
   int pixel_id = 0;
 
   // Project the octree full leaves onto the xy-plane
-  for (const auto &full_leaf : full_leaves)
+  for ( fl_it = full_leaves.begin () ; fl_it != full_leaves.end () ; ++fl_it )
   {
-    this->getPixelCoordinates (full_leaf->getCenter(), num_pixels_x_, num_pixels_y_);
+    this->getPixelCoordinates ((*fl_it)->getCenter(), i, j);
     // If there is no set/pixel and at this position -> create one
-    if ( sets_[num_pixels_x_][num_pixels_y_] == nullptr )
+    if ( sets_[i][j] == NULL )
     {
-      pixels_[num_pixels_x_][num_pixels_y_] = new Pixel (pixel_id++);
-      sets_[num_pixels_x_][num_pixels_y_] = new Set (num_pixels_x_, num_pixels_y_);
-      full_pixels_.push_back (pixels_[num_pixels_x_][num_pixels_y_]);
-      full_sets_.push_back (sets_[num_pixels_x_][num_pixels_y_]);
+      pixels_[i][j] = new Pixel (pixel_id++);
+      sets_[i][j] = new Set (i, j);
+      full_pixels_.push_back (pixels_[i][j]);
+      full_sets_.push_back (sets_[i][j]);
     }
 
     // Insert the full octree leaf at the right position in the set
-    sets_[num_pixels_x_][num_pixels_y_]->insert (full_leaf);
+    sets_[i][j]->insert (*fl_it);
   }
 
+  int len, maxlen, id_z1, id_z2;
+  float cur_min, best_min, cur_max, best_max;
+
   // Now, at each occupied (i, j) position, get the longest connected component consisting of neighboring full leaves
-  for (const auto &full_set : full_sets_)
+  for ( list<Set*>::iterator current_set = full_sets_.begin () ; current_set != full_sets_.end () ; ++current_set )
   {
     // Get the first node in the set
-    set<ORROctree::Node*, bool(*)(ORROctree::Node*,ORROctree::Node*)>::iterator node = full_set->get_nodes ().begin ();
+    set<ORROctree::Node*, bool(*)(ORROctree::Node*,ORROctree::Node*)>::iterator node = (*current_set)->get_nodes ().begin ();
     // Initialize
-    float best_min = (*node)->getBounds ()[4];
-    float best_max = (*node)->getBounds ()[5];
-    float cur_min = best_min;
-    int id_z1 = (*node)->getData ()->get3dIdZ ();
-    int maxlen = 1;
-    int len = 1;
+    cur_min = best_min = (*node)->getBounds ()[4];
+    cur_max = best_max = (*node)->getBounds ()[5];
+    id_z1 = (*node)->getData ()->get3dIdZ ();
+    maxlen = len = 1;
 
     // Find the longest 1D "connected component" at the current (i, j) position
-    for ( ++node ; node != full_set->get_nodes ().end () ; ++node )
+    for ( ++node ; node != (*current_set)->get_nodes ().end () ; ++node, id_z1 = id_z2 )
     {
-      int id_z2 = (*node)->getData ()->get3dIdZ ();
-      float cur_max = (*node)->getBounds()[5];
+      id_z2 = (*node)->getData ()->get3dIdZ ();
+      cur_max = (*node)->getBounds()[5];
 
       if ( id_z2 - id_z1 > 1 ) // This connected component is over
       {
@@ -204,11 +206,10 @@ pcl::recognition::ORROctreeZProjection::build (const ORROctree& input, float eps
           best_max = cur_max;
         }
       }
-      id_z1 = id_z2;
     }
 
-    int i = full_set->get_x ();
-    int j = full_set->get_y ();
+    i = (*current_set)->get_x ();
+    j = (*current_set)->get_y ();
 
     pixels_[i][j]->set_z1 (best_min - eps_front);
     pixels_[i][j]->set_z2 (best_max  + eps_back);

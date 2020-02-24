@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEGMENTATION_SAC_SEGMENTATION_H_
+#define PCL_SEGMENTATION_SAC_SEGMENTATION_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/PointIndices.h>
@@ -70,13 +71,13 @@ namespace pcl
       using PCLBase<PointT>::input_;
       using PCLBase<PointT>::indices_;
 
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
-      using SearchPtr = typename pcl::search::Search<PointT>::Ptr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
+      typedef typename pcl::search::Search<PointT>::Ptr SearchPtr;
 
-      using SampleConsensusPtr = typename SampleConsensus<PointT>::Ptr;
-      using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+      typedef typename SampleConsensus<PointT>::Ptr SampleConsensusPtr;
+      typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
 
       /** \brief Empty constructor. 
         * \param[in] random if true set the random seed to the current time, else set to 12345 (default: false)
@@ -95,14 +96,13 @@ namespace pcl
         , eps_angle_ (0.0)
         , axis_ (Eigen::Vector3f::Zero ())
         , max_iterations_ (50)
-        , threads_ (-1)
         , probability_ (0.99)
         , random_ (random)
       {
       }
 
       /** \brief Empty destructor. */
-      ~SACSegmentation () { /*srv_.reset ();*/ };
+      virtual ~SACSegmentation () { /*srv_.reset ();*/ };
 
       /** \brief The type of model to use (user given parameter).
         * \param[in] model the model type (check \a model_types.h)
@@ -161,13 +161,6 @@ namespace pcl
       /** \brief Get the probability of choosing at least one sample free from outliers. */
       inline double 
       getProbability () const { return (probability_); }
-
-      /** \brief Set the number of threads to use or turn off parallelization.
-        * \param[in] nr_threads the number of hardware threads to use (0 sets the value automatically, a negative number turns parallelization off)
-        * \note Not all SAC methods have a parallel implementation. Some will ignore this setting.
-        */
-      inline void
-      setNumberOfThreads (const int nr_threads = -1) { threads_ = nr_threads; }
 
       /** \brief Set to true if a coefficient refinement is required.
         * \param[in] optimize true for enabling model coefficient refinement, false otherwise
@@ -299,9 +292,6 @@ namespace pcl
       /** \brief Maximum number of iterations before giving up (user given parameter). */
       int max_iterations_;
 
-      /** \brief The number of threads the scheduler should use, or a negative number if no parallelization is wanted. */
-      int threads_;
-
       /** \brief Desired probability of choosing at least one sample free from outliers (user given parameter). */
       double probability_;
 
@@ -332,17 +322,17 @@ namespace pcl
       using PCLBase<PointT>::input_;
       using PCLBase<PointT>::indices_;
 
-      using PointCloud = typename SACSegmentation<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename SACSegmentation<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
-      using PointCloudN = pcl::PointCloud<PointNT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<PointNT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-      using SampleConsensusPtr = typename SampleConsensus<PointT>::Ptr;
-      using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
-      using SampleConsensusModelFromNormalsPtr = typename SampleConsensusModelFromNormals<PointT, PointNT>::Ptr;
+      typedef typename SampleConsensus<PointT>::Ptr SampleConsensusPtr;
+      typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
+      typedef typename SampleConsensusModelFromNormals<PointT, PointNT>::Ptr SampleConsensusModelFromNormalsPtr;
 
       /** \brief Empty constructor.
         * \param[in] random if true set the random seed to the current time, else set to 12345 (default: false)
@@ -352,8 +342,8 @@ namespace pcl
         , normals_ ()
         , distance_weight_ (0.1)
         , distance_from_origin_ (0)
-        , min_angle_ (0.0)
-        , max_angle_ (M_PI_2)
+        , min_angle_ ()
+        , max_angle_ ()
       {};
 
       /** \brief Provide a pointer to the input dataset that contains the point normals of 
@@ -399,7 +389,7 @@ namespace pcl
       }
 
       /** \brief Set the distance we expect a plane model to be from the origin
-        * \param[in] d distance from the template plane model to the origin
+        * \param[in] d distance from the template plane modl to the origin
         */
       inline void
       setDistanceFromOrigin (const double d) { distance_from_origin_ = d; }
@@ -427,15 +417,17 @@ namespace pcl
       /** \brief Initialize the Sample Consensus model and set its parameters.
         * \param[in] model_type the type of SAC model that is to be used
         */
-      bool 
-      initSACModel (const int model_type) override;
+      virtual bool 
+      initSACModel (const int model_type);
 
       /** \brief Class get name method. */
-      std::string 
-      getClassName () const override { return ("SACSegmentationFromNormals"); }
+      virtual std::string 
+      getClassName () const { return ("SACSegmentationFromNormals"); }
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/segmentation/impl/sac_segmentation.hpp>
 #endif
+
+#endif  //#ifndef PCL_SEGMENTATION_SAC_SEGMENTATION_H_

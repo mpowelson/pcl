@@ -47,8 +47,8 @@
 int
 main (int, char**)
 {
-  using PointType = pcl::PointXYZ;
-  using CloudType = pcl::PointCloud<PointType>;
+  typedef pcl::PointXYZ PointType;
+  typedef pcl::PointCloud<PointType> CloudType;
   CloudType::Ptr cloud (new CloudType);
   cloud->is_dense = false;
   PointType p;

@@ -36,7 +36,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ORGANIZED_BOUNDARY_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ORGANIZED_BOUNDARY_H_
 
 #include <pcl/registration/correspondence_rejection.h>
 
@@ -63,11 +64,12 @@ namespace pcl
         : boundary_nans_threshold_ (8)
         , window_size_ (5)
         , depth_step_threshold_ (0.025f)
+        , data_container_ ()
       { }
 
       void
       getRemainingCorrespondences (const pcl::Correspondences& original_correspondences,
-                                   pcl::Correspondences& remaining_correspondences) override;
+                                   pcl::Correspondences& remaining_correspondences);
 
       inline void
       setNumberOfBoundaryNaNs (int val)
@@ -92,12 +94,12 @@ namespace pcl
 
       /** \brief See if this rejector requires source points */
       bool
-      requiresSourcePoints () const override
+      requiresSourcePoints () const
       { return (true); }
 
       /** \brief Blob method for setting the source cloud */
       void
-      setSourcePoints (pcl::PCLPointCloud2::ConstPtr cloud2) override
+      setSourcePoints (pcl::PCLPointCloud2::ConstPtr cloud2)
       { 
         PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
         fromPCLPointCloud2 (*cloud2, *cloud);
@@ -106,12 +108,12 @@ namespace pcl
       
       /** \brief See if this rejector requires a target cloud */
       bool
-      requiresTargetPoints () const override
+      requiresTargetPoints () const
       { return (true); }
 
       /** \brief Method for setting the target cloud */
       void
-      setTargetPoints (pcl::PCLPointCloud2::ConstPtr cloud2) override
+      setTargetPoints (pcl::PCLPointCloud2::ConstPtr cloud2)
       { 
         PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
         fromPCLPointCloud2 (*cloud2, *cloud);
@@ -128,17 +130,20 @@ namespace pcl
         * \param[out] correspondences the set of resultant correspondences.
         */
       inline void
-      applyRejection (pcl::Correspondences &correspondences) override
+      applyRejection (pcl::Correspondences &correspondences)
       { getRemainingCorrespondences (*input_correspondences_, correspondences); }
 
       int boundary_nans_threshold_;
       int window_size_;
       float depth_step_threshold_;
 
-      using DataContainerPtr = DataContainerInterface::Ptr;
+      typedef boost::shared_ptr<pcl::registration::DataContainerInterface> DataContainerPtr;
       DataContainerPtr data_container_;
     };
   }
 }
 
 #include <pcl/registration/impl/correspondence_rejection_organized_boundary.hpp>
+
+
+#endif /* PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ORGANIZED_BOUNDARY_H_ */

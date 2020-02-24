@@ -36,9 +36,10 @@
  *
  */
 
-#pragma once
-
 #include "pcl/pcl_config.h"
+
+#ifndef PCL_IO_VLP_GRABBER_H_
+#define PCL_IO_VLP_GRABBER_H_
 
 #include <pcl/io/hdl_grabber.h>
 #include <pcl/io/grabber.h>
@@ -67,17 +68,17 @@ namespace pcl
        * \param[in] port UDP Port that should be used to listen for VLP packets
        */
       VLPGrabber (const boost::asio::ip::address& ipAddress,
-                  const std::uint16_t port);
+                  const uint16_t port);
 
       /** \brief virtual Destructor inherited from the Grabber interface. It never throws. */
-      
-      ~VLPGrabber () noexcept;
+      virtual
+      ~VLPGrabber () throw ();
 
       /** \brief Obtains the name of this I/O Grabber
        *  \return The name of the grabber
        */
-      std::string
-      getName () const override;
+      virtual std::string
+      getName () const;
 
       /** \brief Allows one to customize the colors used by each laser.
        * \param[in] color RGB color to set
@@ -85,7 +86,7 @@ namespace pcl
        */
       void
       setLaserColorRGB (const pcl::RGB& color,
-                        const std::uint8_t laserNumber);
+                        const uint8_t laserNumber);
 
       /** \brief Allows one to customize the colors used for each of the lasers.
       * \param[in] begin begin iterator of RGB color array
@@ -99,21 +100,21 @@ namespace pcl
 
       /** \brief Returns the maximum number of lasers
       */
-      std::uint8_t
-      getMaximumNumberOfLasers () const override;
+      virtual uint8_t
+      getMaximumNumberOfLasers () const;
 
     protected:
-      static const std::uint8_t VLP_MAX_NUM_LASERS = 16;
-      static const std::uint8_t VLP_DUAL_MODE = 0x39;
+      static const uint8_t VLP_MAX_NUM_LASERS = 16;
+      static const uint8_t VLP_DUAL_MODE = 0x39;
 
     private:
       pcl::RGB laser_rgb_mapping_[VLP_MAX_NUM_LASERS];
 
-      void
-      toPointClouds (HDLDataPacket *dataPacket) override;
+      virtual void
+      toPointClouds (HDLDataPacket *dataPacket);
 
       boost::asio::ip::address
-      getDefaultNetworkAddress () override;
+      getDefaultNetworkAddress ();
 
       void
       initializeLaserMapping ();
@@ -123,3 +124,5 @@ namespace pcl
 
   };
 }
+
+#endif /* PCL_IO_VLP_GRABBER_H_ */

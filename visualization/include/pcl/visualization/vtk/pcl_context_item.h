@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VISUALIZATION_PCL_CONTEXT_ITEM_H_
+#define	PCL_VISUALIZATION_PCL_CONTEXT_ITEM_H_
 
 #include <pcl/pcl_macros.h>
 #include <vtkContextItem.h>
@@ -58,7 +59,7 @@ namespace pcl
     {
       vtkTypeMacro (PCLContextItem, vtkContextItem);
       static PCLContextItem *New();
-      bool Paint (vtkContext2D *) override { return (false); };
+      virtual bool Paint (vtkContext2D *) { return (false); };
       void setColors (unsigned char r, unsigned char g, unsigned char b);
       void setColors (unsigned char rgb[3]) { memcpy (colors, rgb, 3 * sizeof (unsigned char)); }
       void setOpacity (double opacity) { SetOpacity (opacity); };
@@ -77,7 +78,7 @@ namespace pcl
       PCLContextImageItem ();
 
       static PCLContextImageItem *New ();
-      bool Paint (vtkContext2D *painter) override;
+      virtual bool Paint (vtkContext2D *painter);
       void set (float _x, float _y, vtkImageData *_image);
       vtkSmartPointer<vtkImageData> image;
       float x, y;
@@ -89,7 +90,7 @@ namespace pcl
       {
         vtkTypeMacro (Point, PCLContextItem);
         static Point *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         virtual void set (float _x, float _y);
       };
 
@@ -97,7 +98,7 @@ namespace pcl
       {
         vtkTypeMacro (Line, PCLContextItem);
         static Line *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         virtual void set (float _x_1, float _y_1, float _x_2, float _y_2);
       };
 
@@ -105,7 +106,7 @@ namespace pcl
       {
         vtkTypeMacro (Circle, PCLContextItem);
         static Circle *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         virtual void set (float _x, float _y, float _r);
       };
 
@@ -113,14 +114,14 @@ namespace pcl
       {
         vtkTypeMacro (Disk, Circle);
         static Disk *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
       };
 
       struct PCL_EXPORTS Rectangle : public PCLContextItem
       {
         vtkTypeMacro (Rectangle, Point);
         static Rectangle *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         virtual void set (float _x, float _y, float _w, float _h);
       };
 
@@ -128,14 +129,14 @@ namespace pcl
       {
         vtkTypeMacro (FilledRectangle, Rectangle);
         static FilledRectangle *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
       };
 
       struct PCL_EXPORTS Points : public PCLContextItem
       {
         vtkTypeMacro (Points, PCLContextItem);
         static Points *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         void set (const std::vector<float>& _xy)  { params = _xy; }
       };
 
@@ -143,14 +144,14 @@ namespace pcl
       {
         vtkTypeMacro (Polygon, Points);
         static Polygon *New();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
       };
 
       struct PCL_EXPORTS Text : public PCLContextItem
       {
         vtkTypeMacro (Text, PCLContextItem);
         static Text *New ();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         virtual void set (float x, float y, const std::string& _text);
         std::string text;
       };
@@ -159,7 +160,7 @@ namespace pcl
       {
         vtkTypeMacro (Markers, Points);
         static Markers *New ();
-        bool Paint (vtkContext2D *painter) override;
+        virtual bool Paint (vtkContext2D *painter);
         void setSize (float _size) { size = _size; }
         void setPointColors (unsigned char r, unsigned char g, unsigned char b);
         void setPointColors (unsigned char rgb[3]);
@@ -169,3 +170,5 @@ namespace pcl
     }
   }
 }
+
+#endif

@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef STATISTICAL_OUTLIER_REMOVAL_H_
+#define STATISTICAL_OUTLIER_REMOVAL_H_
 
 #include <pcl/apps/cloud_composer/tool_interface/abstract_tool.h>
 #include <pcl/apps/cloud_composer/tool_interface/tool_factory.h>
@@ -50,13 +51,13 @@ namespace pcl
       Q_OBJECT
       public:
         StatisticalOutlierRemovalTool (PropertiesModel* parameter_model, QObject* parent);
-        ~StatisticalOutlierRemovalTool ();
+        virtual ~StatisticalOutlierRemovalTool ();
         
-        QList <CloudComposerItem*>
-        performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE) override;
+        virtual QList <CloudComposerItem*>
+        performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE);
       
-        inline QString
-        getToolName () const override { return "Statistical Outlier Removal Tool";}
+        inline virtual QString
+        getToolName () const { return "Statistical Outlier Removal Tool";}
     };
 
     
@@ -64,34 +65,36 @@ namespace pcl
     {
       Q_OBJECT
       Q_INTERFACES (pcl::cloud_composer::ToolFactory)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
       Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#endif
       public:
         ModifyItemTool*
-        createTool (PropertiesModel* parameter_model, QObject* parent = nullptr) override 
+        createTool (PropertiesModel* parameter_model, QObject* parent = 0) 
         {
             return new StatisticalOutlierRemovalTool(parameter_model, parent);
         }
         
         PropertiesModel*
-        createToolParameterModel (QObject* parent) override;
+        createToolParameterModel (QObject* parent);
         
-        inline QString 
-        getPluginName () const override { return "Statistical Outlier Removal";}
+        inline virtual QString 
+        getPluginName () const { return "Statistical Outlier Removal";}
         
-        QString 
-        getToolGroupName () const override { return "Filters";}
+        virtual QString 
+        getToolGroupName () const { return "Filters";}
         
-        QString
-        getIconName () const override { return ":/statistical_outlier_removal.png"; }
+        virtual QString
+        getIconName () const { return ":/statistical_outlier_removal.png"; }
         
-        inline CloudComposerItem::ItemType
-        getInputItemType () const override
+        inline virtual CloudComposerItem::ItemType
+        getInputItemType () const
         {
           return CloudComposerItem::CLOUD_ITEM;
         }
         
-        inline QList <CloudComposerItem::ItemType>
-        getRequiredInputChildrenTypes () const override 
+        inline virtual QList <CloudComposerItem::ItemType>
+        getRequiredInputChildrenTypes () const 
         {
           return QList <CloudComposerItem::ItemType> ();
         }
@@ -101,3 +104,10 @@ namespace pcl
 
   }
 }
+
+
+
+
+
+
+#endif //STATISTICAL_OUTLIER_REMOVAL_H_

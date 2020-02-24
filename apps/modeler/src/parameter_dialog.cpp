@@ -40,13 +40,6 @@
 #include <cassert>
 #include <fstream>
 
-#include <QCheckBox>
-#include <QColorDialog>
-#include <QGridLayout>
-#include <QHeaderView>
-#include <QPushButton>
-#include <QTableView>
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::modeler::ParameterDialog::addParameter(pcl::modeler::Parameter* parameter)
@@ -63,7 +56,7 @@ pcl::modeler::ParameterDialog::addParameter(pcl::modeler::Parameter* parameter)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-pcl::modeler::ParameterDialog::ParameterDialog(const std::string& title, QWidget* parent) : QDialog(parent), parameter_model_(nullptr)
+pcl::modeler::ParameterDialog::ParameterDialog(const std::string& title, QWidget* parent) : QDialog(parent), parameter_model_(NULL)
 {
   setModal(false);
   setWindowTitle(QString(title.c_str())+" Parameters");
@@ -84,14 +77,16 @@ pcl::modeler::ParameterDialog::exec()
   QTableView tableView(this);
   tableView.setModel(&parameterModel);
 
-  std::size_t currentRow = 0;
-  for(const auto &name_parameter : name_parameter_map_)
+  size_t currentRow = 0;
+  for(std::map<std::string, Parameter*>::iterator it = name_parameter_map_.begin();
+    it != name_parameter_map_.end();
+    ++ it)
   {
     QModelIndex name = parameterModel.index(int (currentRow), 0, QModelIndex());
-    parameterModel.setData(name, QVariant(name_parameter.first.c_str()));
+    parameterModel.setData(name, QVariant(it->first.c_str()));
 
     QModelIndex value = parameterModel.index(int (currentRow), 1, QModelIndex());
-    std::pair<QVariant, int> model_data = name_parameter.second->toModelData();
+    std::pair<QVariant, int> model_data = it->second->toModelData();
     parameterModel.setData(value, model_data.first, model_data.second);
 
     currentRow ++;
@@ -101,7 +96,11 @@ pcl::modeler::ParameterDialog::exec()
   tableView.setItemDelegate(&parameterDelegate);
 
   tableView.horizontalHeader()->setStretchLastSection(true);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
   tableView.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#else
+  tableView.horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+#endif
   tableView.setShowGrid(true);
   tableView.verticalHeader()->hide();
   tableView.setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -134,13 +133,15 @@ pcl::modeler::ParameterDialog::exec()
 void
 pcl::modeler::ParameterDialog::reset()
 {
-  std::size_t currentRow = 0;
-  for (auto &name_parameter : name_parameter_map_)
+  size_t currentRow = 0;
+  for (std::map<std::string, Parameter*>::iterator it = name_parameter_map_.begin();
+    it != name_parameter_map_.end();
+    ++ it)
   {
-    name_parameter.second->reset();
+    it->second->reset();
 
     QModelIndex value = parameter_model_->index(int (currentRow), 1, QModelIndex());
-    std::pair<QVariant, int> model_data = name_parameter.second->toModelData();
+    std::pair<QVariant, int> model_data = it->second->toModelData();
     parameter_model_->setData(value, model_data.first, model_data.second);
 
     currentRow ++;
@@ -154,8 +155,8 @@ pcl::modeler::Parameter* pcl::modeler::ParameterDelegate::getCurrentParameter(co
 {
   std::map<std::string, Parameter*>::iterator currentParameter = parameter_map_.begin();
 
-  std::size_t currentRow = 0;
-  while(currentRow < (std::size_t) index.row() && currentParameter != parameter_map_.end()) {
+  size_t currentRow = 0;
+  while(currentRow < (size_t) index.row() && currentParameter != parameter_map_.end()) {
     ++ currentParameter;
     ++ currentRow;
   }

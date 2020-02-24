@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEARCH_BRUTE_FORCE_H_
+#define PCL_SEARCH_BRUTE_FORCE_H_
 
 #include <pcl/search/search.h>
 
@@ -50,11 +51,11 @@ namespace pcl
     template<typename PointT>
     class BruteForce: public Search<PointT>
     {
-      using PointCloud = typename Search<PointT>::PointCloud;
-      using PointCloudConstPtr = typename Search<PointT>::PointCloudConstPtr;
+      typedef typename Search<PointT>::PointCloud PointCloud;
+      typedef typename Search<PointT>::PointCloudConstPtr PointCloudConstPtr;
 
-      using IndicesPtr = shared_ptr<std::vector<int> >;
-      using IndicesConstPtr = shared_ptr<const std::vector<int> >;
+      typedef boost::shared_ptr<std::vector<int> > IndicesPtr;
+      typedef boost::shared_ptr<const std::vector<int> > IndicesConstPtr;
 
       using pcl::search::Search<PointT>::input_;
       using pcl::search::Search<PointT>::indices_;
@@ -90,7 +91,7 @@ namespace pcl
         }
 
         /** \brief Destructor for KdTree. */
-        
+        virtual
         ~BruteForce ()
         {
         }
@@ -104,7 +105,7 @@ namespace pcl
           * \return number of neighbors found
           */
         int
-        nearestKSearch (const PointT &point, int k, std::vector<int> &k_indices, std::vector<float> &k_distances) const override;
+        nearestKSearch (const PointT &point, int k, std::vector<int> &k_indices, std::vector<float> &k_distances) const;
 
         /** \brief Search for all the nearest neighbors of the query point in a given radius.
           * \param[in] point the given query point
@@ -119,7 +120,7 @@ namespace pcl
         int
         radiusSearch (const PointT& point, double radius,
                       std::vector<int> &k_indices, std::vector<float> &k_sqr_distances,
-                      unsigned int max_nn = 0) const override;
+                      unsigned int max_nn = 0) const;
 
       private:
         int
@@ -144,3 +145,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/search/impl/brute_force.hpp>
 #endif
+
+#endif    // PCL_SEARCH_BRUTE_FORCE_H_

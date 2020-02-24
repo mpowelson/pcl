@@ -35,7 +35,7 @@
  *
  */
 
-#include <cmath>
+#include <math.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -58,7 +58,7 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace pcl::console;
 
-using PointCloudXYZRGBA = pcl::PointCloud<pcl::PointXYZRGBA>;
+typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudXYZRGBA;
 
 void
 printHelp (int, char **argv)
@@ -107,7 +107,7 @@ maskForegroundPoints (const PointCloudXYZRGBA::ConstPtr & input,
   
   // Mask off points outside the specified near and far depth thresholds
   pcl::IndicesPtr indices (new std::vector<int>);
-  for (std::size_t i = 0; i < input->size (); ++i)
+  for (size_t i = 0; i < input->size (); ++i)
   {
     const float z = input->points[i].z;
     if (min_depth < z && z < max_depth)
@@ -133,17 +133,17 @@ maskForegroundPoints (const PointCloudXYZRGBA::ConstPtr & input,
   seg.segment (*inliers, *coefficients);  
   
   // Mask off the plane inliers
-  for (const int &index : inliers->indices)
-    foreground_mask[index] = false;
+  for (size_t i = 0; i < inliers->indices.size (); ++i)
+    foreground_mask[inliers->indices[i]] = false;
 
   // Mask off any foreground points that are too high above the detected plane
   const std::vector<float> & c = coefficients->values;
-  for (std::size_t i = 0; i < input->size (); ++i)
+  for (size_t i = 0; i < input->size (); ++i)
   {
     if (foreground_mask[i])
     {
       const pcl::PointXYZRGBA & p = input->points[i];
-      float d = std::abs (c[0]*p.x + c[1]*p.y + c[2]*p.z + c[3]);
+      float d = fabsf (c[0]*p.x + c[1]*p.y + c[2]*p.z + c[3]);
       foreground_mask[i] = (d < max_height);
     }
   }
@@ -167,11 +167,11 @@ trainTemplate (const PointCloudXYZRGBA::ConstPtr & input, const std::vector<bool
   modalities[0] = &color_grad_mod;
   modalities[1] = &surface_norm_mod;
 
-  std::size_t min_x (input->width), min_y (input->height), max_x (0), max_y (0);
+  size_t min_x (input->width), min_y (input->height), max_x (0), max_y (0);
   pcl::MaskMap mask_map (input->width, input->height);
-  for (std::size_t j = 0; j < input->height; ++j)
+  for (size_t j = 0; j < input->height; ++j)
   {
-    for (std::size_t i = 0; i < input->width; ++i)
+    for (size_t i = 0; i < input->width; ++i)
     {
       mask_map (i,j) = foreground_mask[j*input->width+i];
       if (foreground_mask[j*input->width+i])
@@ -208,7 +208,7 @@ compute (const PointCloudXYZRGBA::ConstPtr & input, float min_depth, float max_d
 
   // Save the masked template cloud (masking with NaNs to preserve its organized structure)
   PointCloudXYZRGBA template_cloud (*input);
-  for (std::size_t i = 0; i < foreground_mask.size (); ++i)
+  for (size_t i = 0; i < foreground_mask.size (); ++i)
   {
     if (!foreground_mask[i])
     {
@@ -261,27 +261,14 @@ main (int argc, char** argv)
   float max_height = std::numeric_limits<float>::max ();
   parse_argument (argc, argv, "-max_height", max_height);
 
-  bool processed_at_least_one_pcd = false;
   // Segment and create templates for each input file
-  for (const int &p_file_index : p_file_indices)
+  for (size_t i_file = 0; i_file < p_file_indices.size (); ++i_file)
   {
     // Load input file
-    const std::string input_filename = argv[p_file_index];
+    const std::string input_filename = argv[p_file_indices[i_file]];
     PointCloudXYZRGBA::Ptr cloud (new PointCloudXYZRGBA);
-  
     if (!loadCloud (input_filename, *cloud)) 
       return (-1);
-
-    if (!cloud->isOrganized())
-    {
-      std::string warn_msg = "Unorganized point cloud detected. Skipping file " + input_filename + "\n";
-      print_warn(warn_msg.c_str());
-      continue;
-    }
-    else
-    {
-      processed_at_least_one_pcd = true;
-    }
 
     // Construct output filenames
     std::string sqmmt_filename = input_filename;
@@ -297,9 +284,5 @@ main (int argc, char** argv)
     compute (cloud, min_depth, max_depth, max_height, pcd_filename, sqmmt_filename);
   }
 
-  if (!processed_at_least_one_pcd)
-  {
-    print_error("All input pcd files are unorganized.\n");
-  }
-
 }
+

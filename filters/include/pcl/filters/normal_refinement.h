@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_NORMAL_REFINEMENT_H_
+#define PCL_FILTERS_NORMAL_REFINEMENT_H_
 
 #include <pcl/filters/filter.h>
 
@@ -102,12 +103,12 @@ namespace pcl
     float nx = 0.0f;
     float ny = 0.0f;
     float nz = 0.0f;
-    for (std::size_t i = 0; i < k_indices.size (); ++i) {
+    for (unsigned int i = 0; i < k_indices.size (); ++i) {
       // Neighbor
       const NormalT& pointi = cloud[k_indices[i]];
       
       // Accumulate if not NaN
-      if (std::isfinite (pointi.normal_x) && std::isfinite (pointi.normal_y) && std::isfinite (pointi.normal_z))
+      if (pcl_isfinite (pointi.normal_x) && pcl_isfinite (pointi.normal_y) && pcl_isfinite (pointi.normal_z))
       {
         const float& weighti = weights[i];
         nx += weighti * pointi.normal_x;
@@ -118,7 +119,7 @@ namespace pcl
     
     // Normalize if norm valid and non-zero
     const float norm = std::sqrt (nx * nx + ny * ny + nz * nz);
-    if (std::isfinite (norm) && norm > std::numeric_limits<float>::epsilon ())
+    if (pcl_isfinite (norm) && norm > std::numeric_limits<float>::epsilon ())
     {
       point.normal_x = nx / norm;
       point.normal_y = ny / norm;
@@ -190,9 +191,9 @@ namespace pcl
     using Filter<NormalT>::filter_name_;
     using Filter<NormalT>::getClassName;
 
-    using PointCloud = typename Filter<NormalT>::PointCloud;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename Filter<NormalT>::PointCloud PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
     public:
       /** \brief Empty constructor, sets default convergence parameters
@@ -281,7 +282,7 @@ namespace pcl
         * \param output the resultant point cloud message
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
       
     private:
       /** \brief indices of neighboring points */
@@ -303,3 +304,5 @@ namespace pcl
 #else
 #define PCL_INSTANTIATE_NormalRefinement(T) template class PCL_EXPORTS pcl::NormalRefinement<T>;
 #endif
+
+#endif 

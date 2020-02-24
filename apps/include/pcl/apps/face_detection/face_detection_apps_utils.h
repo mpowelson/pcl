@@ -5,11 +5,12 @@
  *      Author: ari
  */
 
-#pragma once
+#ifndef FACE_DETECTION_APPS_UTILS_H_
+#define FACE_DETECTION_APPS_UTILS_H_
 
 namespace face_detection_apps_utils
 {
-  inline bool readMatrixFromFile(const std::string& file, Eigen::Matrix4f & matrix)
+  inline bool readMatrixFromFile(std::string file, Eigen::Matrix4f & matrix)
   {
 
     std::ifstream in;
@@ -54,8 +55,8 @@ namespace face_detection_apps_utils
       std::string id_1 = strs1[strs1.size () - 1];
       std::string id_2 = strs2[strs2.size () - 1];
 
-      std::size_t pos1 = id_1.find (".pcd");
-      std::size_t pos2 = id_2.find (".pcd");
+      size_t pos1 = id_1.find (".pcd");
+      size_t pos2 = id_2.find (".pcd");
 
       id_1 = id_1.substr (0, pos1);
       id_2 = id_2.substr (0, pos2);
@@ -67,26 +68,41 @@ namespace face_detection_apps_utils
   inline
   void getFilesInDirectory(bf::path & dir, std::string & rel_path_so_far, std::vector<std::string> & relative_paths, std::string & ext)
   {
-    for (const auto& dir_entry : bf::directory_iterator(dir))
+    bf::directory_iterator end_itr;
+    for (bf::directory_iterator itr (dir); itr != end_itr; ++itr)
     {
       //check if its a directory, then get models in it
-      if (bf::is_directory (dir_entry))
+      if (bf::is_directory (*itr))
       {
-        std::string so_far = rel_path_so_far + (dir_entry.path().filename()).string() + "/";
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string so_far = rel_path_so_far + (itr->path().filename()).string() + "/";
+#else
+        std::string so_far = rel_path_so_far + (itr->path ()).filename () + "/";
+#endif
 
-        bf::path curr_path = dir_entry.path ();
+        bf::path curr_path = itr->path ();
         getFilesInDirectory (curr_path, so_far, relative_paths, ext);
       } else
       {
         //check that it is a ply file and then add, otherwise ignore..
         std::vector < std::string > strs;
-        std::string file = (dir_entry.path().filename()).string();
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string file = (itr->path().filename()).string();
+#else
+        std::string file = (itr->path ()).filename ();
+#endif
+
         boost::split (strs, file, boost::is_any_of ("."));
         std::string extension = strs[strs.size () - 1];
 
-        if (extension == ext)
+        if (extension.compare (ext) == 0)
         {
-          std::string path = rel_path_so_far + (dir_entry.path().filename()).string();
+#if BOOST_FILESYSTEM_VERSION == 3
+          std::string path = rel_path_so_far + (itr->path().filename()).string();
+#else
+          std::string path = rel_path_so_far + (itr->path ()).filename ();
+#endif
+
           relative_paths.push_back (path);
         }
       }
@@ -95,7 +111,7 @@ namespace face_detection_apps_utils
 
   void displayHeads(std::vector<Eigen::VectorXf> & heads, pcl::visualization::PCLVisualizer & vis)
   {
-    for (std::size_t i = 0; i < heads.size (); i++)
+    for (size_t i = 0; i < heads.size (); i++)
     {
       std::stringstream name;
       name << "sphere" << i;
@@ -129,3 +145,5 @@ namespace face_detection_apps_utils
     }
   }
 }
+
+#endif /* FACE_DETECTION_APPS_UTILS_H_ */

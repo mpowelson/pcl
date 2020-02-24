@@ -37,7 +37,8 @@
 /// @details The set of simple common operations used throughout the project.
 /// @author Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef COMMON_H_
+#define COMMON_H_
 
 #include <sstream>
 
@@ -82,3 +83,5 @@ toString(T input, std::string &result)
 /// @param s The string to be made lower.
 void
 stringToLower(std::string &s);
+
+#endif // COMMON_H_

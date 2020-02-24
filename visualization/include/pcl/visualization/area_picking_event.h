@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VISUALIZATION_AREA_PICKING_EVENT_H_
+#define PCL_VISUALIZATION_AREA_PICKING_EVENT_H_
 
 #include <pcl/pcl_macros.h>
 
@@ -72,3 +73,5 @@ namespace pcl
     };
   } //namespace visualization
 } //namespace pcl
+
+#endif  /* PCL_VISUALIZATION_AREA_PICKING_EVENT_H_ */

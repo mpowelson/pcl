@@ -36,10 +36,15 @@
 
 #include <ui_manual_registration.h>
 
-// QT
+// QT4
 #include <QMainWindow>
 #include <QMutex>
 #include <QTimer>
+
+// Boost
+#ifndef Q_MOC_RUN
+#include <boost/thread/thread.hpp>
+#endif
 
 // PCL
 #include <pcl/console/print.h>
@@ -61,7 +66,7 @@
 
 #include <pcl/registration/transformation_estimation_svd.h>
 
-using PointT = pcl::PointXYZRGBA;
+typedef pcl::PointXYZRGBA PointT;
 
 // Useful macros
 #define FPS_CALC(_WHAT_) \
@@ -88,9 +93,9 @@ class ManualRegistration : public QMainWindow
 {
   Q_OBJECT
   public:
-    using Cloud = pcl::PointCloud<PointT>;
-    using CloudPtr = Cloud::Ptr;
-    using CloudConstPtr = Cloud::ConstPtr;
+    typedef pcl::PointCloud<PointT> Cloud;
+    typedef Cloud::Ptr CloudPtr;
+    typedef Cloud::ConstPtr CloudConstPtr;
 
     ManualRegistration ();
 
@@ -101,13 +106,13 @@ class ManualRegistration : public QMainWindow
     void
     setSrcCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_src)
     {
-      cloud_src_ = std::move(cloud_src);
+      cloud_src_ = cloud_src;
       cloud_src_present_ = true;
     }
     void
     setDstCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_dst)
     {
-      cloud_dst_ = std::move(cloud_dst);
+      cloud_dst_ = cloud_dst;
       cloud_dst_present_ = true;
     }
 
@@ -117,8 +122,8 @@ class ManualRegistration : public QMainWindow
     DstPointPickCallback (const pcl::visualization::PointPickingEvent& event, void*);
 
   protected:
-    pcl::visualization::PCLVisualizer::Ptr vis_src_;
-    pcl::visualization::PCLVisualizer::Ptr vis_dst_;
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> vis_src_;
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> vis_dst_;
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_src_;
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_dst_;

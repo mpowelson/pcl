@@ -74,7 +74,7 @@ vtkStandardNewMacro(vtkVertexBufferObject);
 vtkVertexBufferObject::vtkVertexBufferObject()
 {
   this->Handle = 0;
-  this->Context = nullptr;
+  this->Context = 0;
   this->BufferTarget = 0;
   this->Size=0;
   this->Count=0;
@@ -90,7 +90,7 @@ vtkVertexBufferObject::vtkVertexBufferObject()
 //----------------------------------------------------------------------------
 vtkVertexBufferObject::~vtkVertexBufferObject()
 {
-  this->SetContext(nullptr);
+  this->SetContext(0);
 }
 
 //----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ void vtkVertexBufferObject::SetContext(vtkRenderWindow* renWin)
     {
     if (!this->LoadRequiredExtensions(openGLRenWin->GetExtensionManager()))
       {
-      this->Context = nullptr;
+      this->Context = 0;
       vtkErrorMacro("Required OpenGL extensions not supported by the context.");
       }
     }
@@ -227,25 +227,25 @@ void vtkVertexBufferObject::Bind()
                                this->AttributeType,
                                static_cast<GLboolean> (this->AttributeNormalized),
                                this->AttributeStride,
-                               nullptr);
+                               0);
     vtkgl::EnableVertexAttribArray(this->AttributeIndex);
   } else {
     glEnableClientState(this->ArrayType);
     switch(this->ArrayType){
       case GL_VERTEX_ARRAY:
-        glVertexPointer(this->AttributeSize, this->AttributeType, this->AttributeStride, nullptr);
+        glVertexPointer(this->AttributeSize, this->AttributeType, this->AttributeStride, 0);
         break;
 
       case GL_INDEX_ARRAY:
-        glIndexPointer(this->AttributeType, this->AttributeStride, nullptr);
+        glIndexPointer(this->AttributeType, this->AttributeStride, 0);
         break;
 
       case GL_COLOR_ARRAY:
-        glColorPointer(this->AttributeSize, this->AttributeType, this->AttributeStride, nullptr);
+        glColorPointer(this->AttributeSize, this->AttributeType, this->AttributeStride, 0);
         break;
 
       case GL_NORMAL_ARRAY:
-        glNormalPointer(this->AttributeType, this->AttributeStride, nullptr);
+        glNormalPointer(this->AttributeType, this->AttributeStride, 0);
         break;
 
       default:
@@ -341,7 +341,7 @@ bool vtkVertexBufferObject::Upload(vtkCellArray *verts)
 
   verts->InitTraversal();
   while(verts->GetNextCell(npts, pts) != 0){
-    for (std::size_t i=0; i < static_cast<std::size_t>(npts); i++)
+    for (size_t i=0; i < static_cast<size_t>(npts); i++)
         indices.push_back(static_cast<unsigned int> (pts[i]));
   }
 
@@ -462,7 +462,7 @@ void vtkVertexBufferObject::ReleaseMemory()
   if (this->Context && this->Handle)
     {
     this->Bind();
-    vtkgl::BufferData(this->BufferTarget, 0, nullptr, OpenGLVertexBufferObjectUsage[this->Usage]);
+    vtkgl::BufferData(this->BufferTarget, 0, NULL, OpenGLVertexBufferObjectUsage[this->Usage]);
     this->Size = 0;
     this->Count = 0;
     }

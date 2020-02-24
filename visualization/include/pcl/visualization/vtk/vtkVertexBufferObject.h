@@ -24,7 +24,8 @@
 // float and then uploaded.
 // DON'T PLAY WITH IT YET.
 
-#pragma once
+#ifndef __vtkVertexBufferObject_h
+#define __vtkVertexBufferObject_h
 
 #include <vector>
 
@@ -48,7 +49,7 @@ public:
   
   static vtkVertexBufferObject* New();
   vtkTypeMacro(vtkVertexBufferObject, vtkObject);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
+  void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Get/Set the context. Context must be a vtkOpenGLRenderWindow.
@@ -212,3 +213,7 @@ private:
   int GetDataTypeSize(int type);
   //ETX
 };
+
+#endif
+
+

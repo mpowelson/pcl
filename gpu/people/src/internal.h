@@ -36,7 +36,8 @@
  * @authors: Cedric Cagniart, Koen Buys, Anatoly Baksheev
  */
 
-#pragma once
+#ifndef PCL_GPU_PEOPLE_INTERNAL_H_
+#define PCL_GPU_PEOPLE_INTERNAL_H_
 
 #include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/utils/safe_call.hpp>
@@ -49,15 +50,15 @@ namespace pcl
 {
   namespace device
   {
-    using Cloud = DeviceArray2D<float4>;
-    using Image = DeviceArray2D<uchar4>;
+    typedef DeviceArray2D<float4> Cloud;
+    typedef DeviceArray2D<uchar4> Image;
 
-    using Depth = DeviceArray2D<unsigned short>;
-    using Labels = DeviceArray2D<unsigned char>;      
-    using HueImage = DeviceArray2D<float>;
-    using Mask = DeviceArray2D<unsigned char>;  
+    typedef DeviceArray2D<unsigned short> Depth;
+    typedef DeviceArray2D<unsigned char>  Labels;      
+    typedef DeviceArray2D<float>          HueImage;
+    typedef DeviceArray2D<unsigned char>  Mask;  
 
-    using MultiLabels = DeviceArray2D<char4>;
+    typedef DeviceArray2D<char4> MultiLabels;
 
     /** \brief The intrinsic camera calibration **/
     struct Intr
@@ -99,7 +100,7 @@ namespace pcl
 
     struct Dilatation
     {
-        using Kernel = DeviceArray<unsigned char>;
+        typedef DeviceArray<unsigned char> Kernel;
         enum 
         { 
           KSIZE_X = 5,
@@ -115,8 +116,8 @@ namespace pcl
     /** \brief Struct that holds a single RDF tree in GPU **/
     struct CUDATree
     {
-        using Node = pcl::gpu::people::trees::Node;
-        using Label = pcl::gpu::people::trees::Label;
+        typedef pcl::gpu::people::trees::Node Node;
+        typedef pcl::gpu::people::trees::Label Label;
 
         int treeHeight;
         int numNodes;
@@ -194,3 +195,5 @@ namespace pcl
     };
   }
 }
+
+#endif /* PCL_GPU_PEOPLE_INTERNAL_H_ */

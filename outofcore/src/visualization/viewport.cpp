@@ -1,7 +1,6 @@
 // C++
 #include <iostream>
 #include <string>
-#include <cinttypes>
 
 // PCL
 #include <pcl/outofcore/visualization/camera.h>
@@ -20,6 +19,17 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
+
+//void CallbackFunction (vtkObject* caller, long unsigned int vtkNotUsed (eventId), void* clientData, void* vtkNotUsed (callData) )
+//{
+//  vtkRenderer* renderer = static_cast<vtkRenderer*> (caller);
+//
+//  double timeInSeconds = renderer->GetLastRenderTimeInSeconds ();
+//  double fps = 1.0/timeInSeconds;
+//  std::cout << "FPS: " << fps << std::endl;
+//
+//  std::cout << "Callback" << std::endl;
+//}
 
 // Operators
 // -----------------------------------------------------------------------------
@@ -134,15 +144,24 @@ Viewport::viewportActorUpdate ()
 
   std::vector<Camera*> cameras = scene->getCameras ();
 
-  for (auto &camera : cameras)
+  for (size_t i = 0; i < cameras.size (); i++)
   {
-    camera->render (renderer_);
+    cameras[i]->render (renderer_);
+//    if (cameras[i]->getCamera () != renderer_->GetActiveCamera ())
+//    {
+//      renderer_->AddActor (cameras[i]->getCameraActor ());
+//      if (cameras[i]->getName () == "octree")
+//      {
+//        renderer_->AddActor (cameras[i]->getHullActor ());
+//      }
+//    }
   }
 
   std::vector<Object*> objects = scene->getObjects ();
-  for (auto &object : objects)
+  for (size_t i = 0; i < objects.size (); i++)
   {
-    object->render (renderer_);
+    //std::cout << objects[i]->getName () << std::endl;
+    objects[i]->render (renderer_);
   }
 }
 
@@ -168,12 +187,13 @@ Viewport::viewportHudUpdate ()
   Scene *scene = Scene::instance ();
   std::vector<Object*> objects = scene->getObjects ();
 
-  std::uint64_t points_loaded = 0;
-  std::uint64_t data_loaded = 0;
-  for (const auto &object : objects)
+  uint64_t points_loaded = 0;
+  uint64_t data_loaded = 0;
+  for (size_t i = 0; i < objects.size (); i++)
   {
-    const auto cloud = dynamic_cast<const OutofcoreCloud*> (object);
-    if (cloud != nullptr)
+    //TYPE& dynamic_cast<TYPE&> (object);
+    OutofcoreCloud* cloud = dynamic_cast<OutofcoreCloud*> (objects[i]);
+    if (cloud != NULL)
     {
       points_loaded += cloud->getPointsLoaded ();
       data_loaded += cloud->getDataLoaded ();
@@ -181,8 +201,7 @@ Viewport::viewportHudUpdate ()
   }
 
   char points_loaded_str[50];
-  snprintf (points_loaded_str, sizeof(points_loaded_str),
-            "%" PRIu64 " points/%" PRIu64 " mb", points_loaded, data_loaded/1024);
+  sprintf (points_loaded_str, "%lu points/%lu mb", points_loaded, data_loaded/1024);
   points_hud_actor_->SetInput (points_loaded_str);
 }
 

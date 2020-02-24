@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_TRAJKOVIC_KEYPOINT_2D_H_
+#define PCL_TRAJKOVIC_KEYPOINT_2D_H_
 
 #include <pcl/keypoints/keypoint.h>
 #include <pcl/common/intensity.h>
@@ -54,18 +55,18 @@ namespace pcl
   class TrajkovicKeypoint2D : public Keypoint<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<TrajkovicKeypoint2D<PointInT, PointOutT, IntensityT> >;
-      using ConstPtr = shared_ptr<const TrajkovicKeypoint2D<PointInT, PointOutT, IntensityT> >;
-      using PointCloudIn = typename Keypoint<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Keypoint<PointInT, PointOutT>::PointCloudOut;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef boost::shared_ptr<TrajkovicKeypoint2D<PointInT, PointOutT, IntensityT> > Ptr;
+      typedef boost::shared_ptr<const TrajkovicKeypoint2D<PointInT, PointOutT, IntensityT> > ConstPtr;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
       using Keypoint<PointInT, PointOutT>::name_;
       using Keypoint<PointInT, PointOutT>::input_;
       using Keypoint<PointInT, PointOutT>::indices_;
       using Keypoint<PointInT, PointOutT>::keypoints_indices_;
 
-      enum ComputationMethod { FOUR_CORNERS, EIGHT_CORNERS };
+      typedef enum { FOUR_CORNERS, EIGHT_CORNERS } ComputationMethod;
 
       /** \brief Constructor
         * \param[in] method the method to be used to determine the corner responses
@@ -138,10 +139,10 @@ namespace pcl
 
     protected:
       bool
-      initCompute () override;
+      initCompute ();
 
       void
-      detectKeypoints (PointCloudOut &output) override;
+      detectKeypoints (PointCloudOut &output);
 
     private:
       /// comparator for responses intensity
@@ -171,3 +172,5 @@ namespace pcl
 }
 
 #include <pcl/keypoints/impl/trajkovic_2d.hpp>
+
+#endif // #ifndef PCL_TRAJKOVIC_KEYPOINT_2D_H_

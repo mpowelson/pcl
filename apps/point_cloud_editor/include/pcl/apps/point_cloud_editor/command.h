@@ -39,7 +39,8 @@
 /// CommandQueue.
 /// @author Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef COMMAND_H_
+#define COMMAND_H_
 
 #include <pcl/apps/point_cloud_editor/localTypes.h>
 
@@ -100,3 +101,4 @@ class Command
       assert(false); return (*this);
     }
 };
+#endif //COMMAND_H_

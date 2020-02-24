@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCLVIEWER_H
+#define PCLVIEWER_H
 
 #include <iostream>
 
@@ -49,7 +50,7 @@ public Q_SLOTS:
   blueSliderValueChanged (int value);
 
 protected:
-  pcl::visualization::PCLVisualizer::Ptr viewer;
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
   PointCloudT::Ptr cloud;
 
   unsigned int red;
@@ -60,3 +61,5 @@ private:
   Ui::PCLViewer *ui;
 
 };
+
+#endif // PCLVIEWER_H

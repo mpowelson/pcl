@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_BOOST_GRAPH_H_
+#define PCL_REGISTRATION_BOOST_GRAPH_H_
 
 #include <boost/graph/adjacency_list.hpp>
 #include <Eigen/StdVector>
@@ -53,13 +54,13 @@ namespace boost
   template <class ValueType>
     struct container_gen<eigen_vecS, ValueType>
     {
-      using type = std::vector<ValueType, Eigen::aligned_allocator<ValueType> >;
+      typedef std::vector<ValueType, Eigen::aligned_allocator<ValueType> > type;
     };
 
   template <>
     struct parallel_edge_traits<eigen_vecS>
     {
-      using type = allow_parallel_edge_tag;
+      typedef allow_parallel_edge_tag type;
     };
 
   namespace detail
@@ -68,7 +69,7 @@ namespace boost
       struct is_random_access<eigen_vecS>
       {
         enum { value = true };
-        using type = mpl::true_;
+        typedef mpl::true_ type;
       };
   }
 
@@ -79,13 +80,13 @@ namespace boost
   template <class ValueType>
     struct container_gen<eigen_listS, ValueType>
     {
-      using type = std::list<ValueType, Eigen::aligned_allocator<ValueType> >;
+      typedef std::list<ValueType, Eigen::aligned_allocator<ValueType> > type;
     };
 
   template <>
     struct parallel_edge_traits<eigen_listS>
     {
-      using type = allow_parallel_edge_tag;
+      typedef allow_parallel_edge_tag type;
     };
 
   namespace detail
@@ -94,7 +95,9 @@ namespace boost
       struct is_random_access<eigen_listS>
       {
         enum { value = false };
-        using type = mpl::false_;
+        typedef mpl::false_ type;
       };
   }
 }
+
+#endif    // PCL_REGISTRATION_BOOST_GRAPH_H_

@@ -45,12 +45,12 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 pcl::modeler::StatisticalOutlierRemovalWorker::StatisticalOutlierRemovalWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent) :
   AbstractWorker(cloud_mesh_items, parent),
-  mean_k_(nullptr), stddev_mul_thresh_(nullptr)
+  mean_k_(NULL), stddev_mul_thresh_(NULL)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-pcl::modeler::StatisticalOutlierRemovalWorker::~StatisticalOutlierRemovalWorker()
+pcl::modeler::StatisticalOutlierRemovalWorker::~StatisticalOutlierRemovalWorker(void)
 {
   delete mean_k_;
   delete stddev_mul_thresh_;

@@ -37,10 +37,11 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GEOMETRY_PLANAR_POLYGON_H_
+#define PCL_GEOMETRY_PLANAR_POLYGON_H_
+
 
 #include <pcl/common/eigen.h>
-#include <pcl/pcl_macros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/ModelCoefficients.h>
 
@@ -53,11 +54,11 @@ namespace pcl
   class PlanarPolygon
   {
     public:
-      using Ptr = shared_ptr<PlanarPolygon<PointT> >;
-      using ConstPtr = shared_ptr<const PlanarPolygon<PointT> >;
+      typedef boost::shared_ptr<PlanarPolygon<PointT> > Ptr;
+      typedef boost::shared_ptr<const PlanarPolygon<PointT> > ConstPtr;
 
        /** \brief Empty constructor for PlanarPolygon */
-      PlanarPolygon () : contour_ ()
+      PlanarPolygon () : contour_ (), coefficients_ ()
       {}
       
       /** \brief Constructor for PlanarPolygon
@@ -136,6 +137,9 @@ namespace pcl
       Eigen::Vector4f coefficients_;
     
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
+
+#endif  //#ifndef PCL_GEOMETRY_PLANAR_POLYGON_H_
+

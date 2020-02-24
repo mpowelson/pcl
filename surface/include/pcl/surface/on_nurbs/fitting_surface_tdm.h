@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_PATCH_TDM_H
+#define NURBS_FITTING_PATCH_TDM_H
 
 #include <pcl/surface/on_nurbs/fitting_surface_pdm.h>
 
@@ -85,13 +86,13 @@ namespace pcl
 
       /** \brief Solve system of equations using Eigen or UmfPack (can be defined in on_nurbs.cmake),
        *  and updates B-Spline surface if a solution can be obtained. */
-      void
-      solve (double damp = 1.0) override;
+      virtual void
+      solve (double damp = 1.0);
 
       /** \brief Update surface according to the current system of equations.
        *  \param[in] damp damping factor from one iteration to the other. */
-      void
-      updateSurf (double damp) override;
+      virtual void
+      updateSurf (double damp);
 
     protected:
 
@@ -110,26 +111,28 @@ namespace pcl
                           unsigned &row);
 
       /** \brief Add minimization constraint: interior smoothness by control point regularisation. */
-      void
-      addCageInteriorRegularisation (double weight, unsigned &row) override;
+      virtual void
+      addCageInteriorRegularisation (double weight, unsigned &row);
 
       /** \brief Add minimization constraint: boundary smoothness by control point regularisation. */
-      void
-      addCageBoundaryRegularisation (double weight, int side, unsigned &row) override;
+      virtual void
+      addCageBoundaryRegularisation (double weight, int side, unsigned &row);
 
       /** \brief Add minimization constraint: corner smoothness by control point regularisation. */
-      void
-      addCageCornerRegularisation (double weight, unsigned &row) override;
+      virtual void
+      addCageCornerRegularisation (double weight, unsigned &row);
 
-      void
-      addInteriorRegularisation (int, int, int, double, unsigned &) override
+      virtual void
+      addInteriorRegularisation (int, int, int, double, unsigned &)
       {
       }
-      void
-      addBoundaryRegularisation (int, int, int, double, unsigned &) override
+      virtual void
+      addBoundaryRegularisation (int, int, int, double, unsigned &)
       {
       }
     };
 
   }
 }
+
+#endif /* NURBS_FITTING_PATCH_TDM_H */

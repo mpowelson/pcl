@@ -57,9 +57,9 @@ int Narf::max_no_of_threads = 1;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Narf::Narf() : 
-  surface_patch_ (nullptr), 
+  position_ (), transformation_ (), surface_patch_ (NULL), 
   surface_patch_pixel_size_ (0), surface_patch_world_size_ (), 
-  surface_patch_rotation_ (), descriptor_ (nullptr), descriptor_size_ (0)
+  surface_patch_rotation_ (), descriptor_ (NULL), descriptor_size_ (0)
 {
   reset();
 }
@@ -72,9 +72,9 @@ Narf::~Narf()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Narf::Narf (const Narf& other) : 
-  surface_patch_ (nullptr), 
+  position_ (), transformation_ (), surface_patch_ (NULL), 
   surface_patch_pixel_size_ (0), surface_patch_world_size_ (), 
-  surface_patch_rotation_ (), descriptor_ (nullptr), descriptor_size_ (0)
+  surface_patch_rotation_ (), descriptor_ (NULL), descriptor_size_ (0)
 {
   deepCopy (other);
 }
@@ -92,10 +92,10 @@ void
 Narf::reset ()
 {
   delete[] descriptor_;
-  descriptor_ = nullptr;
+  descriptor_ = NULL;
   descriptor_size_ = 0;
   delete[] surface_patch_;
-  surface_patch_ = nullptr;
+  surface_patch_ = NULL;
   surface_patch_pixel_size_ = 0;
   surface_patch_world_size_ = 0.0f;
   surface_patch_rotation_ = 0.0f;
@@ -105,7 +105,7 @@ Narf::reset ()
 void 
 Narf::deepCopy (const Narf& other)
 {
-  //std::cout << __PRETTY_FUNCTION__<<" called.\n";
+  //cout << __PRETTY_FUNCTION__<<" called.\n";
   if (&other == this)
     return;
   
@@ -147,7 +147,7 @@ Narf::extractDescriptor (int descriptor_size)
     descriptor_ = new float[descriptor_size_];
   }
   float angle_step_size = deg2rad (360.0f) / static_cast<float> (descriptor_size_);
-  //std::cout << PVARN(no_of_beam_points)<<PVARN(surface_patch_pixel_size_);
+  //cout << PVARN(no_of_beam_points)<<PVARN(surface_patch_pixel_size_);
 
   float cell_size = surface_patch_world_size_/float(surface_patch_pixel_size_),
         cell_factor = 1.0f/cell_size,
@@ -161,7 +161,7 @@ Narf::extractDescriptor (int descriptor_size)
     descriptor_value = 0.0f;
     float angle = static_cast<float> (descriptor_value_idx) * angle_step_size + surface_patch_rotation_,
           beam_point_factor_x = sinf(angle) * beam_point_factor,
-          beam_point_factor_y = -std::cos (angle) * beam_point_factor;
+          beam_point_factor_y = -cosf (angle) * beam_point_factor;
      
     std::vector<float> beam_values (no_of_beam_points + 1);
     float current_cell = 0.0f;
@@ -176,7 +176,7 @@ Narf::extractDescriptor (int descriptor_size)
 
       int cell_x = static_cast<int> (pcl_lrint (beam_point_cell_x)), cell_y = static_cast<int> (pcl_lrint (beam_point_cell_y));
       beam_value = surface_patch_[cell_y*surface_patch_pixel_size_ + cell_x];
-      if (!std::isfinite(beam_value))
+      if (!pcl_isfinite(beam_value))
       {
         if (beam_value > 0.0f)
           beam_value = max_dist;
@@ -194,7 +194,7 @@ Narf::extractDescriptor (int descriptor_size)
       current_cell += current_weight * diff;
     }
     // Scaling for easy descriptor distances:
-    current_cell = std::atan2 (current_cell, max_dist) / deg2rad(180.0f);  // Scales the result to [-0.5, 0.5]
+    current_cell = atan2f (current_cell, max_dist) / deg2rad(180.0f);  // Scales the result to [-0.5, 0.5]
     descriptor_value = current_cell;
   }
   return true;
@@ -256,15 +256,20 @@ Narf::extractFromRangeImageWithBestRotation (const RangeImage& range_image, cons
                                              int descriptor_size, float support_size)
 {
   extractFromRangeImage(range_image, interest_point, descriptor_size, support_size);
-  std::vector<float> rotations, strengths;
+  vector<float> rotations, strengths;
   getRotations(rotations, strengths);
   if (rotations.empty())
     return false;
-
-  const auto max_it = std::max_element(strengths.cbegin (), strengths.cend ());
-  const auto max_idx = std::distance(strengths.cbegin (), max_it);
-  const auto best_rotation = rotations[max_idx];
-
+  float best_rotation=rotations[0], best_strength=strengths[0];
+  for (unsigned int i=1; i<rotations.size(); ++i)
+  {
+    if (strengths[i] > best_strength)
+    {
+      best_rotation = rotations[i];
+      best_strength = strengths[i];
+    }
+  }
+  
   transformation_ = Eigen::AngleAxisf(-best_rotation, Eigen::Vector3f(0.0f, 0.0f, 1.0f))*transformation_;
   surface_patch_rotation_ = best_rotation;
   return extractDescriptor(descriptor_size_);
@@ -284,10 +289,10 @@ Narf::getBlurredSurfacePatch (int new_pixel_size, int blur_radius) const
     for (int x=0; x<new_pixel_size; ++x)
     {
       float& integral_pixel = *(integral_image_ptr++);
-      int old_x = static_cast<int> (pcl_lrint (std::floor (new_to_old_factor * float (x)))),
-          old_y = static_cast<int> (pcl_lrint (std::floor (new_to_old_factor * float (y))));
+      int old_x = static_cast<int> (pcl_lrint (floor (new_to_old_factor * float (x)))),
+          old_y = static_cast<int> (pcl_lrint (floor (new_to_old_factor * float (y))));
       integral_pixel = surface_patch_[old_y*surface_patch_pixel_size_ + old_x];
-      if (std::isinf(integral_pixel))
+      if (pcl_isinf(integral_pixel))
         integral_pixel = 0.5f*surface_patch_world_size_;
       float left_value=0, top_left_value=0, top_value=0;
       if (x>0)
@@ -300,7 +305,7 @@ Narf::getBlurredSurfacePatch (int new_pixel_size, int blur_radius) const
         top_value = integral_image[(y-1)*new_pixel_size+x];
       
       integral_pixel += left_value + top_value - top_left_value;
-      //std::cout << PVARC(x)<<PVARC(y)<<PVARC(left_value)<<PVARC(top_value)<<PVARC(top_left_value)<<PVARN(integral_pixel)<<PVARN(integral_image[y*new_pixel_size+x-1]);
+      //cout << PVARC(x)<<PVARC(y)<<PVARC(left_value)<<PVARC(top_value)<<PVARC(top_left_value)<<PVARN(integral_pixel)<<PVARN(integral_image[y*new_pixel_size+x-1]);
     }
   }
   
@@ -348,7 +353,7 @@ Narf::extractFromRangeImageAndAddToList (const RangeImage& range_image, const Ei
     feature_list.push_back(feature);
     return;
   }
-  std::vector<float> rotations, strengths;
+  vector<float> rotations, strengths;
   feature->getRotations(rotations, strengths);
   feature->getRotatedVersions(range_image, rotations, feature_list);
   delete feature;
@@ -373,11 +378,11 @@ Narf::extractForInterestPoints (const RangeImage& range_image, const PointCloud<
 {
   # pragma omp parallel for num_threads(max_no_of_threads) default(shared) schedule(dynamic, 10)
   //!!! nizar 20110408 : for OpenMP sake on MSVC this must be kept signed
-  for (std::ptrdiff_t idx = 0; idx < static_cast<std::ptrdiff_t>(interest_points.points.size ()); ++idx)
+  for (int interest_point_idx = 0; interest_point_idx < int (interest_points.points.size ()); ++interest_point_idx)
   {
-    const auto& interest_point = interest_points.points[idx];
+    const InterestPoint& interest_point = interest_points.points[interest_point_idx];
     Vector3fMapConst point = interest_point.getVector3fMap ();
-
+    
     Narf* feature = new Narf;
     if (!feature->extractFromRangeImage(range_image, point, descriptor_size, support_size))
     {
@@ -392,12 +397,13 @@ Narf::extractForInterestPoints (const RangeImage& range_image, const PointCloud<
         }
       }
       else {
-        std::vector<float> rotations, strengths;
+        vector<float> rotations, strengths;
         feature->getRotations(rotations, strengths);
         {
           //feature->getRotatedVersions(range_image, rotations, feature_list);
-          for (const float &rotation : rotations)
+          for (unsigned int i=0; i<rotations.size(); ++i)
           {
+            float rotation = rotations[i];
             Narf* feature2 = new Narf(*feature);  // Call copy constructor
             feature2->transformation_ = Eigen::AngleAxisf(-rotation, Eigen::Vector3f(0.0f, 0.0f, 1.0f))*feature2->transformation_;
             feature2->surface_patch_rotation_ = rotation;
@@ -437,13 +443,13 @@ Narf::extractForEveryRangeImagePointAndAddToList (const RangeImage& range_image,
 void 
 Narf::getRotations (std::vector<float>& rotations, std::vector<float>& strengths) const
 {
-  const auto angle_steps_no = std::max (descriptor_size_, 36);
-  const float min_angle_dist_between_rotations = deg2rad(70.0f);
-  const float angle_step_size1 = deg2rad (360.0f) / static_cast<float> (angle_steps_no);
-  const float angle_step_size2 = deg2rad (360.0f) / static_cast<float> (descriptor_size_);
-
-  const float score_normalization = 1.0f / static_cast<float> (descriptor_size_);
-
+  int angle_steps_no = (std::max) (descriptor_size_, 36);
+  float min_angle_dist_between_rotations = deg2rad(70.0f);
+  float angle_step_size1 = deg2rad (360.0f) / static_cast<float> (angle_steps_no);
+  float angle_step_size2 = deg2rad (360.0f) / static_cast<float> (descriptor_size_);
+  
+  float score_normalization = 1.0f / static_cast<float> (descriptor_size_);
+  
   std::multimap<float, float> scored_orientations;
   for (int step=0; step<angle_steps_no; ++step)
   {
@@ -454,7 +460,7 @@ Narf::getRotations (std::vector<float>& rotations, std::vector<float>& strengths
     {
       float value = descriptor_[descriptor_value_idx];
       float angle2 = static_cast<float> (descriptor_value_idx) * angle_step_size2;
-      float distance_weight = powf (1.0f - std::abs (normAngle (angle - angle2)) / deg2rad (180.0f), 2.0f);
+      float distance_weight = powf (1.0f - fabsf (normAngle (angle - angle2)) / deg2rad (180.0f), 2.0f);
       
       score += value * distance_weight;
     }
@@ -463,14 +469,14 @@ Narf::getRotations (std::vector<float>& rotations, std::vector<float>& strengths
   }
   
   //for (std::multimap<float, float>::const_iterator it=scored_orientations.begin(); it!=scored_orientations.end(); ++it)
-    //std::cout << "Score "<<it->first<<" for angle "<<rad2deg(it->second)<<".\n";
+    //cout << "Score "<<it->first<<" for angle "<<rad2deg(it->second)<<".\n";
   
   float min_score = scored_orientations.begin()->first,
         max_score = scored_orientations.rbegin()->first;
   
   float min_score_for_remaining_rotations = max_score - 0.2f*(max_score-min_score);
   scored_orientations.erase(scored_orientations.begin(), scored_orientations.upper_bound(min_score_for_remaining_rotations));
-  //std::cout << "There are "<<scored_orientations.size()<<" potential orientations left after filtering out bad scores.\n";
+  //cout << "There are "<<scored_orientations.size()<<" potential orientations left after filtering out bad scores.\n";
   
   while (!scored_orientations.empty())
   {
@@ -492,8 +498,10 @@ Narf::getRotations (std::vector<float>& rotations, std::vector<float>& strengths
 void 
 Narf::getRotatedVersions (const RangeImage&, const std::vector<float>& rotations, std::vector<Narf*>& features) const
 {
-  for (const float &rotation : rotations)
+  for (unsigned int i=0; i<rotations.size(); ++i)
   {
+    float rotation = rotations[i];
+    
     Narf* feature = new Narf(*this);  // Call copy constructor
     feature->transformation_ = Eigen::AngleAxisf(-rotation, Eigen::Vector3f(0.0f, 0.0f, 1.0f))*feature->transformation_;
     feature->surface_patch_rotation_ = rotation;
@@ -543,7 +551,7 @@ Narf::saveBinary (const std::string& filename) const
 int 
 Narf::loadHeader(std::istream& file) const
 {
-  std::size_t pos_in_file = static_cast<std::size_t> (file.tellg ());
+  size_t pos_in_file = static_cast<size_t> (file.tellg ());
   file.width (getHeaderKeyword ().size()+10); // limit maximum number of bytes to read
   std::string header;
   file >> header;
@@ -582,7 +590,7 @@ Narf::loadBinary (std::istream& file)
   file.read(reinterpret_cast<char*>(&descriptor_size_), sizeof(descriptor_size_));
   descriptor_ = new float[descriptor_size_];
   if (file.eof())
-    std::cout << ":-(\n";
+    cout << ":-(\n";
   file.read (reinterpret_cast<char*>(descriptor_), descriptor_size_*sizeof(*descriptor_));
 }
 
@@ -600,7 +608,7 @@ Narf::loadBinary (const std::string& filename)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 NarfDescriptor::NarfDescriptor (const RangeImage* range_image, const std::vector<int>* indices) : 
-  range_image_ ()
+  BaseClass (), range_image_ (), parameters_ ()
 {
   setRangeImage (range_image, indices);
 }
@@ -615,7 +623,7 @@ void
 NarfDescriptor::setRangeImage (const RangeImage* range_image, const std::vector<int>* indices)
 {
   range_image_ = range_image;
-  if (indices != nullptr)
+  if (indices != NULL)
   {
     IndicesPtr indicesptr (new std::vector<int> (*indices));
     setIndices (indicesptr);
@@ -630,7 +638,7 @@ NarfDescriptor::computeFeature(NarfDescriptor::PointCloudOut& output)
   
   output.points.clear();
   
-  if (range_image_==nullptr)
+  if (range_image_==NULL)
   {
     std::cerr << __PRETTY_FUNCTION__
               << ": RangeImage is not set. Sorry, the NARF descriptor calculation works on range images, not on normal point clouds."
@@ -650,11 +658,11 @@ NarfDescriptor::computeFeature(NarfDescriptor::PointCloudOut& output)
   std::vector<Narf*> feature_list;
   if (indices_)
   {
-    for (const auto& point_index: *indices_)
+    for (size_t indices_idx=0; indices_idx<indices_->size(); ++indices_idx)
     {
-      const float y = point_index/range_image_->width;
-      const float x = point_index - y * range_image_->width;
-      Narf::extractFromRangeImageAndAddToList(*range_image_, x, y, 36, parameters_.support_size,
+      int point_index = (*indices_)[indices_idx];
+      int y=point_index/range_image_->width, x=point_index - y*range_image_->width;
+      Narf::extractFromRangeImageAndAddToList(*range_image_, static_cast<float> (x), static_cast<float> (y), 36, parameters_.support_size,
                                               parameters_.rotation_invariant, feature_list);
     }
   }
@@ -672,14 +680,14 @@ NarfDescriptor::computeFeature(NarfDescriptor::PointCloudOut& output)
   
   // Copy to NARF36 struct
   output.points.resize(feature_list.size());
-  for (std::size_t i = 0; i < feature_list.size(); ++i)
+  for (unsigned int i=0; i<feature_list.size(); ++i)
   {
     feature_list[i]->copyToNarf36(output.points[i]);
   }
   
   // Cleanup
-  for (auto &i : feature_list)
-    delete i;
+  for (size_t i=0; i<feature_list.size(); ++i)
+    delete feature_list[i];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_APPS_IN_HAND_SCANNER_MESH_PROCESSING_H
+#define PCL_APPS_IN_HAND_SCANNER_MESH_PROCESSING_H
 
 #include <pcl/apps/in_hand_scanner/common_types.h>
 
@@ -54,10 +55,11 @@ namespace pcl
     {
       public:
 
-        using Mesh = pcl::ihs::Mesh;
-        using HalfEdgeIndices = Mesh::HalfEdgeIndices;
+        typedef pcl::ihs::Mesh        Mesh;
+        typedef Mesh::HalfEdgeIndices HalfEdgeIndices;
 
-        static_assert (Mesh::IsManifold::value, "MeshProcessing currently works only on the manifold mesh.");
+        // Currently works only on the manifold mesh.
+        BOOST_STATIC_ASSERT (Mesh::IsManifold::value);
 
         /** \brief Constructor. */
         MeshProcessing ();
@@ -72,3 +74,5 @@ namespace pcl
     };
   } // End namespace ihs
 } // End namespace pcl
+
+#endif // PCL_APPS_IN_HAND_SCANNER_MESH_PROCESSING_H

@@ -186,7 +186,7 @@ public:
   int newvi;
 };
 
-using QSORTCMPFUNC = int (*)(const void *, const void *);
+typedef int (*QSORTCMPFUNC)(const void*,const void*);
 
 static int CompareMESHEDGE( const ON__MESHEDGE* a, const ON__MESHEDGE* b )
 {

@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GEOMETRY_MESH_ELEMENTS_H
+#define PCL_GEOMETRY_MESH_ELEMENTS_H
 
 #include <pcl/geometry/mesh_indices.h>
 
@@ -70,7 +71,7 @@ namespace pcl
     {
       private:
 
-        using HalfEdgeIndex = pcl::geometry::HalfEdgeIndex;
+        typedef pcl::geometry::HalfEdgeIndex HalfEdgeIndex;
 
         /** \brief Constructor.
           * \param[in] idx_outgoing_half_edge Index to the outgoing half-edge. Defaults to an invalid index.
@@ -107,9 +108,9 @@ namespace pcl
     {
       private:
 
-        using VertexIndex = pcl::geometry::VertexIndex;
-        using HalfEdgeIndex = pcl::geometry::HalfEdgeIndex;
-        using FaceIndex = pcl::geometry::FaceIndex;
+        typedef pcl::geometry::VertexIndex   VertexIndex;
+        typedef pcl::geometry::HalfEdgeIndex HalfEdgeIndex;
+        typedef pcl::geometry::FaceIndex     FaceIndex;
 
         /** \brief Constructor.
           * \param[in] idx_terminating_vertex Index to the terminating vertex. Defaults to an invalid index.
@@ -165,7 +166,7 @@ namespace pcl
     {
       private:
 
-        using HalfEdgeIndex = pcl::geometry::HalfEdgeIndex;
+        typedef pcl::geometry::HalfEdgeIndex HalfEdgeIndex;
 
         /** \brief Constructor.
           * \param[in] inner_half_edge_idx Index to the outgoing half-edge. Defaults to an invalid index
@@ -185,3 +186,5 @@ namespace pcl
     };
   } // End namespace geometry
 } // End namespace pcl
+
+#endif // PCL_GEOMETRY_MESH_ELEMENTS_H

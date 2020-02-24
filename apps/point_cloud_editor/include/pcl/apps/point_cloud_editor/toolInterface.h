@@ -39,7 +39,8 @@
 /// Note that the CTRL key may be evaluated as the Command key in OSX.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef TOOL_INTERFACE_H_
+#define TOOL_INTERFACE_H_
 
 #include <pcl/apps/point_cloud_editor/localTypes.h>
 
@@ -119,3 +120,4 @@ class ToolInterface
       assert(false); return (*this);
     }
 };
+#endif // TOOL_INTERFACE_H_

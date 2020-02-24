@@ -38,7 +38,8 @@
 /// functionalities to enable 2D selection.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef SELECT_2D_TOOL_H_
+#define SELECT_2D_TOOL_H_
 
 #include <qgl.h>
 #include <pcl/apps/point_cloud_editor/toolInterface.h>
@@ -64,7 +65,7 @@ class Select2DTool : public ToolInterface
     /// modifiers: 1. shift key, 2. ctrl key, 3. no modifier is pressed. Note
     /// that the ctrl key may be evaluated as the command key in OSX.
     void
-    start (int x, int y, BitMask modifiers, BitMask mouseButton) override;
+    start (int x, int y, BitMask modifiers, BitMask mouseButton);
 
     /// @brief Update the selection tool from the current mouse screen
     /// coordinates and key modifiers.
@@ -74,7 +75,7 @@ class Select2DTool : public ToolInterface
     /// @param y the y value of the mouse screen coordinates.
     /// @param modifiers the key modifier.
     void
-    update (int x, int y, BitMask modifiers, BitMask mouseButton) override;
+    update (int x, int y, BitMask modifiers, BitMask mouseButton);
 
     /// @brief Update the coordinates of the lower right corner of the rubber
     /// band and process the points in the rubber band.
@@ -87,7 +88,7 @@ class Select2DTool : public ToolInterface
     /// @param y the y value of the mouse screen coordinates.
     /// @param modifiers the key modifier.
     void
-    end (int x, int y, BitMask modifiers, BitMask mouseButton) override;
+    end (int x, int y, BitMask modifiers, BitMask mouseButton);
 
     /// @brief Checks whether a point is inside the selection region.
     /// @param pt the point to be checked against the selection region.
@@ -100,7 +101,7 @@ class Select2DTool : public ToolInterface
     /// @brief Draws the rubber band as well as any highlighted points during
     /// the 'update' phase (i.e. before the selection is made by a call to end).
     void
-    draw () const override;
+    draw () const;
 
     /// The default size in pixels of the rubberband tool outline
     static const float DEFAULT_TOOL_DISPLAY_SIZE_;
@@ -148,3 +149,4 @@ class Select2DTool : public ToolInterface
     bool display_box_;
 
 };
+#endif // SELECT_2D_TOOL_H_

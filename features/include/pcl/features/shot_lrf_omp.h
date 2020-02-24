@@ -37,7 +37,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_FEATURES_SHOT_LRF_OMP_H_
+#define PCL_FEATURES_SHOT_LRF_OMP_H_
 
 #include <pcl/point_types.h>
 #include <pcl/features/feature.h>
@@ -66,8 +67,8 @@ namespace pcl
   class SHOTLocalReferenceFrameEstimationOMP : public SHOTLocalReferenceFrameEstimation<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<SHOTLocalReferenceFrameEstimationOMP<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr<const SHOTLocalReferenceFrameEstimationOMP<PointInT, PointOutT> >;
+      typedef boost::shared_ptr<SHOTLocalReferenceFrameEstimationOMP<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const SHOTLocalReferenceFrameEstimationOMP<PointInT, PointOutT> > ConstPtr;
       /** \brief Constructor */
     SHOTLocalReferenceFrameEstimationOMP ()
       {
@@ -77,7 +78,7 @@ namespace pcl
       }
 
     /** \brief Empty destructor */
-    ~SHOTLocalReferenceFrameEstimationOMP () {}
+    virtual ~SHOTLocalReferenceFrameEstimationOMP () {}
 
     /** \brief Initialize the scheduler and set the number of threads to use.
      * \param nr_threads the number of hardware threads to use (0 sets the value back to automatic)
@@ -95,14 +96,14 @@ namespace pcl
       using Feature<PointInT, PointOutT>::tree_;
       using Feature<PointInT, PointOutT>::search_parameter_;
       using SHOTLocalReferenceFrameEstimation<PointInT, PointOutT>::getLocalRF;
-      using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
       /** \brief Feature estimation method.
         * \param[out] output the resultant features
         */
-      void
-      computeFeature (PointCloudOut &output) override;
+      virtual void
+      computeFeature (PointCloudOut &output);
 
       /** \brief The number of threads the scheduler should use. */
       unsigned int threads_;
@@ -113,3 +114,6 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/shot_lrf_omp.hpp>
 #endif
+
+#endif    // PCL_FEATURES_SHOT_LRF_H_
+

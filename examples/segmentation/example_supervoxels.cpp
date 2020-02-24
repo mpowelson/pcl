@@ -1,5 +1,3 @@
-#include <thread>
-
 #include <pcl/common/time.h>
 #include <pcl/console/parse.h>
 #include <pcl/point_cloud.h>
@@ -15,17 +13,15 @@
 #include <vtkImageFlip.h>
 #include <vtkPolyLine.h>
 
-using namespace std::chrono_literals;
-
 // Types
-using PointT = pcl::PointXYZRGBA;
-using PointCloudT = pcl::PointCloud<PointT>;
-using PointNT = pcl::PointNormal;
-using PointNCloudT = pcl::PointCloud<PointNT>;
-using PointLT = pcl::PointXYZL;
-using PointLCloudT = pcl::PointCloud<PointLT>;
-using NormalT = pcl::Normal;
-using NormalCloudT = pcl::PointCloud<NormalT>;
+typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointCloud<PointT> PointCloudT;
+typedef pcl::PointNormal PointNT;
+typedef pcl::PointCloud<PointNT> PointNCloudT;
+typedef pcl::PointXYZL PointLT;
+typedef pcl::PointCloud<PointLT> PointLCloudT;
+typedef pcl::Normal NormalT;
+typedef pcl::PointCloud<NormalT> NormalCloudT;
 
 bool show_voxel_centroids = true;
 bool show_supervoxels = true;
@@ -60,22 +56,22 @@ keyboard_callback (const pcl::visualization::KeyboardEvent& event, void*)
 void addSupervoxelConnectionsToViewer (PointT &supervoxel_center, 
                                        PointCloudT &adjacent_supervoxel_centers,
                                        std::string supervoxel_name,
-                                       pcl::visualization::PCLVisualizer::Ptr & viewer);
+                                       boost::shared_ptr<pcl::visualization::PCLVisualizer> & viewer);
 
 /** \brief Displays info text in the specified PCLVisualizer
  *  \param[in] viewer_arg The PCLVisualizer to modify  */
-void printText (pcl::visualization::PCLVisualizer::Ptr viewer);
+void printText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer);
 
 /** \brief Removes info text in the specified PCLVisualizer
  *  \param[in] viewer_arg The PCLVisualizer to modify  */
-void removeText (pcl::visualization::PCLVisualizer::Ptr viewer);
+void removeText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer);
 
 /** \brief Checks if the PCLPointCloud2 pc2 has the field named field_name
  * \param[in] pc2 PCLPointCloud2 to check
  * \param[in] field_name Fieldname to check
  * \return True if field has been found, false otherwise */
 bool
-hasField (const pcl::PCLPointCloud2 &pc2, const std::string &field_name);
+hasField (const pcl::PCLPointCloud2 &pc2, const std::string field_name);
 
 
 using namespace pcl;
@@ -104,8 +100,8 @@ main (int argc, char ** argv)
   if (depth_file_specified)
     pcl::console::parse (argc, argv, "-d", depth_path);
   
-  PointCloudT::Ptr cloud (new PointCloudT);
-  NormalCloudT::Ptr input_normals (new NormalCloudT);
+  PointCloudT::Ptr cloud = boost::shared_ptr<PointCloudT> (new PointCloudT);
+  NormalCloudT::Ptr input_normals = boost::make_shared < NormalCloudT > ();
   
   bool pcd_file_specified = pcl::console::find_switch (argc, argv, "-p");
   std::string pcd_path;
@@ -116,8 +112,10 @@ main (int argc, char ** argv)
     {
       std::cout << "No cloud specified!\n";
       return (1);
+    }else
+    {
+      pcl::console::parse (argc,argv,"-p",pcd_path);
     }
-    pcl::console::parse (argc,argv,"-p",pcd_path);
   }
   
   bool disable_transform = pcl::console::find_switch (argc, argv, "--NT");
@@ -214,12 +212,12 @@ main (int argc, char ** argv)
     depth_pixel = static_cast<unsigned short*>(depth_image->GetScalarPointer (depth_dims[0]-1,depth_dims[1]-1,0));
     color_pixel = static_cast<unsigned char*> (rgb_image->GetScalarPointer (depth_dims[0]-1,depth_dims[1]-1,0));
     
-    for (std::size_t y=0; y<cloud->height; ++y)
+    for (size_t y=0; y<cloud->height; ++y)
     {
-      for (std::size_t x=0; x<cloud->width; ++x, --depth_pixel, color_pixel-=3)
+      for (size_t x=0; x<cloud->width; ++x, --depth_pixel, color_pixel-=3)
       {
         PointT new_point;
-        //  std::uint8_t* p_i = &(cloud_blob->data[y * cloud_blob->row_step + x * cloud_blob->point_step]);
+        //  uint8_t* p_i = &(cloud_blob->data[y * cloud_blob->row_step + x * cloud_blob->point_step]);
         float depth = static_cast<float>(*depth_pixel) * scale;
         if (depth == 0.0f)
         {
@@ -269,11 +267,11 @@ main (int argc, char ** argv)
   //////////////////////////////  //////////////////////////////
   
   // If the cloud is organized and we haven't disabled the transform we need to
-  // check that there are no negative z values, since we use std::log(z)
+  // check that there are no negative z values, since we use log(z)
   if (cloud->isOrganized () && !disable_transform)
   {
-    for (const auto &point : *cloud)
-      if (point.z < 0)
+    for (PointCloudT::iterator cloud_itr = cloud->begin (); cloud_itr != cloud->end (); ++cloud_itr)
+      if (cloud_itr->z < 0)
       {
         PCL_ERROR ("Points found with negative Z values, this is not compatible with the single camera transform!\n");
         PCL_ERROR ("Set the --NT option to disable the single camera transform!\n");
@@ -294,26 +292,26 @@ main (int argc, char ** argv)
   super.setColorImportance (color_importance);
   super.setSpatialImportance (spatial_importance);
   super.setNormalImportance (normal_importance);
-  std::map <std::uint32_t, pcl::Supervoxel<PointT>::Ptr > supervoxel_clusters;
+  std::map <uint32_t, pcl::Supervoxel<PointT>::Ptr > supervoxel_clusters;
  
   std::cout << "Extracting supervoxels!\n";
   super.extract (supervoxel_clusters);
   std::cout << "Found " << supervoxel_clusters.size () << " Supervoxels!\n";
   PointLCloudT::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud ();
   PointCloudT::Ptr voxel_centroid_cloud = super.getVoxelCentroidCloud ();
-  PointNCloudT::Ptr sv_normal_cloud = pcl::SupervoxelClustering<PointT>::makeSupervoxelNormalCloud (supervoxel_clusters);
+  PointNCloudT::Ptr sv_normal_cloud = super.makeSupervoxelNormalCloud (supervoxel_clusters);
   PointLCloudT::Ptr full_labeled_cloud = super.getLabeledCloud ();
   
   std::cout << "Getting supervoxel adjacency\n";
-  std::multimap<std::uint32_t, std::uint32_t> label_adjacency;
+  std::multimap<uint32_t, uint32_t> label_adjacency;
   super.getSupervoxelAdjacency (label_adjacency);
    
-  std::map <std::uint32_t, pcl::Supervoxel<PointT>::Ptr > refined_supervoxel_clusters;
+  std::map <uint32_t, pcl::Supervoxel<PointT>::Ptr > refined_supervoxel_clusters;
   std::cout << "Refining supervoxels \n";
   super.refineSupervoxels (3, refined_supervoxel_clusters);
 
   PointLCloudT::Ptr refined_labeled_voxel_cloud = super.getLabeledVoxelCloud ();
-  PointNCloudT::Ptr refined_sv_normal_cloud = pcl::SupervoxelClustering<PointT>::makeSupervoxelNormalCloud (refined_supervoxel_clusters);
+  PointNCloudT::Ptr refined_sv_normal_cloud = super.makeSupervoxelNormalCloud (refined_supervoxel_clusters);
   PointLCloudT::Ptr refined_full_labeled_cloud = super.getLabeledCloud ();
   
   // THESE ONLY MAKE SENSE FOR ORGANIZED CLOUDS
@@ -333,15 +331,15 @@ main (int argc, char ** argv)
   }
   
   std::cout << "Constructing Boost Graph Library Adjacency List...\n";
-  using VoxelAdjacencyList = boost::adjacency_list<boost::setS, boost::setS, boost::undirectedS, std::uint32_t, float>;
+  typedef boost::adjacency_list<boost::setS, boost::setS, boost::undirectedS, uint32_t, float> VoxelAdjacencyList;
   VoxelAdjacencyList supervoxel_adjacency_list;
   super.getSupervoxelAdjacencyList (supervoxel_adjacency_list);
 
   
   std::cout << "Loading visualization...\n";
-  pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer->setBackgroundColor (0, 0, 0);
-  viewer->registerKeyboardCallback(keyboard_callback, nullptr);
+  viewer->registerKeyboardCallback(keyboard_callback, 0);
 
  
   bool refined_normal_shown = show_refined;
@@ -396,8 +394,9 @@ main (int argc, char ** argv)
     
     if (show_normals)
     {
-      auto sv_itr = ((show_refined) ? refined_supervoxel_clusters.begin () : supervoxel_clusters.begin ());
-      auto sv_itr_end = ((show_refined) ? refined_supervoxel_clusters.end () : supervoxel_clusters.end ());
+      std::map <uint32_t, pcl::Supervoxel<PointT>::Ptr>::iterator sv_itr,sv_itr_end;
+      sv_itr = ((show_refined)?refined_supervoxel_clusters.begin ():supervoxel_clusters.begin ());
+      sv_itr_end = ((show_refined)?refined_supervoxel_clusters.end ():supervoxel_clusters.end ());
       for (; sv_itr != sv_itr_end; ++sv_itr)
       {
         std::stringstream ss;
@@ -416,8 +415,9 @@ main (int argc, char ** argv)
     }
     else if (!show_normals)
     {
-      auto sv_itr = ((show_refined) ? refined_supervoxel_clusters.begin () : supervoxel_clusters.begin ());
-      auto sv_itr_end = ((show_refined) ? refined_supervoxel_clusters.end () : supervoxel_clusters.end ());
+      std::map <uint32_t, pcl::Supervoxel<PointT>::Ptr>::iterator sv_itr,sv_itr_end;
+      sv_itr = ((show_refined)?refined_supervoxel_clusters.begin ():supervoxel_clusters.begin ());
+      sv_itr_end = ((show_refined)?refined_supervoxel_clusters.end ():supervoxel_clusters.end ());
       for (; sv_itr != sv_itr_end; ++sv_itr)
       {
         std::stringstream ss;
@@ -429,15 +429,17 @@ main (int argc, char ** argv)
     if (show_graph && !graph_added)
     {
       poly_names.clear ();
-      for (auto label_itr = label_adjacency.begin (); label_itr != label_adjacency.end (); )
+      std::multimap<uint32_t,uint32_t>::iterator label_itr = label_adjacency.begin ();
+      for ( ; label_itr != label_adjacency.end (); )
       {
         //First get the label 
-        std::uint32_t supervoxel_label = label_itr->first;
+        uint32_t supervoxel_label = label_itr->first;
          //Now get the supervoxel corresponding to the label
         pcl::Supervoxel<PointT>::Ptr supervoxel = supervoxel_clusters.at (supervoxel_label);
         //Now we need to iterate through the adjacent supervoxels and make a point cloud of them
         PointCloudT adjacent_supervoxel_centers;
-        for (auto adjacent_itr = label_adjacency.equal_range (supervoxel_label).first; adjacent_itr!=label_adjacency.equal_range (supervoxel_label).second; ++adjacent_itr)
+        std::multimap<uint32_t,uint32_t>::iterator adjacent_itr = label_adjacency.equal_range (supervoxel_label).first;
+        for ( ; adjacent_itr!=label_adjacency.equal_range (supervoxel_label).second; ++adjacent_itr)
         {     
           pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = supervoxel_clusters.at (adjacent_itr->second);
           adjacent_supervoxel_centers.push_back (neighbor_supervoxel->centroid_);
@@ -455,9 +457,9 @@ main (int argc, char ** argv)
     }
     else if (!show_graph && graph_added)
     {
-      for (const auto &poly_name : poly_names)
+      for (std::vector<std::string>::iterator name_itr = poly_names.begin (); name_itr != poly_names.end (); ++name_itr)
       {
-        viewer->removeShape (poly_name);
+        viewer->removeShape (*name_itr);
       }
       graph_added = false;
     }
@@ -476,7 +478,7 @@ main (int argc, char ** argv)
       
     
     viewer->spinOnce (100);
-    std::this_thread::sleep_for(100ms);
+    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
     
   }
   return (0);
@@ -486,24 +488,25 @@ void
 addSupervoxelConnectionsToViewer (PointT &supervoxel_center, 
                                   PointCloudT &adjacent_supervoxel_centers,
                                   std::string supervoxel_name,
-                                  pcl::visualization::PCLVisualizer::Ptr & viewer)
+                                  boost::shared_ptr<pcl::visualization::PCLVisualizer> & viewer)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New (); 
   vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New (); 
   vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New ();
   
   //Iterate through all adjacent points, and add a center point to adjacent point pair
-  for (const auto &adjacent_supervoxel_center : adjacent_supervoxel_centers)
+  PointCloudT::iterator adjacent_itr = adjacent_supervoxel_centers.begin ();
+  for ( ; adjacent_itr != adjacent_supervoxel_centers.end (); ++adjacent_itr)
   {
     points->InsertNextPoint (supervoxel_center.data);
-    points->InsertNextPoint (adjacent_supervoxel_center.data); 
+    points->InsertNextPoint (adjacent_itr->data); 
   } 
   // Create a polydata to store everything in
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New ();
   // Add the points to the dataset
   polyData->SetPoints (points);
   polyLine->GetPointIds  ()->SetNumberOfIds(points->GetNumberOfPoints ());
-  for(vtkIdType i = 0; i < points->GetNumberOfPoints (); i++)
+  for(unsigned int i = 0; i < points->GetNumberOfPoints (); i++)
     polyLine->GetPointIds ()->SetId (i,i);
   cells->InsertNextCell (polyLine);
   // Add the lines to the dataset
@@ -512,7 +515,7 @@ addSupervoxelConnectionsToViewer (PointT &supervoxel_center,
 }
 
 
-void printText (pcl::visualization::PCLVisualizer::Ptr viewer)
+void printText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer)
 {
   std::string on_str = "on";
   std::string off_str = "off";
@@ -544,7 +547,7 @@ void printText (pcl::visualization::PCLVisualizer::Ptr viewer)
     viewer->addText (temp, 5, 10, 10, 1.0, 1.0, 1.0, "refined_text");
 }
 
-void removeText (pcl::visualization::PCLVisualizer::Ptr viewer)
+void removeText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer)
 {
   viewer->removeShape ("hud_text");
   viewer->removeShape ("voxel_text");
@@ -556,10 +559,10 @@ void removeText (pcl::visualization::PCLVisualizer::Ptr viewer)
 }
 
 bool
-hasField (const pcl::PCLPointCloud2 &pc2, const std::string &field_name)
+hasField (const pcl::PCLPointCloud2 &pc2, const std::string field_name)
 {
-  for (const auto &field : pc2.fields)
-    if (field.name == field_name)
+  for (size_t cf = 0; cf < pc2.fields.size (); ++cf)
+    if (pc2.fields[cf].name == field_name)
       return true;
-  return false;
+    return false;
 }

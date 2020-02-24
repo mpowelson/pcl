@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEST_KFPCS_DATA_H_
+#define TEST_KFPCS_DATA_H_
 
 const int nr_threads = 1;
 const float voxel_size = 0.1f;
@@ -11,3 +12,5 @@ const float transformation_office1_office2 [4][4] = {
   {  0.0037f, -0.0106f,  0.9999f,  0.7778f },
   {  0.0000f,  0.0000f,  0.0000f,  1.0000f }
 };
+
+#endif // TEST_KFPCS_DATA_H_

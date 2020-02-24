@@ -35,12 +35,25 @@
  *
  *
  */
-
-#pragma once
+#ifndef PCL_COMMON_CONCATENATE_H_
+#define PCL_COMMON_CONCATENATE_H_
 
 #include <pcl/conversions.h>
 
-#include <type_traits>
+// We're doing a lot of black magic with Boost here, so disable warnings in Maintainer mode, as we will never
+// be able to fix them anyway
+#ifdef BUILD_Maintainer
+#  if defined __GNUC__
+#    if __GNUC__ == 4 && __GNUC_MINOR__ > 3
+#      pragma GCC diagnostic ignored "-Weffc++"
+#      pragma GCC diagnostic ignored "-pedantic"
+#    else
+#      pragma GCC system_header 
+#    endif
+#  elif defined _MSC_VER
+#    pragma warning(push, 1)
+#  endif
+#endif
 
 namespace pcl
 {
@@ -50,8 +63,8 @@ namespace pcl
   template<typename PointInT, typename PointOutT>
   struct NdConcatenateFunctor
   {
-    using PodIn = typename traits::POD<PointInT>::type;
-    using PodOut = typename traits::POD<PointOutT>::type;
+    typedef typename traits::POD<PointInT>::type PodIn;
+    typedef typename traits::POD<PointOutT>::type PodOut;
     
     NdConcatenateFunctor (const PointInT &p1, PointOutT &p2)
       : p1_ (reinterpret_cast<const PodIn&> (p1))
@@ -62,14 +75,14 @@ namespace pcl
     {
       // This sucks without Fusion :(
       //boost::fusion::at_key<Key> (p2_) = boost::fusion::at_key<Key> (p1_);
-      using InT = typename pcl::traits::datatype<PointInT, Key>::type;
-      using OutT = typename pcl::traits::datatype<PointOutT, Key>::type;
+      typedef typename pcl::traits::datatype<PointInT, Key>::type InT;
+      typedef typename pcl::traits::datatype<PointOutT, Key>::type OutT;
       // Note: don't currently support different types for the same field (e.g. converting double to float)
-      BOOST_MPL_ASSERT_MSG ((std::is_same<InT, OutT>::value),
+      BOOST_MPL_ASSERT_MSG ((boost::is_same<InT, OutT>::value),
                             POINT_IN_AND_POINT_OUT_HAVE_DIFFERENT_TYPES_FOR_FIELD,
                             (Key, PointInT&, InT, PointOutT&, OutT));
-      memcpy (reinterpret_cast<std::uint8_t*>(&p2_) + pcl::traits::offset<PointOutT, Key>::value,
-              reinterpret_cast<const std::uint8_t*>(&p1_) + pcl::traits::offset<PointInT, Key>::value,
+      memcpy (reinterpret_cast<uint8_t*>(&p2_) + pcl::traits::offset<PointOutT, Key>::value,
+              reinterpret_cast<const uint8_t*>(&p1_) + pcl::traits::offset<PointInT, Key>::value,
               sizeof (InT));
     }
 
@@ -78,3 +91,17 @@ namespace pcl
       PodOut &p2_;
   };
 }
+
+#ifdef BUILD_Maintainer
+#  if defined __GNUC__
+#    if __GNUC__ == 4 && __GNUC_MINOR__ > 3
+#      pragma GCC diagnostic warning "-Weffc++"
+#      pragma GCC diagnostic warning "-pedantic"
+#    endif
+#  elif defined _MSC_VER
+#    pragma warning(pop)
+#  endif
+#endif
+
+#endif // PCL_COMMON_CONCATENATE_H_
+

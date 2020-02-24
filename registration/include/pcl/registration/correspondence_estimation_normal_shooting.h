@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_ESTIMATION_NORMAL_SHOOTING_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_ESTIMATION_NORMAL_SHOOTING_H_
 
 #include <pcl/registration/correspondence_types.h>
 #include <pcl/registration/correspondence_estimation.h>
@@ -77,8 +78,8 @@ namespace pcl
     class CorrespondenceEstimationNormalShooting : public CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>
     {
       public:
-        using Ptr = shared_ptr<CorrespondenceEstimationNormalShooting<PointSource, PointTarget, NormalT, Scalar> >;
-        using ConstPtr = shared_ptr<const CorrespondenceEstimationNormalShooting<PointSource, PointTarget, NormalT, Scalar> >;
+        typedef boost::shared_ptr<CorrespondenceEstimationNormalShooting<PointSource, PointTarget, NormalT, Scalar> > Ptr;
+        typedef boost::shared_ptr<const CorrespondenceEstimationNormalShooting<PointSource, PointTarget, NormalT, Scalar> > ConstPtr;
 
         using CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initCompute;
         using CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initComputeReciprocal;
@@ -90,20 +91,20 @@ namespace pcl
         using CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::point_representation_;
         using CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::target_indices_;
 
-        using KdTree = pcl::search::KdTree<PointTarget>;
-        using KdTreePtr = typename KdTree::Ptr;
+        typedef typename pcl::search::KdTree<PointTarget> KdTree;
+        typedef typename pcl::search::KdTree<PointTarget>::Ptr KdTreePtr;
 
-        using PointCloudSource = pcl::PointCloud<PointSource>;
-        using PointCloudSourcePtr = typename PointCloudSource::Ptr;
-        using PointCloudSourceConstPtr = typename PointCloudSource::ConstPtr;
+        typedef pcl::PointCloud<PointSource> PointCloudSource;
+        typedef typename PointCloudSource::Ptr PointCloudSourcePtr;
+        typedef typename PointCloudSource::ConstPtr PointCloudSourceConstPtr;
 
-        using PointCloudTarget = pcl::PointCloud<PointTarget>;
-        using PointCloudTargetPtr = typename PointCloudTarget::Ptr;
-        using PointCloudTargetConstPtr = typename PointCloudTarget::ConstPtr;
+        typedef pcl::PointCloud<PointTarget> PointCloudTarget;
+        typedef typename PointCloudTarget::Ptr PointCloudTargetPtr;
+        typedef typename PointCloudTarget::ConstPtr PointCloudTargetConstPtr;
 
-        using PointCloudNormals = pcl::PointCloud<NormalT>;
-        using NormalsPtr = typename PointCloudNormals::Ptr;
-        using NormalsConstPtr = typename PointCloudNormals::ConstPtr;
+        typedef pcl::PointCloud<NormalT> PointCloudNormals;
+        typedef typename PointCloudNormals::Ptr NormalsPtr;
+        typedef typename PointCloudNormals::ConstPtr NormalsConstPtr;
 
         /** \brief Empty constructor. 
           *
@@ -119,7 +120,7 @@ namespace pcl
         }
 
         /** \brief Empty destructor */
-        ~CorrespondenceEstimationNormalShooting () {}
+        virtual ~CorrespondenceEstimationNormalShooting () {}
 
         /** \brief Set the normals computed on the source point cloud
           * \param[in] normals the normals computed for the source cloud
@@ -135,12 +136,12 @@ namespace pcl
 
         /** \brief See if this rejector requires source normals */
         bool
-        requiresSourceNormals () const override
+        requiresSourceNormals () const
         { return (true); }
 
         /** \brief Blob method for setting the source normals */
         void
-        setSourceNormals (pcl::PCLPointCloud2::ConstPtr cloud2) override
+        setSourceNormals (pcl::PCLPointCloud2::ConstPtr cloud2)
         { 
           NormalsPtr cloud (new PointCloudNormals);
           fromPCLPointCloud2 (*cloud2, *cloud);
@@ -154,7 +155,7 @@ namespace pcl
           */
         void 
         determineCorrespondences (pcl::Correspondences &correspondences,
-                                  double max_distance = std::numeric_limits<double>::max ()) override;
+                                  double max_distance = std::numeric_limits<double>::max ());
 
         /** \brief Determine the reciprocal correspondences between input and target cloud.
           * A correspondence is considered reciprocal if both Src_i has Tgt_i as a 
@@ -163,9 +164,9 @@ namespace pcl
           * \param[out] correspondences the found correspondences (index of query and target point, distance)
           * \param[in] max_distance maximum allowed distance between correspondences
           */
-        void 
+        virtual void 
         determineReciprocalCorrespondences (pcl::Correspondences &correspondences,
-                                            double max_distance = std::numeric_limits<double>::max ()) override;
+                                            double max_distance = std::numeric_limits<double>::max ());
 
         /** \brief Set the number of nearest neighbours to be considered in the target 
           * point cloud. By default, we use k = 10 nearest neighbors.
@@ -183,8 +184,8 @@ namespace pcl
         getKSearch () const { return (k_); }
 
         /** \brief Clone and cast to CorrespondenceEstimationBase */
-        typename CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::Ptr
-        clone () const override
+        virtual boost::shared_ptr< CorrespondenceEstimationBase<PointSource, PointTarget, Scalar> > 
+        clone () const
         {
           Ptr copy (new CorrespondenceEstimationNormalShooting<PointSource, PointTarget, NormalT, Scalar> (*this));
           return (copy);
@@ -216,3 +217,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_estimation_normal_shooting.hpp>
+
+#endif /* PCL_REGISTRATION_CORRESPONDENCE_ESTIMATION_NORMAL_SHOOTING_H_ */

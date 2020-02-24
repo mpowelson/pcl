@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_APPS_TIMER_H_
+#define PCL_APPS_TIMER_H_
 
 #define MEASURE_FUNCTION_TIME
 #include <pcl/common/time.h> //fps calculations
@@ -63,3 +64,5 @@ do \
 { \
 }while(false)
 #endif
+
+#endif    // PCL_APPS_TIMER_H_

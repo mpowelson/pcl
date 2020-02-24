@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef CRH_ALIGNMENT_H_
+#define CRH_ALIGNMENT_H_
 
 #include <pcl/common/common.h>
 #include <pcl/features/crh.h>
@@ -32,16 +33,16 @@ namespace pcl
     private:
 
       /** \brief Sorts peaks */
-      struct peaks_ordering
+      typedef struct
       {
         bool
         operator() (std::pair<float, int> const& a, std::pair<float, int> const& b)
         {
           return a.first > b.first;
         }
-      };
+      } peaks_ordering;
 
-      using PointTPtr = typename pcl::PointCloud<PointT>::Ptr;
+      typedef typename pcl::PointCloud<PointT>::Ptr PointTPtr;
 
       /** \brief View of the model to be aligned to input_view_ */
       PointTPtr target_view_;
@@ -153,10 +154,10 @@ namespace pcl
 
         //if the number of peaks is too big, we should try to reduce using siluette matching
 
-        for (const float &peak : peaks)
+        for (size_t i = 0; i < peaks.size(); i++)
         {
           Eigen::Affine3f rollToRot;
-          computeRollTransform (centroid_input_, centroid_target_, peak, rollToRot);
+          computeRollTransform (centroid_input_, centroid_target_, peaks[i], rollToRot);
 
           Eigen::Matrix4f rollHomMatrix = Eigen::Matrix4f ();
           rollHomMatrix.setIdentity (4, 4);
@@ -220,7 +221,7 @@ namespace pcl
 
         multAB[nbins_ - 1].r = input_ftt_negate.points[0].histogram[nbins_ - 1] * target_ftt.points[0].histogram[nbins_ - 1];
 
-        kiss_fft_cfg mycfg = kiss_fft_alloc (nr_bins_after_padding, 1, nullptr, nullptr);
+        kiss_fft_cfg mycfg = kiss_fft_alloc (nr_bins_after_padding, 1, NULL, NULL);
         kiss_fft_cpx * invAB = new kiss_fft_cpx[nr_bins_after_padding];
         kiss_fft (mycfg, multAB, invAB);
 
@@ -245,10 +246,11 @@ namespace pcl
           {
             bool insert = true;
 
-            for (const int &peaks_index : peaks_indices)
+            for (size_t j = 0; j < peaks_indices.size (); j++)
             { //check inserted peaks, first pick always inserted
-              if ((std::abs (peaks_index - scored_peaks[i].second) <= peak_distance) ||
-                  (std::abs (peaks_index - (scored_peaks[i].second - nr_bins_after_padding)) <= peak_distance))
+              if (std::abs (peaks_indices[j] - scored_peaks[i].second) <= peak_distance || std::abs (
+                                                                                             peaks_indices[j] - (scored_peaks[i].second
+                                                                                                 - nr_bins_after_padding)) <= peak_distance)
               {
                 insert = false;
                 break;
@@ -269,3 +271,5 @@ namespace pcl
       }
     };
 }
+
+#endif /* CRH_ALIGNMENT_H_ */

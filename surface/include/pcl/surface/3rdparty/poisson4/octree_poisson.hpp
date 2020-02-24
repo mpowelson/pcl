@@ -30,8 +30,6 @@ DAMAGE.
 #include <math.h>
 #include <algorithm>
 
-#include "poisson_exceptions.h"
-
 /////////////
 // OctNode //
 /////////////
@@ -96,7 +94,9 @@ namespace pcl
         children=new OctNode[Cube::CORNERS];
       }
       if(!children){
-        POISSON_THROW_EXCEPTION (pcl::poisson::PoissonBadInitException, "Failed to initialize OctNode children.");
+        fprintf(stderr,"Failed to initialize children in OctNode::initChildren\n");
+        exit(0);
+        return 0;
       }
       int d,off[3];
       depthAndOffset(d,off);
@@ -794,8 +794,7 @@ namespace pcl
     long long _InterleaveBits( int p[3] )
     {
       long long key = 0;
-      long long _p[3] = {p[0],p[1],p[2]};
-      for( int i=0 ; i<31 ; i++ ) key |= ( ( _p[0] & (1ull<<i) )<<(2*i) ) | ( ( _p[1] & (1ull<<i) )<<(2*i+1) ) | ( ( _p[2] & (1ull<<i) )<<(2*i+2) );
+      for( int i=0 ; i<32 ; i++ ) key |= ( ( p[0] & (1<<i) )<<(2*i) ) | ( ( p[1] & (1<<i) )<<(2*i+1) ) | ( ( p[2] & (1<<i) )<<(2*i+2) );
       return key;
     }
     template <class NodeData,class Real>
@@ -861,7 +860,7 @@ namespace pcl
     template <class NodeData,class Real>
     OctNode<NodeData,Real>* OctNode<NodeData,Real>::__faceNeighbor(int dir,int off,int forceChildren){
       if(!parent){return NULL;}
-      int pIndex=int(this-(parent->children));
+      int pIndex=int(this-parent->children);
       pIndex^=(1<<dir);
       if((pIndex & (1<<dir))==(off<<dir)){return &parent->children[pIndex];}
       else{
@@ -877,7 +876,7 @@ namespace pcl
     template <class NodeData,class Real>
     const OctNode<NodeData,Real>* OctNode<NodeData,Real>::__faceNeighbor(int dir,int off) const {
       if(!parent){return NULL;}
-      int pIndex=int(this-(parent->children));
+      int pIndex=int(this-parent->children);
       pIndex^=(1<<dir);
       if((pIndex & (1<<dir))==(off<<dir)){return &parent->children[pIndex];}
       else{
@@ -912,7 +911,7 @@ namespace pcl
     template <class NodeData,class Real>
     const OctNode<NodeData,Real>* OctNode<NodeData,Real>::__edgeNeighbor(int o,const int i[2],const int idx[2]) const{
       if(!parent){return NULL;}
-      int pIndex=int(this-(parent->children));
+      int pIndex=int(this-parent->children);
       int aIndex,x[DIMENSION];
 
       Cube::FactorCornerIndex(pIndex,x[0],x[1],x[2]);
@@ -941,7 +940,7 @@ namespace pcl
     template <class NodeData,class Real>
     OctNode<NodeData,Real>* OctNode<NodeData,Real>::__edgeNeighbor(int o,const int i[2],const int idx[2],int forceChildren){
       if(!parent){return NULL;}
-      int pIndex=int(this-(parent->children));
+      int pIndex=int(this-parent->children);
       int aIndex,x[DIMENSION];
 
       Cube::FactorCornerIndex(pIndex,x[0],x[1],x[2]);
@@ -977,7 +976,7 @@ namespace pcl
       int pIndex,aIndex=0;
       if(!parent){return NULL;}
 
-      pIndex=int(this-(parent->children));
+      pIndex=int(this-parent->children);
       aIndex=(cornerIndex ^ pIndex);	// The disagreement bits
       pIndex=(~pIndex)&7;				// The antipodal point
       if(aIndex==7){					// Agree on no bits
@@ -1025,7 +1024,7 @@ namespace pcl
       int pIndex,aIndex=0;
       if(!parent){return NULL;}
 
-      pIndex=int(this-(parent->children));
+      pIndex=int(this-parent->children);
       aIndex=(cornerIndex ^ pIndex);	// The disagreement bits
       pIndex=(~pIndex)&7;				// The antipodal point
       if(aIndex==7){					// Agree on no bits
@@ -1196,7 +1195,8 @@ namespace pcl
 
           if( !temp.neighbors[1][1][1] || !temp.neighbors[1][1][1]->children )
           {
-            POISSON_THROW_EXCEPTION (pcl::poisson::PoissonBadArgumentException, "Couldn't find node at appropriate depth");
+            fprintf( stderr , "[ERROR] Couldn't find node at appropriate depth\n" );
+            exit( 0 );
           }
           for( i=0 ; i<2 ; i++ ) for( j=0 ; j<2 ; j++ ) for( k=0 ; k<2 ; k++ )
             neighbors[d].neighbors[x2+i][y2+j][z2+k] = &temp.neighbors[1][1][1]->children[Cube::CornerIndex(i,j,k)];
@@ -1548,10 +1548,7 @@ namespace pcl
     typename OctNode<NodeData,Real>::ConstNeighbors3& OctNode<NodeData,Real>::ConstNeighborKey3::getNeighbors( const OctNode<NodeData,Real>* node , int minDepth )
     {
       int d=node->depth();
-      if (d < minDepth)
-      {
-        POISSON_THROW_EXCEPTION (pcl::poisson::PoissonBadArgumentException, "Node depth lower than min-depth: (actual)" << d << " < (minimum)" << minDepth);
-      }
+      if( d<minDepth ) fprintf( stderr , "[ERROR] Node depth lower than min-depth: %d < %d\n" , d , minDepth ) , exit( 0 );
       if( node!=neighbors[d].neighbors[1][1][1] )
       {
         neighbors[d].clear();

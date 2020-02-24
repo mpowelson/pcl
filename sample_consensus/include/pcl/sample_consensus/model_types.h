@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_MODEL_TYPES_H_
+#define PCL_SAMPLE_CONSENSUS_MODEL_TYPES_H_
 
 namespace pcl
 {
@@ -64,3 +65,5 @@ namespace pcl
     SACMODEL_STICK
   };
 }
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_MODEL_TYPES_H_

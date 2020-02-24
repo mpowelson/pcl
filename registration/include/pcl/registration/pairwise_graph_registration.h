@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_PAIRWISE_GRAPH_REGISTRATION_H_
+#define PCL_PAIRWISE_GRAPH_REGISTRATION_H_
 
 #include <pcl/registration/graph_registration.h>
 #include <pcl/registration/registration.h>
@@ -57,8 +58,8 @@ namespace pcl
       using GraphRegistration<GraphT>::last_aligned_vertex_;
       using GraphRegistration<GraphT>::last_vertices_;
 
-      using RegistrationPtr = typename Registration<PointT, PointT>::Ptr;
-      using GraphHandlerVertex = typename pcl::registration::GraphHandler<GraphT>::Vertex;
+      typedef typename Registration<PointT, PointT>::Ptr RegistrationPtr;
+      typedef typename pcl::registration::GraphHandler<GraphT>::Vertex GraphHandlerVertex;
 
       /** \brief Empty destructor */
       virtual ~PairwiseGraphRegistration () {}
@@ -113,3 +114,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/pairwise_graph_registration.hpp>
+
+#endif // PCL_PAIRWISE_GRAPH_REGISTRATION_H_

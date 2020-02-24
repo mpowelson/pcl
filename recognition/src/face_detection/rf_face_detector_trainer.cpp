@@ -49,7 +49,8 @@ void pcl::RFFaceDetectorTrainer::trainWithDataProvider()
   dft.setRandomFeaturesAtSplitNode (true);
   dft.setThresholds (thresholds_);
 
-  typename face_detection::FaceDetectorDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType>::Ptr dtdp;
+  boost::shared_ptr < face_detection::FaceDetectorDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType>
+      > dtdp;
   dtdp.reset (new face_detection::FaceDetectorDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType>);
   dtdp->setUseNormals (use_normals_);
   dtdp->setWSize (w_size_);
@@ -58,7 +59,10 @@ void pcl::RFFaceDetectorTrainer::trainWithDataProvider()
 
   dtdp->initialize (directory_);
 
-  auto cast_dtdp = boost::dynamic_pointer_cast<pcl::DecisionTreeTrainerDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType>> (dtdp);
+  boost::shared_ptr < pcl::DecisionTreeTrainerDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType>
+      > cast_dtdp;
+  cast_dtdp = boost::dynamic_pointer_cast
+      < pcl::DecisionTreeTrainerDataProvider<face_detection::FeatureType, std::vector<face_detection::TrainingExample>, float, int, NodeType> > (dtdp);
   dft.setDecisionTreeDataProvider (cast_dtdp);
 
   pcl::DecisionForest<NodeType> forest;
@@ -81,12 +85,12 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
   std::vector < Eigen::Vector3f > clusters_mean;
   std::vector < std::vector<int> > votes_indices;
 
-  for (std::size_t i = 0; i < head_center_votes_.size (); i++)
+  for (size_t i = 0; i < head_center_votes_.size (); i++)
   {
     Eigen::Vector3f center_vote = head_center_votes_[i];
     std::vector<bool> valid_in_cluster (clusters_mean.size (), false);
     bool found = false;
-    for (std::size_t j = 0; j < clusters_mean.size () /*&& !found*/; j++)
+    for (size_t j = 0; j < clusters_mean.size () /*&& !found*/; j++)
     {
       float sq_norm = (clusters_mean[j] - center_vote).squaredNorm ();
       if (sq_norm < large_radius)
@@ -114,8 +118,8 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
 
     //get the largest biggest cluster and put if there
     int idx = -1;
-    std::size_t biggest_num = 0;
-    for (std::size_t j = 0; j < clusters_mean.size () /*&& !found*/; j++)
+    size_t biggest_num = 0;
+    for (size_t j = 0; j < clusters_mean.size () /*&& !found*/; j++)
     {
       if ((votes_indices[j].size () > biggest_num) && (valid_in_cluster[j]))
       {
@@ -137,7 +141,7 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
   std::cout << "Number of clusters:" << clusters_mean.size () << " votes:" << head_center_votes_.size () << std::endl;
 
   int valid = 0;
-  for (std::size_t i = 0; i < clusters_mean.size (); i++)
+  for (size_t i = 0; i < clusters_mean.size (); i++)
   {
     //ignore this cluster
     if (votes_indices[i].size () < min_votes_size_)
@@ -151,7 +155,7 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
       mean.setZero ();
       int good_votes = 0;
       new_cluster.clear ();
-      for (std::size_t j = 0; j < votes_indices[i].size (); j++)
+      for (size_t j = 0; j < votes_indices[i].size (); j++)
       {
         Eigen::Vector3f center_vote = head_center_votes_[votes_indices[i][j]];
         float sq_norm = (clusters_mean[i] - center_vote).squaredNorm ();
@@ -163,7 +167,7 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
         }
       }
 
-      mean /= static_cast<float> (good_votes);
+      mean = mean / static_cast<float> (good_votes);
       clusters_mean[i] = mean;
     }
 
@@ -181,18 +185,18 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
   head_clusters_rotation_.clear ();
   head_center_votes_clustered_.resize (clusters_mean.size ());
 
-  for (std::size_t i = 0; i < clusters_mean.size (); i++)
+  for (size_t i = 0; i < clusters_mean.size (); i++)
   {
     if (votes_indices[i].size () > min_votes_size_)
     {
       //compute rotation using the first less uncertain votes
       std::vector < std::pair<int, float> > uncertainty;
-      for (const int &index : votes_indices[i])
+      for (size_t j = 0; j < votes_indices[i].size (); j++)
       {
-        uncertainty.emplace_back (index, uncertainties_[index]);
+        uncertainty.push_back (std::make_pair (votes_indices[i][j], uncertainties_[votes_indices[i][j]]));
       }
 
-      std::sort (uncertainty.begin (), uncertainty.end (), [] (const auto& p1, const auto& p2) { return p1.second < p2.second; });
+      std::sort (uncertainty.begin (), uncertainty.end (), boost::bind (&std::pair<int, float>::second, _1) < boost::bind (&std::pair<int, float>::second, _2));
 
       Eigen::Vector3f rot;
       rot.setZero ();
@@ -202,19 +206,19 @@ void pcl::RFFaceDetectorTrainer::faceVotesClustering()
         rot += angle_votes_[uncertainty[j].first];
       }
 
-      rot /= static_cast<float> (num);
+      rot = rot / static_cast<float> (num);
 
       Eigen::Vector3f pos;
       pos.setZero ();
       for (int j = 0; j < num; j++)
         pos += head_center_votes_[uncertainty[j].first];
 
-      pos /= static_cast<float> (num);
+      pos = pos / static_cast<float> (num);
 
       head_clusters_centers_.push_back (pos); //clusters_mean[i]
       head_clusters_rotation_.push_back (rot);
 
-      for (std::size_t j = 0; j < votes_indices[i].size (); j++)
+      for (size_t j = 0; j < votes_indices[i].size (); j++)
       {
         head_center_votes_clustered_[i].push_back (head_center_votes_[votes_indices[i][j]]);
       }
@@ -269,7 +273,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
   pass_.filter (*cloud);
 
   //compute depth integral image
-  pcl::IntegralImage2D<float, 1>::Ptr integral_image_depth;
+  boost::shared_ptr<pcl::IntegralImage2D<float, 1> > integral_image_depth;
   integral_image_depth.reset (new pcl::IntegralImage2D<float, 1> (false));
 
   int element_stride = sizeof(pcl::PointXYZ) / sizeof(float);
@@ -282,7 +286,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
 
   if (use_normals_)
   {
-    using NormalEstimator_ = pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal>;
+    typedef pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> NormalEstimator_;
     NormalEstimator_ n3d;
     n3d.setNormalEstimationMethod (n3d.COVARIANCE_MATRIX);
     n3d.setInputCloud (cloud);
@@ -293,9 +297,9 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
 
   int element_stride_normal = sizeof(pcl::Normal) / sizeof(float);
   int row_stride_normal = element_stride_normal * normals->width;
-  pcl::IntegralImage2D<float, 1>::Ptr integral_image_normal_x;
-  pcl::IntegralImage2D<float, 1>::Ptr integral_image_normal_y;
-  pcl::IntegralImage2D<float, 1>::Ptr integral_image_normal_z;
+  boost::shared_ptr<pcl::IntegralImage2D<float, 1> > integral_image_normal_x;
+  boost::shared_ptr<pcl::IntegralImage2D<float, 1> > integral_image_normal_y;
+  boost::shared_ptr<pcl::IntegralImage2D<float, 1> > integral_image_normal_z;
 
   if (use_normals_)
   {
@@ -327,7 +331,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
 
     std::vector<float> weights;
     weights.resize (cloud->points.size ());
-    for (std::size_t i = 0; i < cloud->points.size (); i++)
+    for (size_t i = 0; i < cloud->points.size (); i++)
       weights[i] = 0;
 
     int w_size_2 = static_cast<int> (w_size_ / 2);
@@ -365,16 +369,16 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
           std::vector<NodeType> leaves;
           dfe.evaluate (forest_, fhda, rse, eval_examples, 0, leaves);
 
-          for (const auto &leaf : leaves)
+          for (size_t l = 0; l < leaves.size (); l++)
           {
-            if (leaf.value >= thres_face_)
+            if (leaves[l].value >= thres_face_)
             {
-              if ((leaf.covariance_trans_.trace () + leaf.covariance_rot_.trace ()) > trans_max_variance_)
+              if ((leaves[l].covariance_trans_.trace () + leaves[l].covariance_rot_.trace ()) > trans_max_variance_)
                 continue;
 
-              Eigen::Vector3f head_center = Eigen::Vector3f (static_cast<float>(leaf.trans_mean_[0]),
-                                                             static_cast<float>(leaf.trans_mean_[1]),
-                                                             static_cast<float>(leaf.trans_mean_[2]));
+              Eigen::Vector3f head_center = Eigen::Vector3f (static_cast<float>(leaves[l].trans_mean_[0]),
+                                                             static_cast<float>(leaves[l].trans_mean_[1]),
+                                                             static_cast<float>(leaves[l].trans_mean_[2]));
               head_center *= 0.001f;
 
               pcl::PointXYZ patch_center_point;
@@ -389,7 +393,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
               if (!pcl::isFinite (ppp))
                 continue;
 
-              //this is a good leaf
+              //this is a good leave
               for (int j = te.col_; j < (te.col_ + w_size_); j++)
               {
                 for (int k = te.row_; k < (te.row_ + w_size_); k++)
@@ -398,10 +402,11 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
 
               head_center_votes_.push_back (head_center);
               float mult_fact = 0.0174532925f;
-              angle_votes_.emplace_back(static_cast<float>(leaf.rot_mean_[0]) * mult_fact,
-                                   static_cast<float>(leaf.rot_mean_[1]) * mult_fact,
-                                   static_cast<float>(leaf.rot_mean_[2]) * mult_fact);
-              uncertainties_.push_back (static_cast<float>(leaf.covariance_trans_.trace () + leaf.covariance_rot_.trace ()));
+              angle_votes_.push_back (
+                  Eigen::Vector3f (static_cast<float>(leaves[l].rot_mean_[0]) * mult_fact,
+                                   static_cast<float>(leaves[l].rot_mean_[1]) * mult_fact,
+                                   static_cast<float>(leaves[l].rot_mean_[2]) * mult_fact));
+              uncertainties_.push_back (static_cast<float>(leaves[l].covariance_trans_.trace () + leaves[l].covariance_rot_.trace ()));
             }
           }
         }
@@ -416,7 +421,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
       face_heat_map_->width = static_cast<unsigned int>(cloud->points.size ());
       face_heat_map_->is_dense = false;
 
-      for (std::size_t i = 0; i < cloud->points.size (); i++)
+      for (size_t i = 0; i < cloud->points.size (); i++)
       {
         face_heat_map_->points[i].getVector4fMap () = cloud->points[i].getVector4fMap ();
         face_heat_map_->points[i].intensity = weights[i];
@@ -426,7 +431,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
 
   faceVotesClustering ();
 
-  if (pose_refinement_ && (!head_clusters_centers_.empty ()))
+  if (pose_refinement_ && (head_clusters_centers_.size () > 0))
   {
     Eigen::Matrix4f icp_trans;
     float max_distance = 0.015f;
@@ -436,7 +441,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
     pcl::PointCloud<pcl::Normal>::Ptr scene_normals (new pcl::PointCloud<pcl::Normal> ());
 
     {
-      using NormalEstimator_ = pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal>;
+      typedef pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> NormalEstimator_;
       NormalEstimator_ n3d;
       n3d.setNormalEstimationMethod (n3d.COVARIANCE_MATRIX);
       n3d.setInputCloud (input_);
@@ -472,7 +477,7 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
     pcl::PointCloud<pcl::PointNormal>::Ptr output (new pcl::PointCloud<pcl::PointNormal> ());
 
     pcl::IterativeClosestPoint<pcl::PointNormal, pcl::PointNormal> reg;
-    for (std::size_t i = 0; i < head_clusters_centers_.size (); i++)
+    for (size_t i = 0; i < head_clusters_centers_.size (); i++)
     {
       Eigen::Matrix3f matrixxx;
 
@@ -544,8 +549,8 @@ void pcl::RFFaceDetectorTrainer::detectFaces()
      papazov.verify ();
      papazov.getMask (mask_hv);
 
-     std::size_t valid=0;
-     for(std::size_t i=0; i < mask_hv.size(); i++) {
+     size_t valid=0;
+     for(size_t i=0; i < mask_hv.size(); i++) {
      if (!mask_hv[i])
      continue;
 

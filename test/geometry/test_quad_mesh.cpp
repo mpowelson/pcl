@@ -49,35 +49,35 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using VertexIndex = pcl::geometry::VertexIndex;
-using HalfEdgeIndex = pcl::geometry::HalfEdgeIndex;
-using EdgeIndex = pcl::geometry::EdgeIndex;
-using FaceIndex = pcl::geometry::FaceIndex;
+typedef pcl::geometry::VertexIndex   VertexIndex;
+typedef pcl::geometry::HalfEdgeIndex HalfEdgeIndex;
+typedef pcl::geometry::EdgeIndex     EdgeIndex;
+typedef pcl::geometry::FaceIndex     FaceIndex;
 
-using VertexIndices = std::vector<VertexIndex>;
-using HalfEdgeIndices = std::vector<HalfEdgeIndex>;
-using FaceIndices = std::vector<FaceIndex>;
+typedef std::vector <VertexIndex>   VertexIndices;
+typedef std::vector <HalfEdgeIndex> HalfEdgeIndices;
+typedef std::vector <FaceIndex>     FaceIndices;
 
 template <bool IsManifoldT>
 struct MeshTraits
 {
-    using VertexData = int;
-    using HalfEdgeData = pcl::geometry::NoData;
-    using EdgeData = pcl::geometry::NoData;
-    using FaceData = pcl::geometry::NoData;
-    using IsManifold = std::integral_constant <bool, IsManifoldT>;
+    typedef int                                          VertexData;
+    typedef pcl::geometry::NoData                        HalfEdgeData;
+    typedef pcl::geometry::NoData                        EdgeData;
+    typedef pcl::geometry::NoData                        FaceData;
+    typedef boost::integral_constant <bool, IsManifoldT> IsManifold;
 };
 
-using ManifoldQuadMesh = pcl::geometry::QuadMesh<MeshTraits<true> >;
-using NonManifoldQuadMesh = pcl::geometry::QuadMesh<MeshTraits<false> >;
+typedef pcl::geometry::QuadMesh <MeshTraits <true > > ManifoldQuadMesh;
+typedef pcl::geometry::QuadMesh <MeshTraits <false> > NonManifoldQuadMesh;
 
-using QuadMeshTypes = testing::Types <ManifoldQuadMesh, NonManifoldQuadMesh>;
+typedef testing::Types <ManifoldQuadMesh, NonManifoldQuadMesh> QuadMeshTypes;
 
 template <class MeshT>
 class TestQuadMesh : public testing::Test
 {
   protected:
-    using Mesh = MeshT;
+    typedef MeshT Mesh;
 };
 
 TYPED_TEST_CASE (TestQuadMesh, QuadMeshTypes);
@@ -86,8 +86,8 @@ TYPED_TEST_CASE (TestQuadMesh, QuadMeshTypes);
 
 TYPED_TEST (TestQuadMesh, CorrectMeshTag)
 {
-  using Mesh = typename TestFixture::Mesh;
-  using MeshTag = typename Mesh::MeshTag;
+  typedef typename TestFixture::Mesh Mesh;
+  typedef typename Mesh::MeshTag     MeshTag;
 
   ASSERT_EQ (typeid (pcl::geometry::QuadMeshTag), typeid (MeshTag));
 }
@@ -97,7 +97,7 @@ TYPED_TEST (TestQuadMesh, CorrectMeshTag)
 TYPED_TEST (TestQuadMesh, CorrectNumberOfVertices)
 {
   // Make sure that only quads can be added
-  using Mesh = typename TestFixture::Mesh;
+  typedef typename TestFixture::Mesh Mesh;
 
   for (unsigned int n=1; n<=5; ++n)
   {
@@ -119,7 +119,7 @@ TYPED_TEST (TestQuadMesh, CorrectNumberOfVertices)
 
 TYPED_TEST (TestQuadMesh, OneQuad)
 {
-  using Mesh = typename TestFixture::Mesh;
+  typedef typename TestFixture::Mesh Mesh;
 
   // 3 - 2 //
   // |   | //
@@ -221,7 +221,7 @@ TYPED_TEST (TestQuadMesh, OneQuad)
 
 TYPED_TEST (TestQuadMesh, NineQuads)
 {
-  using Mesh = typename TestFixture::Mesh;
+  typedef typename TestFixture::Mesh Mesh;
   const int int_max = std::numeric_limits <int>::max ();
 
   // Order
@@ -329,7 +329,7 @@ TYPED_TEST (TestQuadMesh, NineQuads)
   // 08 - 09 - 10 - 11 //
   //  |    |    |    | //
   // 12 - 13 - 14 - 15 //
-  using VI = VertexIndex;
+  typedef VertexIndex VI;
   std::vector <VertexIndices> faces;
   VertexIndices vi;
   vi.push_back (VI ( 0)); vi.push_back (VI ( 4)); vi.push_back (VI ( 5)); vi.push_back (VI ( 1)); faces.push_back (vi); vi.clear ();
@@ -344,7 +344,7 @@ TYPED_TEST (TestQuadMesh, NineQuads)
 
   ASSERT_EQ (order_vec.size (), non_manifold.size ());
   ASSERT_EQ (9, faces.size ());
-  for (std::size_t i=0; i<order_vec.size (); ++i)
+  for (unsigned int i=0; i<order_vec.size (); ++i)
   {
     std::stringstream ss;
     ss << "Configuration " << i;
@@ -356,16 +356,16 @@ TYPED_TEST (TestQuadMesh, NineQuads)
     if (9 != order.size ()) continue;
 
     Mesh mesh;
-    for (std::size_t j=0; j<16; ++j) mesh.addVertex (j);
+    for (unsigned int j=0; j<16; ++j) mesh.addVertex (j);
 
     std::vector <VertexIndices> ordered_faces;
 
-    for (std::size_t j=0; j<faces.size (); ++j)
+    for (unsigned int j=0; j<faces.size (); ++j)
     {
       ordered_faces.push_back (faces [order [j]]);
     }
     bool check_has_faces = true;
-    for (std::size_t j=0; j<faces.size (); ++j)
+    for (unsigned int j=0; j<faces.size (); ++j)
     {
       const FaceIndex index = mesh.addFace (ordered_faces [j]);
 

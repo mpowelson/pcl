@@ -77,7 +77,7 @@ namespace pcl
     struct CopyPointHelper { };
 
     template <typename PointInT, typename PointOutT>
-    struct CopyPointHelper<PointInT, PointOutT, std::enable_if_t<std::is_same<PointInT, PointOutT>::value>>
+    struct CopyPointHelper<PointInT, PointOutT, typename boost::enable_if<boost::is_same<PointInT, PointOutT> >::type>
     {
       void operator () (const PointInT& point_in, PointOutT& point_out) const
       {
@@ -87,40 +87,40 @@ namespace pcl
 
     template <typename PointInT, typename PointOutT>
     struct CopyPointHelper<PointInT, PointOutT,
-                           std::enable_if_t<boost::mpl::and_<boost::mpl::not_<std::is_same<PointInT, PointOutT>>,
-                                                             boost::mpl::or_<boost::mpl::not_<pcl::traits::has_color<PointInT>>,
-                                                                             boost::mpl::not_<pcl::traits::has_color<PointOutT>>,
-                                                                             boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
-                                                                                              pcl::traits::has_field<PointOutT, pcl::fields::rgb>>,
-                                                                             boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgba>,
-                                                                                              pcl::traits::has_field<PointOutT, pcl::fields::rgba>>>>::value>>
+                           typename boost::enable_if<boost::mpl::and_<boost::mpl::not_<boost::is_same<PointInT, PointOutT> >,
+                                                                      boost::mpl::or_<boost::mpl::not_<pcl::traits::has_color<PointInT> >,
+                                                                                      boost::mpl::not_<pcl::traits::has_color<PointOutT> >,
+                                                                                      boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
+                                                                                                       pcl::traits::has_field<PointOutT, pcl::fields::rgb> >,
+                                                                                      boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgba>,
+                                                                                                       pcl::traits::has_field<PointOutT, pcl::fields::rgba> > > > >::type>
     {
       void operator () (const PointInT& point_in, PointOutT& point_out) const
       {
-        using FieldListInT = typename pcl::traits::fieldList<PointInT>::type;
-        using FieldListOutT = typename pcl::traits::fieldList<PointOutT>::type;
-        using FieldList = typename pcl::intersect<FieldListInT, FieldListOutT>::type;
+        typedef typename pcl::traits::fieldList<PointInT>::type FieldListInT;
+        typedef typename pcl::traits::fieldList<PointOutT>::type FieldListOutT;
+        typedef typename pcl::intersect<FieldListInT, FieldListOutT>::type FieldList;
         pcl::for_each_type <FieldList> (pcl::NdConcatenateFunctor <PointInT, PointOutT> (point_in, point_out));
       }
     };
 
     template <typename PointInT, typename PointOutT>
     struct CopyPointHelper<PointInT, PointOutT,
-                           std::enable_if_t<boost::mpl::and_<boost::mpl::not_<std::is_same<PointInT, PointOutT>>,
-                                            boost::mpl::or_<boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
-                                                                             pcl::traits::has_field<PointOutT, pcl::fields::rgba>>,
-                                                            boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgba>,
-                                                                             pcl::traits::has_field<PointOutT, pcl::fields::rgb>>>>::value>>
+                           typename boost::enable_if<boost::mpl::and_<boost::mpl::not_<boost::is_same<PointInT, PointOutT> >,
+                                                                      boost::mpl::or_<boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
+                                                                                                       pcl::traits::has_field<PointOutT, pcl::fields::rgba> >,
+                                                                                      boost::mpl::and_<pcl::traits::has_field<PointInT, pcl::fields::rgba>,
+                                                                                                       pcl::traits::has_field<PointOutT, pcl::fields::rgb> > > > >::type>
     {
       void operator () (const PointInT& point_in, PointOutT& point_out) const
       {
-        using FieldListInT = typename pcl::traits::fieldList<PointInT>::type;
-        using FieldListOutT = typename pcl::traits::fieldList<PointOutT>::type;
-        using FieldList = typename pcl::intersect<FieldListInT, FieldListOutT>::type;
-        const std::uint32_t offset_in  = boost::mpl::if_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
+        typedef typename pcl::traits::fieldList<PointInT>::type FieldListInT;
+        typedef typename pcl::traits::fieldList<PointOutT>::type FieldListOutT;
+        typedef typename pcl::intersect<FieldListInT, FieldListOutT>::type FieldList;
+        const uint32_t offset_in  = boost::mpl::if_<pcl::traits::has_field<PointInT, pcl::fields::rgb>,
                                                     pcl::traits::offset<PointInT, pcl::fields::rgb>,
                                                     pcl::traits::offset<PointInT, pcl::fields::rgba> >::type::value;
-        const std::uint32_t offset_out = boost::mpl::if_<pcl::traits::has_field<PointOutT, pcl::fields::rgb>,
+        const uint32_t offset_out = boost::mpl::if_<pcl::traits::has_field<PointOutT, pcl::fields::rgb>,
                                                     pcl::traits::offset<PointOutT, pcl::fields::rgb>,
                                                     pcl::traits::offset<PointOutT, pcl::fields::rgba> >::type::value;
         pcl::for_each_type <FieldList> (pcl::NdConcatenateFunctor <PointInT, PointOutT> (point_in, point_out));

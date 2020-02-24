@@ -44,7 +44,9 @@
 #include <QtCore>
 #include <QKeyEvent>
 #include <QPainter>
-#include <QtConcurrent>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QtConcurrent/QtConcurrent>
+#endif
 
 #include <pcl/exceptions.h>
 #include <pcl/common/time.h>
@@ -63,9 +65,14 @@
 
 pcl::ihs::InHandScanner::InHandScanner (Base* parent)
   : Base                   (parent),
+    mutex_                 (),
+    computation_fps_       (),
+    visualization_fps_     (),
     running_mode_          (RM_UNPROCESSED),
     iteration_             (0),
+    grabber_               (),
     starting_grabber_      (false),
+    new_data_connection_   (),
     input_data_processing_ (new InputDataProcessing ()),
     icp_                   (new ICP ()),
     transformation_        (Eigen::Matrix4f::Identity ()),
@@ -94,7 +101,7 @@ pcl::ihs::InHandScanner::InHandScanner (Base* parent)
 
 pcl::ihs::InHandScanner::~InHandScanner ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   destructor_called_ = true;
 
   if (grabber_ && grabber_->isRunning ()) grabber_->stop ();
@@ -106,7 +113,7 @@ pcl::ihs::InHandScanner::~InHandScanner ()
 void
 pcl::ihs::InHandScanner::startGrabber ()
 {
-  QtConcurrent::run ([this] { startGrabberImpl (); });
+  QtConcurrent::run (boost::bind (&pcl::ihs::InHandScanner::startGrabberImpl, this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +121,7 @@ pcl::ihs::InHandScanner::startGrabber ()
 void
 pcl::ihs::InHandScanner::showUnprocessedData ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Showing the unprocessed input data.\n";
@@ -130,7 +137,7 @@ pcl::ihs::InHandScanner::showUnprocessedData ()
 void
 pcl::ihs::InHandScanner::showProcessedData ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Showing the processed input data.\n";
@@ -146,7 +153,7 @@ pcl::ihs::InHandScanner::showProcessedData ()
 void
 pcl::ihs::InHandScanner::registerContinuously ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Continuous registration.\n";
@@ -162,7 +169,7 @@ pcl::ihs::InHandScanner::registerContinuously ()
 void
 pcl::ihs::InHandScanner::registerOnce ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Single registration.\n";
@@ -177,7 +184,7 @@ pcl::ihs::InHandScanner::registerOnce ()
 void
 pcl::ihs::InHandScanner::showModel ()
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Show the model\n";
@@ -192,7 +199,7 @@ pcl::ihs::InHandScanner::showModel ()
 void
 pcl::ihs::InHandScanner::removeUnfitVertices ()
 {
-  std::unique_lock<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Removing unfit vertices ...\n";
@@ -216,7 +223,7 @@ pcl::ihs::InHandScanner::removeUnfitVertices ()
 void
 pcl::ihs::InHandScanner::reset ()
 {
-  std::unique_lock<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   std::cerr << "Reset the scanning pipeline.\n";
@@ -236,7 +243,7 @@ pcl::ihs::InHandScanner::reset ()
 void
 pcl::ihs::InHandScanner::saveAs (const std::string& filename, const FileType& filetype)
 {
-  std::lock_guard<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   pcl::PolygonMesh pm;
@@ -282,7 +289,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
 {
   Base::calcFPS (computation_fps_); // Must come before the lock!
 
-  std::unique_lock<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   pcl::StopWatch sw;
@@ -408,7 +415,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
 void
 pcl::ihs::InHandScanner::paintEvent (QPaintEvent* event)
 {
-  // std::lock_guard<std::mutex> lock (mutex_);
+  // boost::mutex::scoped_lock lock (mutex_);
   if (destructor_called_) return;
 
   Base::calcFPS (visualization_fps_);
@@ -464,7 +471,7 @@ pcl::ihs::InHandScanner::drawText ()
 void
 pcl::ihs::InHandScanner::startGrabberImpl ()
 {
-  std::unique_lock<std::mutex> lock (mutex_);
+  boost::mutex::scoped_lock lock (mutex_);
   starting_grabber_ = true;
   lock.unlock ();
 
@@ -481,7 +488,7 @@ pcl::ihs::InHandScanner::startGrabberImpl ()
   lock.lock ();
   if (destructor_called_) return;
 
-  std::function <void (const CloudXYZRGBAConstPtr&)> new_data_cb = [this] (const CloudXYZRGBAConstPtr& cloud) { newDataCallback (cloud); };
+  boost::function <void (const CloudXYZRGBAConstPtr&)> new_data_cb = boost::bind (&pcl::ihs::InHandScanner::newDataCallback, this, _1);
   new_data_connection_ = grabber_->registerCallback (new_data_cb);
   grabber_->start ();
 

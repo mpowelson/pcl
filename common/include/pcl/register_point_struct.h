@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTER_POINT_STRUCT_H_
+#define PCL_REGISTER_POINT_STRUCT_H_
 
 #ifdef __GNUC__
 #pragma GCC system_header
@@ -60,10 +61,10 @@
 #include <boost/preprocessor/seq/transform.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/comparison.hpp>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 #endif
-
-#include <cstddef> //offsetof
-#include <type_traits>
+#include <stddef.h> //offsetof
 
 // Must be used in global namespace with name fully qualified
 #define POINT_CLOUD_REGISTER_POINT_STRUCT(name, fseq)               \
@@ -75,7 +76,7 @@
   BOOST_MPL_ASSERT_MSG(sizeof(wrapper) == sizeof(pod), POINT_WRAPPER_AND_POD_TYPES_HAVE_DIFFERENT_SIZES, (wrapper&, pod&)); \
   namespace pcl {                                           \
     namespace traits {                                      \
-      template<> struct POD<wrapper> { using type = pod; }; \
+      template<> struct POD<wrapper> { typedef pod type; }; \
     }                                                       \
   }                                                         \
   /***/
@@ -94,103 +95,103 @@ namespace pcl
   namespace traits
   {
     template<typename T> inline
-    std::enable_if_t<!std::is_array<T>::value>
+    typename boost::disable_if_c<boost::is_array<T>::value>::type
     plus (T &l, const T &r)
     {
       l += r;
     }
 
     template<typename T> inline
-    std::enable_if_t<std::is_array<T>::value>
-    plus (std::remove_const_t<T> &l, const T &r)
+    typename boost::enable_if_c<boost::is_array<T>::value>::type
+    plus (typename boost::remove_const<T>::type &l, const T &r)
     {
-      using type = std::remove_all_extents_t<T>;
-      static const std::uint32_t count = sizeof (T) / sizeof (type);
+      typedef typename boost::remove_all_extents<T>::type type;
+      static const uint32_t count = sizeof (T) / sizeof (type);
       for (int i = 0; i < count; ++i)
         l[i] += r[i];
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<!std::is_array<T1>::value>
+    typename boost::disable_if_c<boost::is_array<T1>::value>::type
     plusscalar (T1 &p, const T2 &scalar)
     {
       p += scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<std::is_array<T1>::value>
+    typename boost::enable_if_c<boost::is_array<T1>::value>::type
     plusscalar (T1 &p, const T2 &scalar)
     {
-      using type = std::remove_all_extents_t<T1>;
-      static const std::uint32_t count = sizeof (T1) / sizeof (type);
+      typedef typename boost::remove_all_extents<T1>::type type;
+      static const uint32_t count = sizeof (T1) / sizeof (type);
       for (int i = 0; i < count; ++i)
         p[i] += scalar;
     }
 
     template<typename T> inline
-    std::enable_if_t<!std::is_array<T>::value>
+    typename boost::disable_if_c<boost::is_array<T>::value>::type
     minus (T &l, const T &r)
     {
       l -= r;
     }
 
     template<typename T> inline
-    std::enable_if_t<std::is_array<T>::value>
-    minus (std::remove_const_t<T> &l, const T &r)
+    typename boost::enable_if_c<boost::is_array<T>::value>::type
+    minus (typename boost::remove_const<T>::type &l, const T &r)
     {
-      using type = std::remove_all_extents_t<T>;
-      static const std::uint32_t count = sizeof (T) / sizeof (type);
+      typedef typename boost::remove_all_extents<T>::type type;
+      static const uint32_t count = sizeof (T) / sizeof (type);
       for (int i = 0; i < count; ++i)
         l[i] -= r[i];
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<!std::is_array<T1>::value>
+    typename boost::disable_if_c<boost::is_array<T1>::value>::type
     minusscalar (T1 &p, const T2 &scalar)
     {
       p -= scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<std::is_array<T1>::value>
+    typename boost::enable_if_c<boost::is_array<T1>::value>::type
     minusscalar (T1 &p, const T2 &scalar)
     {
-      using type = std::remove_all_extents_t<T1>;
-      static const std::uint32_t count = sizeof (T1) / sizeof (type);
+      typedef typename boost::remove_all_extents<T1>::type type;
+      static const uint32_t count = sizeof (T1) / sizeof (type);
       for (int i = 0; i < count; ++i)
         p[i] -= scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<!std::is_array<T1>::value>
+    typename boost::disable_if_c<boost::is_array<T1>::value>::type
     mulscalar (T1 &p, const T2 &scalar)
     {
       p *= scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<std::is_array<T1>::value>
+    typename boost::enable_if_c<boost::is_array<T1>::value>::type
     mulscalar (T1 &p, const T2 &scalar)
     {
-      using type = std::remove_all_extents_t<T1>;
-      static const std::uint32_t count = sizeof (T1) / sizeof (type);
+      typedef typename boost::remove_all_extents<T1>::type type;
+      static const uint32_t count = sizeof (T1) / sizeof (type);
       for (int i = 0; i < count; ++i)
         p[i] *= scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<!std::is_array<T1>::value>
+    typename boost::disable_if_c<boost::is_array<T1>::value>::type
     divscalar (T1 &p, const T2 &scalar)
     {
       p /= scalar;
     }
 
     template<typename T1, typename T2> inline
-    std::enable_if_t<std::is_array<T1>::value>
+    typename boost::enable_if_c<boost::is_array<T1>::value>::type
     divscalar (T1 &p, const T2 &scalar)
     {
-      using type = std::remove_all_extents_t<T1>;
-      static const std::uint32_t count = sizeof (T1) / sizeof (type);
+      typedef typename boost::remove_all_extents<T1>::type type;
+      static const uint32_t count = sizeof (T1) / sizeof (type);
       for (int i = 0; i < count; ++i)
         p[i] /= scalar;
     }
@@ -231,7 +232,7 @@ namespace pcl
   /***/
 
 // Construct type traits given full sequence of (type, name, tag) triples
-//  BOOST_MPL_ASSERT_MSG(std::is_pod<name>::value,
+//  BOOST_MPL_ASSERT_MSG(boost::is_pod<name>::value,
 //                       REGISTERED_POINT_TYPE_MUST_BE_PLAIN_OLD_DATA, (name));
 #define POINT_CLOUD_REGISTER_POINT_STRUCT_I(name, seq)                           \
   namespace pcl                                                                  \
@@ -330,17 +331,21 @@ namespace pcl
 #define POINT_CLOUD_REGISTER_FIELD_OFFSET(r, name, elem)                \
   template<> struct offset<name, pcl::fields::BOOST_PP_TUPLE_ELEM(3, 2, elem)> \
   {                                                                     \
-    static const std::size_t value = offsetof(name, BOOST_PP_TUPLE_ELEM(3, 1, elem)); \
+    static const size_t value = offsetof(name, BOOST_PP_TUPLE_ELEM(3, 1, elem)); \
   };                                                                    \
   /***/
 
+// \note: the mpl::identity weirdness is to support array types without requiring the
+// user to wrap them. The basic problem is:
+// typedef float[81] type; // SYNTAX ERROR!
+// typedef float type[81]; // OK, can now use "type" as a synonym for float[81]
 #define POINT_CLOUD_REGISTER_FIELD_DATATYPE(r, name, elem)              \
   template<> struct datatype<name, pcl::fields::BOOST_PP_TUPLE_ELEM(3, 2, elem)> \
   {                                                                     \
-    using type = boost::mpl::identity<BOOST_PP_TUPLE_ELEM(3, 0, elem)>::type; \
-    using decomposed = decomposeArray<type>;                            \
-    static const std::uint8_t value = asEnum<decomposed::type>::value;       \
-    static const std::uint32_t size = decomposed::value;                     \
+    typedef boost::mpl::identity<BOOST_PP_TUPLE_ELEM(3, 0, elem)>::type type; \
+    typedef decomposeArray<type> decomposed;                            \
+    static const uint8_t value = asEnum<decomposed::type>::value;       \
+    static const uint32_t size = decomposed::value;                     \
   };                                                                    \
   /***/
 
@@ -351,10 +356,12 @@ namespace pcl
 #define POINT_CLOUD_REGISTER_POINT_FIELD_LIST(name, seq)        \
   template<> struct fieldList<name>                             \
   {                                                             \
-    using type = boost::mpl::vector<BOOST_PP_SEQ_ENUM(seq)>;    \
+    typedef boost::mpl::vector<BOOST_PP_SEQ_ENUM(seq)> type;    \
   };                                                            \
   /***/
 
 #if defined _MSC_VER
   #pragma warning (pop)
 #endif
+
+#endif  //#ifndef PCL_REGISTER_POINT_STRUCT_H_

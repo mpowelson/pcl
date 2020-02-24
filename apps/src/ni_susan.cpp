@@ -38,7 +38,6 @@
  */
 
 #define SHOW_FPS 1
-
 #include <pcl/apps/timer.h>
 #include <pcl/common/common.h>
 #include <pcl/common/angles.h>
@@ -51,23 +50,19 @@
 #include <pcl/console/print.h>
 #include <pcl/console/parse.h>
 
-#include <mutex>
-#include <thread>
-
 using namespace pcl;
 using namespace std;
-using namespace std::chrono_literals;
 
-using PointT = PointXYZRGBA;
-using KeyPointT = PointXYZRGBL;
+typedef PointXYZRGBA PointT;
+typedef PointXYZRGBL KeyPointT;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SUSANDemo
 {
   public:
-    using Cloud = PointCloud<PointT>;
-    using CloudPtr = Cloud::Ptr;
-    using CloudConstPtr = Cloud::ConstPtr;
+    typedef PointCloud<PointT> Cloud;
+    typedef Cloud::Ptr CloudPtr;
+    typedef Cloud::ConstPtr CloudConstPtr;
 
     SUSANDemo (Grabber& grabber)
       : cloud_viewer_ ("SUSAN 2D Keypoints -- PointCloud")
@@ -81,7 +76,7 @@ class SUSANDemo
     cloud_callback (const CloudConstPtr& cloud)
     {
       FPS_CALC ("cloud callback");
-      std::lock_guard<std::mutex> lock (cloud_mutex_);
+      boost::mutex::scoped_lock lock (cloud_mutex_);
       cloud_ = cloud;
 
       // Compute SUSAN keypoints 
@@ -97,7 +92,7 @@ class SUSANDemo
     void
     init ()
     {
-      std::function<void (const CloudConstPtr&) > cloud_cb = [this] (const CloudConstPtr& cloud) { cloud_callback (cloud); };
+      boost::function<void (const CloudConstPtr&) > cloud_cb = boost::bind (&SUSANDemo::cloud_callback, this, _1);
       cloud_connection = grabber_.registerCallback (cloud_cb);
     }
 
@@ -138,7 +133,7 @@ class SUSANDemo
           {
             cloud_viewer_.setPosition (0, 0);
             cloud_viewer_.setSize (cloud->width, cloud->height);
-            cloud_init = true;
+            cloud_init = !cloud_init;
           }
 
           if (!cloud_viewer_.updatePointCloud (cloud, "OpenNICloud"))
@@ -151,7 +146,7 @@ class SUSANDemo
           {
             image_viewer_.setPosition (cloud->width, 0);
             image_viewer_.setSize (cloud->width, cloud->height);
-            image_init = true;
+            image_init = !image_init;
           }
 
           image_viewer_.addRGBImage<PointT> (cloud);
@@ -159,7 +154,7 @@ class SUSANDemo
           if (keypoints && !keypoints->empty ())
           {
             image_viewer_.removeLayer (getStrBool (keypts));
-            for (std::size_t i = 0; i < keypoints->size (); ++i)
+            for (size_t i = 0; i < keypoints->size (); ++i)
             {
               int u = int (keypoints->points[i].label % cloud->width);
               int v = cloud->height - int (keypoints->points[i].label / cloud->width);
@@ -177,7 +172,7 @@ class SUSANDemo
 
         cloud_viewer_.spinOnce ();
         image_viewer_.spinOnce ();
-        std::this_thread::sleep_for(100us);
+        boost::this_thread::sleep (boost::posix_time::microseconds (100));
       }
 
       grabber_.stop ();
@@ -186,7 +181,7 @@ class SUSANDemo
     
     visualization::PCLVisualizer cloud_viewer_;
     Grabber& grabber_;
-    std::mutex cloud_mutex_;
+    boost::mutex cloud_mutex_;
     CloudConstPtr cloud_;
     
     visualization::ImageViewer image_viewer_;

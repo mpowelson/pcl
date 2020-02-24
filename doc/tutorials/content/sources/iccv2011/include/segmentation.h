@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SEGMENTATION_H
+#define SEGMENTATION_H
 
 #include "typedefs.h"
 
@@ -101,3 +102,5 @@ clusterObjects (const PointCloudPtr & input,
   ec.setInputCloud (input);
   ec.extract (cluster_indices_out);
 }
+
+#endif

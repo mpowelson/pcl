@@ -35,10 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef SELECTION_EVENT_H_
+#define SELECTION_EVENT_H_
 
 #include <pcl/visualization/vtk.h>
 #include <pcl/apps/cloud_composer/items/cloud_item.h>
+#include <pcl/apps/cloud_composer/qt.h>
 
 namespace pcl
 {
@@ -46,15 +48,15 @@ namespace pcl
   {
     class RectangularFrustumSelector;  
     
-    class SelectionEvent
+    class PCL_EXPORTS SelectionEvent
     {
       
       public:
         SelectionEvent (vtkSmartPointer <vtkPolyData> selected_points, vtkSmartPointer<vtkActor> selected_actor, vtkSmartPointer<vtkDataSetMapper> selected_mapper, QMap < QString, vtkPolyData* > id_selected_map, vtkRenderer* renderer) 
-        : selected_points_ (std::move(selected_points)) 
-        , selected_actor_ (std::move(selected_actor))
-        , selected_mapper_ (std::move(selected_mapper))
-        , id_selected_data_map_ (std::move(id_selected_map))
+        : selected_points_ (selected_points) 
+        , selected_actor_ (selected_actor)
+        , selected_mapper_ (selected_mapper)
+        , id_selected_data_map_ (id_selected_map)
         , renderer_ (renderer) 
         {}
         
@@ -73,7 +75,7 @@ namespace pcl
         getActor () const { return selected_actor_; }
         
         void
-        findIndicesInItem (CloudItem* cloud_item, const pcl::PointIndices::Ptr& indices);
+        findIndicesInItem (CloudItem* cloud_item, pcl::PointIndices::Ptr indices);
         
       private:
       
@@ -88,3 +90,7 @@ namespace pcl
   }
   
 }
+
+#endif // SELECTION_EVENT_H_
+        
+        

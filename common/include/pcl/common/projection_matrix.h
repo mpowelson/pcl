@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef __PCL_ORGANIZED_PROJECTION_MATRIX_H__
+#define __PCL_ORGANIZED_PROJECTION_MATRIX_H__
 
 #include <pcl/common/eigen.h>
 #include <pcl/console/print.h>
@@ -75,3 +76,5 @@ namespace pcl
 }
 
 #include <pcl/common/impl/projection_matrix.hpp>
+
+#endif // __PCL_ORGANIZED_PROJECTION_MATRIX_H__

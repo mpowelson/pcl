@@ -12,8 +12,13 @@ namespace pcl
         {
             __device__ static T Invoke(const T* ptr)
             {
+
+#if (__CUDA_ARCH__ < 200)
+                return *ptr;
+#else
                 //asm code insertion 
                 asm(...);
+#endif
             }
         };
 

@@ -35,11 +35,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#pragma once
- 
 #include <pcl/pcl_config.h>
 #ifdef HAVE_OPENNI2
+
+#ifndef __OPENNI_SHIFT_TO_DEPTH_CONVERSION
+#define __OPENNI_SHIFT_TO_DEPTH_CONVERSION
 
 #include <vector>
 #include <limits>
@@ -63,24 +63,28 @@ namespace openni_wrapper
       generateLookupTable ()
       {
         // lookup of 11 bit shift values
-        constexpr std::size_t table_size = 1<<10;
+        const std::size_t table_size = 1<<10;
 
         lookupTable_.clear();
         lookupTable_.resize(table_size);
 
         // constants taken from openni driver
-        constexpr std::int16_t nConstShift = 800;
-        constexpr double nParamCoeff = 4.000000;
-        constexpr double dPlanePixelSize = 0.104200;
-        constexpr double nShiftScale = 10.000000;
-        constexpr double dPlaneDsr = 120.000000;
-        constexpr double dPlaneDcl = 7.500000;
+        static const int16_t nConstShift = 800;
+        static const double nParamCoeff = 4.000000;
+        static const double dPlanePixelSize = 0.104200;
+        static const double nShiftScale = 10.000000;
+        static const double dPlaneDsr = 120.000000;
+        static const double dPlaneDcl = 7.500000;
 
-        for (std::size_t i=0; i<table_size; ++i)
+        std::size_t i;
+        double dFixedRefX;
+        double dMetric;
+
+        for (i=0; i<table_size; ++i)
         {
           // shift to depth calculation from opnni
-          double dFixedRefX = (static_cast<double>(i - nConstShift) / nParamCoeff)-0.375;
-          double dMetric = dFixedRefX * dPlanePixelSize;
+          dFixedRefX = (static_cast<double>(i - nConstShift) / nParamCoeff)-0.375;
+          dMetric = dFixedRefX * dPlanePixelSize;
           lookupTable_[i] = static_cast<float>((nShiftScale * ((dMetric * dPlaneDsr / (dPlaneDcl - dMetric)) + dPlaneDsr) ) / 1000.0f);
         }
 
@@ -90,7 +94,7 @@ namespace openni_wrapper
       /** \brief Generate a look-up table for converting openni shift values to depth
          */
       inline float
-      shiftToDepth (std::uint16_t shift_val)
+      shiftToDepth (uint16_t shift_val)
       {
         assert (init_);
 
@@ -115,4 +119,6 @@ namespace openni_wrapper
       bool init_;
   } ;
 }
+
 #endif
+#endif //__OPENNI_SHIFT_TO_DEPTH_CONVERSION

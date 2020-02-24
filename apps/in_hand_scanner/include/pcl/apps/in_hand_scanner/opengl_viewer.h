@@ -38,21 +38,18 @@
  *
  */
 
-#pragma once
+#ifndef PCL_APPS_IN_HAND_SCANNER_OPENGL_VIEWER_H
+#define PCL_APPS_IN_HAND_SCANNER_OPENGL_VIEWER_H
+
+#include <string>
+
+#include <QGLWidget>
 
 #include <pcl/pcl_exports.h>
-#include <pcl/pcl_macros.h>
 #include <pcl/common/time.h>
 #include <pcl/apps/in_hand_scanner/boost.h>
 #include <pcl/apps/in_hand_scanner/common_types.h>
 #include <pcl/apps/in_hand_scanner/eigen.h>
-
-#include <QGLWidget>
-
-#include <mutex>
-#include <iomanip>
-#include <string>
-#include <unordered_map>
 
 namespace pcl
 {
@@ -89,17 +86,18 @@ namespace pcl
           /** \brief Constructor. Converts the input mesh into a face vertex mesh. */
           FaceVertexMesh (const Mesh& mesh, const Eigen::Isometry3d& T);
 
-          using PointIHS = pcl::ihs::PointIHS;
-          using CloudIHS = pcl::ihs::CloudIHS;
-          using CloudIHSPtr = pcl::ihs::CloudIHSPtr;
-          using CloudIHSConstPtr = pcl::ihs::CloudIHSConstPtr;
+          typedef pcl::ihs::PointIHS         PointIHS;
+          typedef pcl::ihs::CloudIHS         CloudIHS;
+          typedef pcl::ihs::CloudIHSPtr      CloudIHSPtr;
+          typedef pcl::ihs::CloudIHSConstPtr CloudIHSConstPtr;
 
           CloudIHS               vertices;
           std::vector <Triangle> triangles;
           Eigen::Isometry3d      transformation;
 
         public:
-          PCL_MAKE_ALIGNED_OPERATOR_NEW
+
+          EIGEN_MAKE_ALIGNED_OPERATOR_NEW
       };
     } // End namespace detail
 
@@ -112,30 +110,30 @@ namespace pcl
 
       public:
 
-        using PointXYZRGBNormal = pcl::PointXYZRGBNormal;
-        using CloudXYZRGBNormal = pcl::PointCloud<PointXYZRGBNormal>;
-        using CloudXYZRGBNormalPtr = CloudXYZRGBNormal::Ptr;
-        using CloudXYZRGBNormalConstPtr = CloudXYZRGBNormal::ConstPtr;
+        typedef pcl::PointXYZRGBNormal              PointXYZRGBNormal;
+        typedef pcl::PointCloud <PointXYZRGBNormal> CloudXYZRGBNormal;
+        typedef CloudXYZRGBNormal::Ptr              CloudXYZRGBNormalPtr;
+        typedef CloudXYZRGBNormal::ConstPtr         CloudXYZRGBNormalConstPtr;
 
-        using Mesh = pcl::ihs::Mesh;
-        using MeshPtr = pcl::ihs::MeshPtr;
-        using MeshConstPtr = pcl::ihs::MeshConstPtr;
+        typedef pcl::ihs::Mesh         Mesh;
+        typedef pcl::ihs::MeshPtr      MeshPtr;
+        typedef pcl::ihs::MeshConstPtr MeshConstPtr;
 
         /** \brief How to draw the mesh. */
-        enum MeshRepresentation
+        typedef enum MeshRepresentation
         {
           MR_POINTS, /**< Draw the points. */
           MR_EDGES,  /**< Wireframe represen of the mesh. */
           MR_FACES   /**< Draw the faces of the mesh without edges. */
-        };
+        } MeshRepresentation;
 
         /** \brief How to color the shapes. */
-        enum Coloring
+        typedef enum Coloring
         {
           COL_RGB,       /**< Coloring according to the rgb values. */
           COL_ONE_COLOR, /**< Use one color for all points. */
           COL_VISCONF    /**< Coloring according to the visibility confidence. */
-        };
+        } Coloring;
 
         /** \brief Coefficients for the wireframe box. */
         class BoxCoefficients
@@ -167,11 +165,12 @@ namespace pcl
             Eigen::Isometry3d transformation;
 
           public:
-            PCL_MAKE_ALIGNED_OPERATOR_NEW
+
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         };
 
         /** \brief Constructor. */
-        explicit OpenGLViewer (QWidget* parent=nullptr);
+        explicit OpenGLViewer (QWidget* parent=0);
 
         /** \brief Destructor. */
         ~OpenGLViewer ();
@@ -238,12 +237,12 @@ namespace pcl
         setVisibilityConfidenceNormalization (const float vis_conf_norm);
 
         /** \see http://doc.qt.digia.com/qt/qwidget.html#minimumSizeHint-prop */
-        QSize
-        minimumSizeHint () const override;
+        virtual QSize
+        minimumSizeHint () const;
 
         /** \see http://doc.qt.digia.com/qt/qwidget.html#sizeHint-prop */
-        QSize
-        sizeHint () const override;
+        virtual QSize
+        sizeHint () const;
 
         /** \brief Set the scaling factor to convert from meters to the unit of the drawn files. */
         void
@@ -323,26 +322,26 @@ namespace pcl
         /** \see http://doc.qt.digia.com/qt/qwidget.html#paintEvent
           * \see http://doc.qt.digia.com/qt/opengl-overpainting.html
           */
-        void
-        paintEvent (QPaintEvent* event) override;
+        virtual void
+        paintEvent (QPaintEvent* event);
 
       private:
 
-        using Color = Eigen::Matrix <unsigned char, 3, 1             >;
-        using Colors = Eigen::Matrix <unsigned char, 3, Eigen::Dynamic>;
-        using Colormap = Eigen::Matrix <unsigned char, 3, 256           >;
+        typedef Eigen::Matrix <unsigned char, 3, 1             > Color;
+        typedef Eigen::Matrix <unsigned char, 3, Eigen::Dynamic> Colors;
+        typedef Eigen::Matrix <unsigned char, 3, 256           > Colormap;
 
-        using CloudXYZRGBNormalMap = std::unordered_map <std::string, CloudXYZRGBNormalPtr>;
+        typedef boost::unordered_map <std::string, CloudXYZRGBNormalPtr> CloudXYZRGBNormalMap;
 
-        using PointIHS = pcl::ihs::PointIHS;
-        using CloudIHS = pcl::ihs::CloudIHS;
-        using CloudIHSPtr = pcl::ihs::CloudIHSPtr;
-        using CloudIHSConstPtr = pcl::ihs::CloudIHSConstPtr;
+        typedef pcl::ihs::PointIHS         PointIHS;
+        typedef pcl::ihs::CloudIHS         CloudIHS;
+        typedef pcl::ihs::CloudIHSPtr      CloudIHSPtr;
+        typedef pcl::ihs::CloudIHSConstPtr CloudIHSConstPtr;
 
-        using FaceVertexMesh = pcl::ihs::detail::FaceVertexMesh;
-        using FaceVertexMeshPtr = std::shared_ptr<FaceVertexMesh>;
-        using FaceVertexMeshConstPtr = std::shared_ptr<const FaceVertexMesh>;
-        using FaceVertexMeshMap = std::unordered_map <std::string, FaceVertexMeshPtr>;
+        typedef pcl::ihs::detail::FaceVertexMesh                      FaceVertexMesh;
+        typedef boost::shared_ptr <      FaceVertexMesh>              FaceVertexMeshPtr;
+        typedef boost::shared_ptr <const FaceVertexMesh>              FaceVertexMeshConstPtr;
+        typedef boost::unordered_map <std::string, FaceVertexMeshPtr> FaceVertexMeshMap;
 
         /** \brief Check if the mesh with the given id is added.
           * \note Must lock the mutex before calling this method.
@@ -366,7 +365,7 @@ namespace pcl
 
         /** \see http://doc.qt.digia.com/qt/qglwidget.html#initializeGL */
         void
-        initializeGL () override;
+        initializeGL ();
 
         /** \see http://www.opengl.org/sdk/docs/man/xhtml/glViewport.xml */
         void
@@ -374,29 +373,29 @@ namespace pcl
 
         /** \see http://doc.qt.digia.com/qt/qglwidget.html#resizeGL */
         void
-        resizeGL (int w, int h) override;
+        resizeGL (int w, int h);
 
         /** \see http://doc.qt.digia.com/qt/qwidget.html#mousePressEvent */
         void
-        mousePressEvent (QMouseEvent* event) override;
+        mousePressEvent (QMouseEvent* event);
 
         /** \see http://doc.qt.digia.com/qt/qwidget.html#mouseMoveEvent */
         void
-        mouseMoveEvent (QMouseEvent* event) override;
+        mouseMoveEvent (QMouseEvent* event);
 
         /** \see http://doc.qt.digia.com/qt/qwidget.html#wheelEvent */
         void
-        wheelEvent (QWheelEvent* event) override;
+        wheelEvent (QWheelEvent* event);
 
         ////////////////////////////////////////////////////////////////////////
         // Members
         ////////////////////////////////////////////////////////////////////////
 
         /** \brief Synchronization. */
-        std::mutex mutex_vis_;
+        boost::mutex mutex_vis_;
 
         /** \brief Visualization timer. */
-        std::shared_ptr<QTimer> timer_vis_;
+        boost::shared_ptr <QTimer> timer_vis_;
 
         /** \brief Colormap. */
         Colormap colormap_;
@@ -444,7 +443,8 @@ namespace pcl
         int y_prev_;
 
       public:
-        PCL_MAKE_ALIGNED_OPERATOR_NEW
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
   } // End namespace ihs
 } // End namespace pcl
@@ -452,3 +452,5 @@ namespace pcl
 // http://doc.qt.digia.com/qt/qmetatype.html#Q_DECLARE_METATYPE
 Q_DECLARE_METATYPE (pcl::ihs::OpenGLViewer::MeshRepresentation)
 Q_DECLARE_METATYPE (pcl::ihs::OpenGLViewer::Coloring)
+
+#endif // PCL_APPS_IN_HAND_SCANNER_OPENGL_VIEWER_H

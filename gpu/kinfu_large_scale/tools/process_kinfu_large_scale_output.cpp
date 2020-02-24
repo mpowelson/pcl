@@ -102,8 +102,8 @@ main (int argc, char** argv)
     pcl::gpu::kinfuLS::StandaloneMarchingCubes<pcl::PointXYZI> m_cubes (pcl::device::kinfuLS::VOLUME_X, pcl::device::kinfuLS::VOLUME_Y, pcl::device::kinfuLS::VOLUME_Z, volume_size);
 
     //~ //Creating the output
-    //~ pcl::PolygonMesh::Ptr mesh_ptr_;
-    //~ std::vector< pcl::PolygonMesh::Ptr > meshes;
+    //~ boost::shared_ptr<pcl::PolygonMesh> mesh_ptr_;
+    //~ std::vector< boost::shared_ptr<pcl::PolygonMesh> > meshes;
 
     m_cubes.getMeshesFromTSDFVector (clouds, transforms);
 

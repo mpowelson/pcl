@@ -37,9 +37,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEGMENTATION_COMPARATOR_H_
+#define PCL_SEGMENTATION_COMPARATOR_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/point_cloud.h>
 
 namespace pcl
@@ -53,12 +53,12 @@ namespace pcl
   class Comparator
   {
     public:
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
-      using Ptr = shared_ptr<Comparator<PointT> >;
-      using ConstPtr = shared_ptr<const Comparator<PointT> >;
+      typedef boost::shared_ptr<Comparator<PointT> > Ptr;
+      typedef boost::shared_ptr<const Comparator<PointT> > ConstPtr;
 
       /** \brief Empty constructor for comparator. */
       Comparator () : input_ ()
@@ -98,6 +98,8 @@ namespace pcl
     protected:
       PointCloudConstPtr input_;
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
+
+#endif //#ifndef _PCL_SEGMENTATION_COMPARATOR_H_

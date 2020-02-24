@@ -35,16 +35,16 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_DEPTH_SENSE_GRABBER_IMPL_H
+#define PCL_IO_DEPTH_SENSE_GRABBER_IMPL_H
+
+#include <boost/thread/mutex.hpp>
+
+#include <DepthSense.hxx>
 
 #include <pcl/common/time.h>
 #include <pcl/io/buffers.h>
 #include <pcl/io/depth_sense_grabber.h>
-
-#include <DepthSense.hxx>
-
-#include <memory>
-#include <mutex>
 
 namespace pcl
 {
@@ -69,10 +69,10 @@ namespace pcl
         int confidence_threshold_;
         DepthSenseGrabber::TemporalFilteringType temporal_filtering_type_;
 
-        std::shared_ptr<DepthSense::ProjectionHelper> projection_;
+        boost::shared_ptr<DepthSense::ProjectionHelper> projection_;
 
-        using sig_cb_depth_sense_point_cloud = DepthSenseGrabber::sig_cb_depth_sense_point_cloud;
-        using sig_cb_depth_sense_point_cloud_rgba = DepthSenseGrabber::sig_cb_depth_sense_point_cloud_rgba;
+        typedef DepthSenseGrabber::sig_cb_depth_sense_point_cloud sig_cb_depth_sense_point_cloud;
+        typedef DepthSenseGrabber::sig_cb_depth_sense_point_cloud_rgba sig_cb_depth_sense_point_cloud_rgba;
 
         /// Signal to indicate whether new XYZ cloud is available
         boost::signals2::signal<sig_cb_depth_sense_point_cloud>* point_cloud_signal_;
@@ -88,12 +88,12 @@ namespace pcl
         bool need_xyzrgba_;
 
         EventFrequency frequency_;
-        mutable std::mutex fps_mutex_;
+        mutable boost::mutex fps_mutex_;
 
         /// Temporary buffer to store color data
-        std::vector<std::uint8_t> color_data_;
+        std::vector<uint8_t> color_data_;
 
-        std::shared_ptr<pcl::io::Buffer<float> > depth_buffer_;
+        boost::shared_ptr<pcl::io::Buffer<float> > depth_buffer_;
 
         static const int FRAMERATE = 30;
         static const int WIDTH = 320;
@@ -105,7 +105,7 @@ namespace pcl
 
         DepthSenseGrabberImpl (DepthSenseGrabber* parent, const std::string& device_id);
 
-        ~DepthSenseGrabberImpl () noexcept;
+        ~DepthSenseGrabberImpl () throw ();
 
         void
         start ();
@@ -120,7 +120,7 @@ namespace pcl
         setConfidenceThreshold (int threshold);
 
         void
-        enableTemporalFiltering (DepthSenseGrabber::TemporalFilteringType type, std::size_t window_size);
+        enableTemporalFiltering (DepthSenseGrabber::TemporalFilteringType type, size_t window_size);
 
         void
         setCameraParameters (const DepthSense::StereoCameraParameters& parameters);
@@ -155,3 +155,6 @@ namespace pcl
   }
 
 }
+
+#endif /* PCL_IO_DEPTH_SENSE_GRABBER_IMPL_H */
+

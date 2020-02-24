@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GEOMETRY_MESH_CONVERSION_H
+#define PCL_GEOMETRY_MESH_CONVERSION_H
 
 #include <pcl/PolygonMesh.h>
 #include <pcl/conversions.h>
@@ -56,15 +57,15 @@ namespace pcl
     template <class HalfEdgeMeshT> void
     toFaceVertexMesh (const HalfEdgeMeshT& half_edge_mesh, pcl::PolygonMesh& face_vertex_mesh)
     {
-      using HalfEdgeMesh = HalfEdgeMeshT;
-      using VAFC = typename HalfEdgeMesh::VertexAroundFaceCirculator;
-      using FaceIndex = typename HalfEdgeMesh::FaceIndex;
+      typedef HalfEdgeMeshT HalfEdgeMesh;
+      typedef typename HalfEdgeMesh::VertexAroundFaceCirculator VAFC;
+      typedef typename HalfEdgeMesh::FaceIndex FaceIndex;
 
       pcl::Vertices polygon;
       pcl::toPCLPointCloud2 (half_edge_mesh.getVertexDataCloud (), face_vertex_mesh.cloud);
 
       face_vertex_mesh.polygons.reserve (half_edge_mesh.sizeFaces ());
-      for (std::size_t i=0; i<half_edge_mesh.sizeFaces (); ++i)
+      for (size_t i=0; i<half_edge_mesh.sizeFaces (); ++i)
       {
         VAFC       circ     = half_edge_mesh.getVertexAroundFaceCirculator (FaceIndex (i));
         const VAFC circ_end = circ;
@@ -87,11 +88,12 @@ namespace pcl
     template <class HalfEdgeMeshT> int
     toHalfEdgeMesh (const pcl::PolygonMesh& face_vertex_mesh, HalfEdgeMeshT& half_edge_mesh)
     {
-      using HalfEdgeMesh = HalfEdgeMeshT;
-      using VertexDataCloud = typename HalfEdgeMesh::VertexDataCloud;
-      using VertexIndices = typename HalfEdgeMesh::VertexIndices;
+      typedef HalfEdgeMeshT                          HalfEdgeMesh;
+      typedef typename HalfEdgeMesh::VertexDataCloud VertexDataCloud;
+      typedef typename HalfEdgeMesh::VertexIndex     VertexIndex;
+      typedef typename HalfEdgeMesh::VertexIndices   VertexIndices;
 
-      static_assert (HalfEdgeMesh::HasVertexData::value, "Output mesh must have data associated with the vertices!");
+      BOOST_STATIC_ASSERT (HalfEdgeMesh::HasVertexData::value); // Output mesh must have data associated with the vertices!
 
       VertexDataCloud vertices;
       pcl::fromPCLPointCloud2 (face_vertex_mesh.cloud, vertices);
@@ -100,9 +102,9 @@ namespace pcl
       half_edge_mesh.reserveEdges (3 * face_vertex_mesh.polygons.size ());
       half_edge_mesh.reserveFaces (    face_vertex_mesh.polygons.size ());
 
-      for (const auto &vertex : vertices)
+      for (typename VertexDataCloud::const_iterator it=vertices.begin (); it!=vertices.end (); ++it)
       {
-        half_edge_mesh.addVertex (vertex);
+        half_edge_mesh.addVertex (*it);
       }
 
       assert (half_edge_mesh.sizeVertices () == vertices.size ());
@@ -110,12 +112,12 @@ namespace pcl
       int count_not_added = 0;
       VertexIndices vi;
       vi.reserve (3); // Minimum number (triangle)
-      for (const auto &polygon : face_vertex_mesh.polygons)
+      for (size_t i=0; i<face_vertex_mesh.polygons.size (); ++i)
       {
         vi.clear ();
-        for (const unsigned int &vertex : polygon.vertices)
+        for (size_t j=0; j<face_vertex_mesh.polygons [i].vertices.size (); ++j)
         {
-          vi.emplace_back (vertex);
+          vi.push_back (VertexIndex (face_vertex_mesh.polygons [i].vertices [j]));
         }
 
         if (!half_edge_mesh.addFace (vi).isValid ())
@@ -128,3 +130,5 @@ namespace pcl
     }
   } // End namespace geometry
 } // End namespace pcl
+
+#endif // PCL_GEOMETRY_MESH_CONVERSION_H

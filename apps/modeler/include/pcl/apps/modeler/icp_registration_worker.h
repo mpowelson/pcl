@@ -34,7 +34,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MODELER_ICP_REGISTRATION_WORKER_H_
+#define PCL_MODELER_ICP_REGISTRATION_WORKER_H_
 
 #include <pcl/apps/modeler/abstract_worker.h>
 #include <pcl/apps/modeler/cloud_mesh.h>
@@ -49,21 +50,21 @@ namespace pcl
     class ICPRegistrationWorker : public AbstractWorker 
     {
       public:
-        ICPRegistrationWorker(CloudMesh::PointCloudPtr cloud, const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=nullptr);
-        ~ICPRegistrationWorker();
+        ICPRegistrationWorker(CloudMesh::PointCloudPtr cloud, const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=0);
+        ~ICPRegistrationWorker(void);
 
       protected:
-        std::string
-        getName () const override {return ("Normal Estimation");}
+        virtual std::string
+        getName () const {return ("Normal Estimation");}
 
-        void
-        initParameters(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        initParameters(CloudMeshItem* cloud_mesh_item);
 
-        void
-        setupParameters() override;
+        virtual void
+        setupParameters();
 
-        void
-        processImpl(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        processImpl(CloudMeshItem* cloud_mesh_item);
 
       private:
         CloudMesh::PointCloudPtr    cloud_;
@@ -80,3 +81,5 @@ namespace pcl
 
   }
 }
+
+#endif // PCL_MODELER_ICP_REGISTRATION_WORKER_H_

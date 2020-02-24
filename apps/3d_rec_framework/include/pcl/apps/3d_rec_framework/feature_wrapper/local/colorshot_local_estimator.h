@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_COLORSHOT_LOCAL_ESTIMATOR_H_
+#define REC_FRAMEWORK_COLORSHOT_LOCAL_ESTIMATOR_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/local/local_estimator.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/normal_estimator.h>
@@ -20,8 +21,8 @@ namespace pcl
       class ColorSHOTLocalEstimation : public LocalEstimator<PointInT, FeatureT>
       {
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
-        using FeatureTPtr = typename pcl::PointCloud<FeatureT>::Ptr;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
+        typedef typename pcl::PointCloud<FeatureT>::Ptr FeatureTPtr;
 
         using LocalEstimator<PointInT, FeatureT>::support_radius_;
         using LocalEstimator<PointInT, FeatureT>::normal_estimator_;
@@ -61,7 +62,7 @@ namespace pcl
           }
 
           //compute signatures
-          using SHOTEstimator = pcl::SHOTColorEstimation<PointInT, pcl::Normal, pcl::SHOT1344>;
+          typedef typename pcl::SHOTColorEstimation<PointInT, pcl::Normal, pcl::SHOT1344> SHOTEstimator;
           typename pcl::search::KdTree<PointInT>::Ptr tree (new pcl::search::KdTree<PointInT>);
 
           pcl::PointCloud<pcl::SHOT1344>::Ptr shots (new pcl::PointCloud<pcl::SHOT1344>);
@@ -78,7 +79,7 @@ namespace pcl
 
           int size_feat = sizeof(signatures->points[0].histogram) / sizeof(float);
 
-          for (std::size_t k = 0; k < shots->points.size (); k++)
+          for (size_t k = 0; k < shots->points.size (); k++)
             for (int i = 0; i < size_feat; i++)
               signatures->points[k].histogram[i] = shots->points[k].descriptor[i];
 
@@ -89,3 +90,5 @@ namespace pcl
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_COLORSHOT_LOCAL_ESTIMATOR_H_ */

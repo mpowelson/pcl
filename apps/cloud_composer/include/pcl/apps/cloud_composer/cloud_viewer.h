@@ -35,13 +35,13 @@
  *
  */
 
-#pragma once
-
-#include <QTabWidget>
+#ifndef CLOUD_VIEWER_H_
+#define CLOUD_VIEWER_H_
 
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/apps/cloud_composer/project_model.h>
 #include <pcl/apps/cloud_composer/cloud_view.h>
+#include <pcl/apps/cloud_composer/qt.h>
 
 namespace pcl
 {
@@ -58,8 +58,8 @@ namespace pcl
 
       public:
         
-        CloudViewer (QWidget* parent = nullptr);
-        ~CloudViewer();
+        CloudViewer (QWidget* parent = 0);
+        virtual ~CloudViewer();
         ProjectModel* getModel () const;
 
       public Q_SLOTS:
@@ -78,8 +78,9 @@ namespace pcl
 
       private:
         
-        pcl::visualization::PCLVisualizer::Ptr vis_;
+        boost::shared_ptr<pcl::visualization::PCLVisualizer> vis_;
         QMap <ProjectModel*, CloudView*> model_view_map_;
     };
   }
 }
+#endif

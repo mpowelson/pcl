@@ -243,7 +243,6 @@ namespace pcl
         case 0:	return EdgeIndex(o,(i+1)%2,j);
         case 2:	return EdgeIndex(o,i,(j+1)%2);
         };
-        break;
       case 2:	return EdgeIndex(o,i,(j+1)%2);
       };
       return -1;

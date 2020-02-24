@@ -38,7 +38,6 @@
  */
 
 #define SHOW_FPS 1
-
 #include <pcl/apps/timer.h>
 #include <pcl/common/common.h>
 #include <pcl/io/openni_grabber.h>
@@ -49,21 +48,17 @@
 #include <pcl/console/print.h>
 #include <pcl/console/parse.h>
 
-#include <mutex>
-#include <thread>
-
-using namespace std::chrono_literals;
 using namespace pcl;
-using PointT = PointXYZRGBA;
-using KeyPointT = PointXYZI;
+typedef PointXYZRGBA PointT;
+typedef PointXYZI KeyPointT;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TrajkovicDemo
 {
   public:
-    using Cloud = PointCloud<PointT>;
-    using CloudPtr = Cloud::Ptr;
-    using CloudConstPtr = Cloud::ConstPtr;
+    typedef PointCloud<PointT> Cloud;
+    typedef Cloud::Ptr CloudPtr;
+    typedef Cloud::ConstPtr CloudConstPtr;
 
   TrajkovicDemo (Grabber& grabber, bool enable_3d)
       : cloud_viewer_ ("TRAJKOVIC 3D Keypoints -- PointCloud")
@@ -78,7 +73,7 @@ class TrajkovicDemo
     cloud_callback_3d (const CloudConstPtr& cloud)
     {
       FPS_CALC ("cloud callback");
-      std::lock_guard<std::mutex> lock (cloud_mutex_);
+      boost::mutex::scoped_lock lock (cloud_mutex_);
       cloud_ = cloud;
 
       // Compute TRAJKOVIC keypoints 3D
@@ -95,7 +90,7 @@ class TrajkovicDemo
     cloud_callback_2d (const CloudConstPtr& cloud)
     {
       FPS_CALC ("cloud callback");
-      std::lock_guard<std::mutex> lock (cloud_mutex_);
+      boost::mutex::scoped_lock lock (cloud_mutex_);
       cloud_ = cloud;
 
       // Compute TRAJKOVIC keypoints 2D
@@ -111,11 +106,11 @@ class TrajkovicDemo
     void
     init ()
     {
-      std::function<void (const CloudConstPtr&) > cloud_cb;
+      boost::function<void (const CloudConstPtr&) > cloud_cb;
       if (enable_3d_)
-        cloud_cb = [this] (const CloudConstPtr& cloud) { cloud_callback_3d (cloud); };
+        cloud_cb = boost::bind (&TrajkovicDemo::cloud_callback_3d, this, _1);
       else
-        cloud_cb = [this] (const CloudConstPtr& cloud) { cloud_callback_2d (cloud); };
+        cloud_cb = boost::bind (&TrajkovicDemo::cloud_callback_2d, this, _1);
 
       cloud_connection = grabber_.registerCallback (cloud_cb);
     }
@@ -152,11 +147,12 @@ class TrajkovicDemo
 
         if (cloud)
         {
+          int w (cloud->width);
           if (!cloud_init)
           {
             cloud_viewer_.setPosition (0, 0);
             cloud_viewer_.setSize (cloud->width, cloud->height);
-            cloud_init = true;
+            cloud_init = !cloud_init;
           }
 
           if (!cloud_viewer_.updatePointCloud (cloud, "OpenNICloud"))
@@ -169,7 +165,7 @@ class TrajkovicDemo
           {
             image_viewer_.setPosition (cloud->width, 0);
             image_viewer_.setSize (cloud->width, cloud->height);
-            image_init = true;
+            image_init = !image_init;
           }
 
           image_viewer_.addRGBImage<PointT> (cloud);
@@ -179,10 +175,12 @@ class TrajkovicDemo
             image_viewer_.removeLayer (getStrBool (keypts));
             std::vector<int> uv;
             uv.reserve (keypoints_indices_->indices.size () * 2);
-            for (const int &index : keypoints_indices_->indices)
+            for (std::vector<int>::const_iterator id = keypoints_indices_->indices.begin ();
+                 id != keypoints_indices_->indices.end ();
+                 ++id)
             {
-              int u (index % cloud->width);
-              int v (index / cloud->width);
+              int u (*id % w);
+              int v (*id / w);
               image_viewer_.markPoint (u, v, visualization::red_color, visualization::blue_color, 5, getStrBool (!keypts), 0.5);
             }
             keypts = !keypts;
@@ -197,7 +195,7 @@ class TrajkovicDemo
 
         cloud_viewer_.spinOnce ();
         image_viewer_.spinOnce ();
-        std::this_thread::sleep_for(100us);
+        boost::this_thread::sleep (boost::posix_time::microseconds (100));
       }
 
       grabber_.stop ();
@@ -206,7 +204,7 @@ class TrajkovicDemo
 
     visualization::PCLVisualizer cloud_viewer_;
     Grabber& grabber_;
-    std::mutex cloud_mutex_;
+    boost::mutex cloud_mutex_;
     CloudConstPtr cloud_;
 
     visualization::ImageViewer image_viewer_;

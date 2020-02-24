@@ -47,7 +47,7 @@ namespace pcl
 {
     namespace device
     {           
-        using PointType = OctreeImpl::PointType;
+        typedef OctreeImpl::PointType PointType;
 
         template<typename RadiusStrategy, typename FetchStrategy>
         struct Batch : public RadiusStrategy, public FetchStrategy
@@ -132,7 +132,7 @@ namespace pcl
         struct Warp_radiusSearch
         {   
         public:                
-            using OctreeIterator = OctreeIteratorDeviceNS;
+            typedef OctreeIteratorDeviceNS OctreeIterator;
 
             const BatchType& batch;
             OctreeIterator iterator;        
@@ -155,7 +155,7 @@ namespace pcl
                 else                
                     query_index = -1;
 
-                while(__any_sync(0xFFFFFFFF, active))
+                while(__any(active))
                 {                
                     int leaf = -1;                
 
@@ -217,7 +217,7 @@ namespace pcl
 
             __device__ __forceinline__ void processLeaf(int leaf)
             {   
-                int mask = __ballot_sync(0xFFFFFFFF, leaf != -1);            
+                int mask = __ballot(leaf != -1);            
 
                 while(mask)
                 {                
@@ -255,7 +255,7 @@ namespace pcl
                     int *out = batch.output + active_query_index * batch.max_results + active_found_count;                    
                     int length_left = batch.max_results - active_found_count;
 
-                    int test = __any_sync(0xFFFFFFFF, active_lane == laneId && (leaf & KernelPolicy::CHECK_FLAG));
+                    int test = __any(active_lane == laneId && (leaf & KernelPolicy::CHECK_FLAG));
 
                     if (test)
                     {                                        
@@ -329,7 +329,7 @@ namespace pcl
                     total_new += new_nodes;
                     out += new_nodes;                
 
-                    if (__all_sync(0xFFFFFFFF, idx >= length) || __any_sync(0xFFFFFFFF, out_of_bounds) || total_new == length_left)
+                    if (__all(idx >= length) || __any(out_of_bounds) || total_new == length_left)
                         break;
                 }
                 return min(total_new, length_left);
@@ -343,7 +343,7 @@ namespace pcl
 
             bool active = query_index < batch.queries.size;
 
-            if (__all_sync(0xFFFFFFFF, active == false)) 
+            if (__all(active == false)) 
                 return;
 
             Warp_radiusSearch<BatchType> search(batch, query_index);
@@ -378,7 +378,7 @@ void pcl::device::OctreeImpl::radiusSearchEx(BatchType& batch, const Queries& qu
 
 void pcl::device::OctreeImpl::radiusSearch(const Queries& queries, float radius, NeighborIndices& results)
 {        
-    using BatchType = Batch<SharedRadius, DirectQuery>;
+    typedef Batch<SharedRadius, DirectQuery> BatchType;
 
     BatchType batch;
     batch.radius = radius;
@@ -388,7 +388,7 @@ void pcl::device::OctreeImpl::radiusSearch(const Queries& queries, float radius,
 
 void pcl::device::OctreeImpl::radiusSearch(const Queries& queries, const Radiuses& radiuses, NeighborIndices& results)
 {
-    using BatchType = Batch<IndividualRadius, DirectQuery>;
+    typedef Batch<IndividualRadius, DirectQuery> BatchType;
 
     BatchType batch;
     batch.radiuses = radiuses;
@@ -398,7 +398,7 @@ void pcl::device::OctreeImpl::radiusSearch(const Queries& queries, const Radiuse
 
 void pcl::device::OctreeImpl::radiusSearch(const Queries& queries, const Indices& indices, float radius, NeighborIndices& results)
 {
-    using BatchType = Batch<SharedRadius, IndicesQuery>;
+    typedef Batch<SharedRadius, IndicesQuery> BatchType;
 
     BatchType batch;
     batch.radius = radius;

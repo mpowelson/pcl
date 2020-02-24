@@ -148,7 +148,7 @@ void ON_SerialNumberMap::EmptyList()
   m_sn_block0.EmptyBlock();
   if (m_snblk_list)
   {
-    std::size_t i = m_snblk_list_capacity;
+    size_t i = m_snblk_list_capacity;
     while(i--)
     {
       if ( 0 != m_snblk_list[i] )
@@ -185,7 +185,7 @@ void ON_SerialNumberMap::SN_BLOCK::CullBlockHelper()
   // This function removes all m_sn[] elements
   // that have 0 == m_sn_active.
 
-  std::size_t i, j;
+  size_t i, j;
   for (i = 0; i < m_count; i++ )
   {
     if ( 0 == m_sn[i].m_sn_active )
@@ -220,7 +220,7 @@ void ON_SerialNumberMap::SN_BLOCK::CullBlockHelper()
 
 /*
 The defines and #include generates a fast sorting function
-static void ON_qsort_SN_ELEMENT( struct ON_SerialNumberMap::SN_ELEMENT* base, std::size_t nel );
+static void ON_qsort_SN_ELEMENT( struct ON_SerialNumberMap::SN_ELEMENT* base, size_t nel );
 */
 
 #define ON_SORT_TEMPLATE_COMPARE compare_SN_ELEMENT_sn
@@ -268,7 +268,7 @@ void ON_SerialNumberMap::SN_BLOCK::SortBlockHelper()
     ON_qsort_SN_ELEMENT(m_sn, m_count);
 #else
     // Heap sort
-    std::size_t i, j, k, i_end;
+    size_t i, j, k, i_end;
     struct SN_ELEMENT e_tmp;
     struct SN_ELEMENT* e;
 
@@ -330,10 +330,10 @@ static bool ON_SerialNumberMap_IsNotValidBlock()
 
 bool ON_SerialNumberMap::SN_BLOCK::IsValidBlock(ON_TextLog* textlog, 
                                                 struct SN_ELEMENT*const* hash_table,
-                                                std::size_t* active_id_count) const
+                                                size_t* active_id_count) const
 {
   unsigned int sn0, sn;
-  std::size_t i, pc, aidcnt;
+  size_t i, pc, aidcnt;
 
   if ( m_count > SN_BLOCK_CAPACITY )
   {
@@ -497,7 +497,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::SN_BLOCK::BinarySearc
   //   m_count > 0
   //   m_sn0 <= sn <= m_sn1.
 
-  std::size_t i, j;
+  size_t i, j;
   struct SN_ELEMENT* e;
   unsigned int midsn;
 
@@ -535,7 +535,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FindElementHelper(uns
 {
   struct SN_BLOCK** eblk_array;
   struct SN_BLOCK* eblk;
-  std::size_t i, j;
+  size_t i, j;
 
   if ( m_maxsn < sn )
     return 0; // happens almost every time an object is added to the doc
@@ -656,12 +656,12 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FindElementHelper(uns
   return 0;
 }
 
-std::size_t ON_SerialNumberMap::ActiveSerialNumberCount() const
+size_t ON_SerialNumberMap::ActiveSerialNumberCount() const
 {
   return m_sn_count - m_sn_purged;
 }
 
-std::size_t ON_SerialNumberMap::ActiveIdCount() const
+size_t ON_SerialNumberMap::ActiveIdCount() const
 {
   return m_active_id_count;
 }
@@ -669,7 +669,7 @@ std::size_t ON_SerialNumberMap::ActiveIdCount() const
 struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FirstElement() const
 {
   struct SN_ELEMENT* e=0;
-  std::size_t i,j;
+  size_t i,j;
 
   // The first element is likely to be m_snblk_list[0]->m_sn[0]
   // so start looking there.
@@ -721,7 +721,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FirstElement() const
 struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::LastElement() const
 {
   struct SN_ELEMENT* e=0;
-  std::size_t i,j;
+  size_t i,j;
 
   // Last element is likely to be m_sn_block0.m_sn[m_sn_block0.m_count-1]
   // so start looking there.
@@ -776,7 +776,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FindSerialNumber(unsi
 struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FindId(ON_UUID id) const
 {
   struct SN_ELEMENT* e = 0;
-  std::size_t i;
+  size_t i;
 
   if ( m_active_id_count > 0 )
   {
@@ -800,14 +800,14 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::FindId(ON_UUID id) co
 }
 
 
-std::size_t ON_SerialNumberMap::GetElements(
+size_t ON_SerialNumberMap::GetElements(
         unsigned int sn0,
         unsigned int sn1, 
-        std::size_t max_count,
+        size_t max_count,
         ON_SimpleArray<SN_ELEMENT>& elements
         ) const
 {
-  std::size_t i,j,k,c;
+  size_t i,j,k,c;
   const SN_ELEMENT *ei, *ek;
 
   const int elements_count0 = elements.Count();
@@ -995,7 +995,7 @@ ON_SerialNumberMap::RemoveSerialNumberAndId(unsigned int sn)
       if ( m_bHashTableIsValid )
       {
         // Hash table is valid - remove the element from the table
-        std::size_t i = HashIndex(&e->m_id);
+        size_t i = HashIndex(&e->m_id);
         struct SN_ELEMENT* prev = 0;
         struct SN_ELEMENT* h;
         for ( h = m_hash_table[i]; h; h = h->m_next )
@@ -1074,7 +1074,7 @@ ON_SerialNumberMap::RemoveId(unsigned int sn, ON_UUID id)
 {
   struct SN_ELEMENT* e=0;
   struct SN_ELEMENT* prev;
-  std::size_t i;
+  size_t i;
   if ( m_active_id_count > 0 )
   {
     i = HashIndex(&id);
@@ -1143,9 +1143,9 @@ int ON_SerialNumberMap::SN_BLOCK::CompareMaxSN(const void* a, const void* b)
   return 0;
 }
 
-std::size_t ON_SerialNumberMap::SN_BLOCK::ActiveElementEstimate(unsigned int sn0, unsigned int sn1) const
+size_t ON_SerialNumberMap::SN_BLOCK::ActiveElementEstimate(unsigned int sn0, unsigned int sn1) const
 {
-  std::size_t c = m_count-m_purged;
+  size_t c = m_count-m_purged;
   if ( c > 0 )
   {
     if ( sn0 < m_sn0 )
@@ -1167,7 +1167,7 @@ static bool ON_SerialNumberMap_IsNotValid()
 
 bool ON_SerialNumberMap::IsValid(ON_TextLog* textlog) const
 {
-  std::size_t i, c, pc, aic;
+  size_t i, c, pc, aic;
 
   aic = 0;
 
@@ -1261,12 +1261,12 @@ bool ON_SerialNumberMap::IsValid(ON_TextLog* textlog) const
   return true;
 }
 
-std::size_t ON_SerialNumberMap::GarbageCollectMoveHelper(ON_SerialNumberMap::SN_BLOCK* dst,ON_SerialNumberMap::SN_BLOCK* src)
+size_t ON_SerialNumberMap::GarbageCollectMoveHelper(ON_SerialNumberMap::SN_BLOCK* dst,ON_SerialNumberMap::SN_BLOCK* src)
 {
   // This helper is used by GarbageCollectHelper and moves
   // as many entries as possible from src to dst.  
   // Returns: the number of entries transfered.
-  std::size_t i,j,n;
+  size_t i,j,n;
   if ( src && dst )
   {
     n = SN_BLOCK_CAPACITY - dst->m_count;
@@ -1327,7 +1327,7 @@ std::size_t ON_SerialNumberMap::GarbageCollectMoveHelper(ON_SerialNumberMap::SN_
 
 void ON_SerialNumberMap::GarbageCollectHelper()
 {
-  std::size_t i,j,k,n;
+  size_t i,j,k,n;
 
   // This is a helper function.  The caller
   // should check that SN_BLOCK_CAPACITY == m_sn_block0.m_count
@@ -1396,7 +1396,7 @@ void ON_SerialNumberMap::GarbageCollectHelper()
     // Merge the serial number lists so the blocks in m_sn_list[]
     // have the lowest serial numbers and m_sn_block0.m_sn[] contains
     // the largest.
-    std::size_t snarray_count = 0;
+    size_t snarray_count = 0;
     struct SN_ELEMENT* snarray = (struct SN_ELEMENT*)onmalloc_from_pool(m_pool,2*SN_BLOCK_CAPACITY*sizeof(snarray[0]));
     for ( i = 0; i < m_snblk_list_count && m_sn_block0.m_count > 0; i++ )
     {
@@ -1441,8 +1441,8 @@ void ON_SerialNumberMap::GarbageCollectHelper()
         while ( k < m_sn_block0.m_count && m_sn_block0.m_sn[k].m_sn < sn1 )
           snarray[snarray_count++] = m_sn_block0.m_sn[k++];
       }
-      n = (snarray_count > static_cast<std::size_t>(SN_BLOCK_CAPACITY))
-        ? static_cast<std::size_t>(SN_BLOCK_CAPACITY)
+      n = (snarray_count > SN_BLOCK_CAPACITY) 
+        ? SN_BLOCK_CAPACITY 
         : snarray_count;
       if ( k < m_sn_block0.m_count )
       {
@@ -1582,7 +1582,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::AddSerialNumber(unsig
 struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::AddSerialNumberAndId(unsigned int sn,ON_UUID id)
 {
   struct SN_ELEMENT* e = AddSerialNumber(sn);
-  std::size_t i;
+  size_t i;
 
   if ( 0 != e && 0 == e->m_id_active )
   {
@@ -1633,7 +1633,7 @@ struct ON_SerialNumberMap::SN_ELEMENT* ON_SerialNumberMap::AddSerialNumberAndId(
   return e;
 }
 
-std::size_t ON_SerialNumberMap::HashIndex(const ON_UUID* id) const
+size_t ON_SerialNumberMap::HashIndex(const ON_UUID* id) const
 {
   // this is a private member function and the caller
   // insures the id pointer is not null.
@@ -1688,7 +1688,7 @@ bool ON_SerialNumberMap::RemoveBlockFromHashTableHelper(const struct ON_SerialNu
     const SN_ELEMENT* e;
     SN_ELEMENT* h;
     SN_ELEMENT* prev;
-    std::size_t i, hash_i;
+    size_t i, hash_i;
     rc = true;
     for (e = blk->m_sn, i = blk->m_count; i--; e++)
     {
@@ -1723,7 +1723,7 @@ void ON_SerialNumberMap::AddBlockToHashTableHelper(struct ON_SerialNumberMap::SN
   if ( m_bHashTableIsValid )
   {
     SN_ELEMENT* e;
-    std::size_t i, hash_i;
+    size_t i, hash_i;
     for (e = blk->m_sn, i = blk->m_count; i--; e++)
     {
       if ( e->m_id_active )
@@ -1751,7 +1751,7 @@ void ON_SerialNumberMap::BuildHashTableHelper()
     {
       struct SN_BLOCK* blk;
       struct SN_ELEMENT* e;
-      std::size_t snblk_i, j, hash_i;
+      size_t snblk_i, j, hash_i;
       for ( snblk_i = 0; snblk_i < m_snblk_list_count; snblk_i++ )
       {
         blk = m_snblk_list[snblk_i];
@@ -1845,7 +1845,7 @@ void ON_SerialNumberMap::Dump(ON_TextLog& text_log) const
   m_sn_block0.Dump(text_log);
   text_log.PopIndent();
 
-  for ( std::size_t i = 0; i < m_snblk_list_count; i++ )
+  for ( size_t i = 0; i < m_snblk_list_count; i++ )
   {
     text_log.Print("m_snblk_list[%d]\n",i);
     text_log.PushIndent();

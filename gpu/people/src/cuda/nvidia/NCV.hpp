@@ -107,23 +107,23 @@ namespace NcvCTprep
 //
 //==============================================================================
 
-using NcvBool = bool;
-using Ncv64s = long long;
+typedef               bool NcvBool;
+typedef          long long Ncv64s;
 
 #if defined(__APPLE__) && !defined(__CUDACC__)
-    using Ncv64u = std::uint64_t;
+    typedef uint64_t Ncv64u;
 #else
-    using Ncv64u = unsigned long long;
+    typedef unsigned long long Ncv64u;
 #endif
 
-using Ncv32s = int;
-using Ncv32u = unsigned int;
-using Ncv16s = short;
-using Ncv16u = unsigned short;
-using Ncv8s = char;
-using Ncv8u = unsigned char;
-using Ncv32f = float;
-using Ncv64f = double;
+typedef                int Ncv32s;
+typedef       unsigned int Ncv32u;
+typedef              short Ncv16s;
+typedef     unsigned short Ncv16u;
+typedef               char Ncv8s;
+typedef      unsigned char Ncv8u;
+typedef              float Ncv32f;
+typedef             double Ncv64f;
 
 struct NcvRect8u
 {
@@ -223,7 +223,7 @@ const Ncv32u K_LOG2_WARP_SIZE = 5;
 
 NCV_EXPORTS void ncvDebugOutput(const std::string &msg);
 
-using NCVDebugOutputHandler = void (const std::string &);
+typedef void NCVDebugOutputHandler(const std::string &msg);
 
 NCV_EXPORTS void ncvSetDebugOutputHandler(NCVDebugOutputHandler* func);
 
@@ -334,7 +334,7 @@ enum
     NCV_LAST_STATUS                           ///< Marker to continue error numeration in other files
 };
 
-using NCVStatus = Ncv32u;
+typedef Ncv32u NCVStatus;
 
 #define NCV_SET_SKIP_COND(x) \
     bool __ncv_skip_cond = x
@@ -347,6 +347,22 @@ using NCVStatus = Ncv32u;
 
 #define NCV_SKIP_COND_END \
     }
+
+
+//==============================================================================
+//
+// Timer
+//
+//==============================================================================
+
+
+typedef struct _NcvTimer *NcvTimer;
+
+NCV_EXPORTS NcvTimer ncvStartTimer(void);
+
+NCV_EXPORTS double ncvEndQueryTimerUs(NcvTimer t);
+
+NCV_EXPORTS double ncvEndQueryTimerMs(NcvTimer t);
 
 
 //==============================================================================
@@ -391,7 +407,7 @@ struct NCV_EXPORTS NCVMemPtr
 struct NCV_EXPORTS NCVMemSegment
 {
     NCVMemPtr begin;
-    std::size_t size;
+    size_t size;
     void clear();
 };
 
@@ -404,15 +420,15 @@ class NCV_EXPORTS INCVMemAllocator
 public:
     virtual ~INCVMemAllocator() = 0;
 
-    virtual NCVStatus alloc(NCVMemSegment &seg, std::size_t size) = 0;
+    virtual NCVStatus alloc(NCVMemSegment &seg, size_t size) = 0;
     virtual NCVStatus dealloc(NCVMemSegment &seg) = 0;
 
-    virtual NcvBool isInitialized() const = 0;
-    virtual NcvBool isCounting() const = 0;
+    virtual NcvBool isInitialized(void) const = 0;
+    virtual NcvBool isCounting(void) const = 0;
     
-    virtual NCVMemoryType memType() const = 0;
-    virtual Ncv32u alignment() const = 0;
-    virtual std::size_t maxSize() const = 0;
+    virtual NCVMemoryType memType(void) const = 0;
+    virtual Ncv32u alignment(void) const = 0;
+    virtual size_t maxSize(void) const = 0;
 };
 
 inline INCVMemAllocator::~INCVMemAllocator() {}
@@ -429,18 +445,18 @@ class NCV_EXPORTS NCVMemStackAllocator : public INCVMemAllocator
 public:
 
     explicit NCVMemStackAllocator(Ncv32u alignment);
-    NCVMemStackAllocator(NCVMemoryType memT, std::size_t capacity, Ncv32u alignment, void *reusePtr=nullptr);
+    NCVMemStackAllocator(NCVMemoryType memT, size_t capacity, Ncv32u alignment, void *reusePtr=NULL);
     virtual ~NCVMemStackAllocator();
 
-    virtual NCVStatus alloc(NCVMemSegment &seg, std::size_t size);
+    virtual NCVStatus alloc(NCVMemSegment &seg, size_t size);
     virtual NCVStatus dealloc(NCVMemSegment &seg);
 
-    virtual NcvBool isInitialized() const;
-    virtual NcvBool isCounting() const;
+    virtual NcvBool isInitialized(void) const;
+    virtual NcvBool isCounting(void) const;
 
-    virtual NCVMemoryType memType() const;
-    virtual Ncv32u alignment() const;
-    virtual std::size_t maxSize() const;
+    virtual NCVMemoryType memType(void) const;
+    virtual Ncv32u alignment(void) const;
+    virtual size_t maxSize(void) const;
 
 private:
 
@@ -449,8 +465,8 @@ private:
     Ncv8u *allocBegin;
     Ncv8u *begin;
     Ncv8u *end;
-    std::size_t currentSize;
-    std::size_t _maxSize;
+    size_t currentSize;
+    size_t _maxSize;
     NcvBool bReusesMemory;
 };
 
@@ -465,15 +481,15 @@ public:
     NCVMemNativeAllocator(NCVMemoryType memT, Ncv32u alignment);
     virtual ~NCVMemNativeAllocator();
 
-    virtual NCVStatus alloc(NCVMemSegment &seg, std::size_t size);
+    virtual NCVStatus alloc(NCVMemSegment &seg, size_t size);
     virtual NCVStatus dealloc(NCVMemSegment &seg);
 
-    virtual NcvBool isInitialized() const;
-    virtual NcvBool isCounting() const;
+    virtual NcvBool isInitialized(void) const;
+    virtual NcvBool isCounting(void) const;
 
-    virtual NCVMemoryType memType() const;
-    virtual Ncv32u alignment() const;
-    virtual std::size_t maxSize() const;
+    virtual NCVMemoryType memType(void) const;
+    virtual Ncv32u alignment(void) const;
+    virtual size_t maxSize(void) const;
 
 private:
 
@@ -482,8 +498,8 @@ private:
 
     NCVMemoryType _memType;
     Ncv32u _alignment;
-    std::size_t currentSize;
-    std::size_t _maxSize;
+    size_t currentSize;
+    size_t _maxSize;
 };
 
 
@@ -492,7 +508,7 @@ private:
 */
 NCV_EXPORTS NCVStatus memSegCopyHelper(void *dst, NCVMemoryType dstType,
                                        const void *src, NCVMemoryType srcType,
-                                       std::size_t sz, cudaStream_t cuStream);
+                                       size_t sz, cudaStream_t cuStream);
 
 
 NCV_EXPORTS NCVStatus memSegCopyHelper2D(void *dst, Ncv32u dstPitch, NCVMemoryType dstType,
@@ -506,7 +522,7 @@ NCV_EXPORTS NCVStatus memSegCopyHelper2D(void *dst, Ncv32u dstPitch, NCVMemoryTy
 template <class T>
 class NCVVector
 {
-    NCVVector(const NCVVector &) = delete;
+    NCVVector(const NCVVector &);
 
 public:
 
@@ -519,12 +535,12 @@ public:
 
     void clear()
     {
-        _ptr = nullptr;
+        _ptr = NULL;
         _length = 0;
         _memtype = NCVMemoryTypeNone;
     }
 
-    NCVStatus copySolid(NCVVector<T> &dst, cudaStream_t cuStream, std::size_t howMuch=0) const
+    NCVStatus copySolid(NCVVector<T> &dst, cudaStream_t cuStream, size_t howMuch=0) const
     {
         if (howMuch == 0)
         {
@@ -537,8 +553,8 @@ public:
                 this->_length * sizeof(T) >= howMuch &&
                 howMuch > 0, NCV_MEM_COPY_ERROR);
         }
-        ncvAssertReturn((this->_ptr != nullptr || this->_memtype == NCVMemoryTypeNone) && 
-                        (dst._ptr != nullptr || dst._memtype == NCVMemoryTypeNone), NCV_NULL_PTR);
+        ncvAssertReturn((this->_ptr != NULL || this->_memtype == NCVMemoryTypeNone) && 
+                        (dst._ptr != NULL || dst._memtype == NCVMemoryTypeNone), NCV_NULL_PTR);
 
         NCVStatus ncvStat = NCV_SUCCESS;
         if (this->_memtype != NCVMemoryTypeNone)
@@ -552,13 +568,13 @@ public:
     }
 
     T *ptr() const {return this->_ptr;}
-    std::size_t length() const {return this->_length;}
+    size_t length() const {return this->_length;}
     NCVMemoryType memType() const {return this->_memtype;}
 
 protected:
 
     T *_ptr;
-    std::size_t _length;
+    size_t _length;
     NCVMemoryType _memtype;
 };
 
@@ -569,9 +585,9 @@ protected:
 template <class T>
 class NCVVectorAlloc : public NCVVector<T>
 {
-    NCVVectorAlloc() = delete;
-    NCVVectorAlloc(const NCVVectorAlloc &) = delete;
-    NCVVectorAlloc& operator=(const NCVVectorAlloc<T>&) = delete;	
+    NCVVectorAlloc();
+    NCVVectorAlloc(const NCVVectorAlloc &);
+    NCVVectorAlloc& operator=(const NCVVectorAlloc<T>&);	
 
 public:
 
@@ -604,7 +620,7 @@ public:
 
     NcvBool isMemAllocated() const
     {
-        return (this->allocatedMem.begin.ptr != nullptr) || (this->allocator.isCounting());
+        return (this->allocatedMem.begin.ptr != NULL) || (this->allocator.isCounting());
     }
 
     Ncv32u getAllocatorsAlignment() const
@@ -629,8 +645,8 @@ private:
 template <class T>
 class NCVVectorReuse : public NCVVector<T>
 {
-    NCVVectorReuse() = delete;
-    NCVVectorReuse(const NCVVectorReuse &) = delete;
+    NCVVectorReuse();
+    NCVVectorReuse(const NCVVectorReuse &);
 
 public:
 
@@ -678,7 +694,7 @@ private:
 template <class T>
 class NCVMatrix
 {
-    NCVMatrix(const NCVMatrix &) = delete;
+    NCVMatrix(const NCVMatrix &);
 
 public:
 
@@ -691,7 +707,7 @@ public:
 
     void clear()
     {
-        _ptr = nullptr;
+        _ptr = NULL;
         _pitch = 0;
         _width = 0;
         _height = 0;
@@ -704,7 +720,7 @@ public:
     }
 
     //a side effect of this function is that it copies everything in a single chunk, so the "padding" will be overwritten
-    NCVStatus copySolid(NCVMatrix<T> &dst, cudaStream_t cuStream, std::size_t howMuch=0) const
+    NCVStatus copySolid(NCVMatrix<T> &dst, cudaStream_t cuStream, size_t howMuch=0) const
     {
         if (howMuch == 0)
         {
@@ -718,8 +734,8 @@ public:
                             this->_pitch * this->_height >= howMuch &&
                             howMuch > 0, NCV_MEM_COPY_ERROR);
         }
-        ncvAssertReturn((this->_ptr != nullptr || this->_memtype == NCVMemoryTypeNone) && 
-                        (dst._ptr != nullptr || dst._memtype == NCVMemoryTypeNone), NCV_NULL_PTR);
+        ncvAssertReturn((this->_ptr != NULL || this->_memtype == NCVMemoryTypeNone) && 
+                        (dst._ptr != NULL || dst._memtype == NCVMemoryTypeNone), NCV_NULL_PTR);
 
         NCVStatus ncvStat = NCV_SUCCESS;
         if (this->_memtype != NCVMemoryTypeNone)
@@ -784,9 +800,9 @@ protected:
 template <class T>
 class NCVMatrixAlloc : public NCVMatrix<T>
 {
-    NCVMatrixAlloc() = delete;
-    NCVMatrixAlloc(const NCVMatrixAlloc &) = delete;
-    NCVMatrixAlloc& operator=(const NCVMatrixAlloc &) = delete;
+    NCVMatrixAlloc();
+    NCVMatrixAlloc(const NCVMatrixAlloc &);
+    NCVMatrixAlloc& operator=(const NCVMatrixAlloc &);
 public:
 
     NCVMatrixAlloc(INCVMemAllocator &allocator, Ncv32u width, Ncv32u height, Ncv32u pitch=0)
@@ -833,7 +849,7 @@ public:
 
     NcvBool isMemAllocated() const
     {
-        return (this->allocatedMem.begin.ptr != nullptr) || (this->allocator.isCounting());
+        return (this->allocatedMem.begin.ptr != NULL) || (this->allocator.isCounting());
     }
 
     Ncv32u getAllocatorsAlignment() const
@@ -859,8 +875,8 @@ private:
 template <class T>
 class NCVMatrixReuse : public NCVMatrix<T>
 {
-    NCVMatrixReuse() = delete;
-    NCVMatrixReuse(const NCVMatrixReuse &) = delete;
+    NCVMatrixReuse();
+    NCVMatrixReuse(const NCVMatrixReuse &);
 
 public:
 

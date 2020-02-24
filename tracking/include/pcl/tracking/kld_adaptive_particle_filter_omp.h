@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_KLD_ADAPTIVE_PARTICLE_FILTER_OMP_H_
+#define PCL_TRACKING_KLD_ADAPTIVE_PARTICLE_FILTER_OMP_H_
 
 #include <pcl/tracking/tracking.h>
 #include <pcl/tracking/kld_adaptive_particle_filter.h>
@@ -44,26 +45,23 @@ namespace pcl
       using KLDAdaptiveParticleFilterTracker<PointInT, StateT>::normalizeParticleWeight;
       using KLDAdaptiveParticleFilterTracker<PointInT, StateT>::calcBoundingBox;
 
-      using BaseClass = Tracker<PointInT, StateT>;
+      typedef Tracker<PointInT, StateT> BaseClass;
 
-      using Ptr = shared_ptr<KLDAdaptiveParticleFilterOMPTracker<PointInT, StateT>>;
-      using ConstPtr = shared_ptr<const KLDAdaptiveParticleFilterOMPTracker<PointInT, StateT>>;
+      typedef typename Tracker<PointInT, StateT>::PointCloudIn PointCloudIn;
+      typedef typename PointCloudIn::Ptr PointCloudInPtr;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
-      using PointCloudIn = typename Tracker<PointInT, StateT>::PointCloudIn;
-      using PointCloudInPtr = typename PointCloudIn::Ptr;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef typename Tracker<PointInT, StateT>::PointCloudState PointCloudState;
+      typedef typename PointCloudState::Ptr PointCloudStatePtr;
+      typedef typename PointCloudState::ConstPtr PointCloudStateConstPtr;
 
-      using PointCloudState = typename Tracker<PointInT, StateT>::PointCloudState;
-      using PointCloudStatePtr = typename PointCloudState::Ptr;
-      using PointCloudStateConstPtr = typename PointCloudState::ConstPtr;
+      typedef PointCoherence<PointInT> Coherence;
+      typedef boost::shared_ptr< Coherence > CoherencePtr;
+      typedef boost::shared_ptr< const Coherence > CoherenceConstPtr;
 
-      using Coherence = PointCoherence<PointInT>;
-      using CoherencePtr = typename Coherence::Ptr;
-      using CoherenceConstPtr = typename Coherence::ConstPtr;
-
-      using CloudCoherence = PointCloudCoherence<PointInT>;
-      using CloudCoherencePtr = typename CloudCoherence::Ptr;
-      using CloudCoherenceConstPtr = typename CloudCoherence::ConstPtr;
+      typedef PointCloudCoherence<PointInT> CloudCoherence;
+      typedef boost::shared_ptr< CloudCoherence > CloudCoherencePtr;
+      typedef boost::shared_ptr< const CloudCoherence > CloudCoherenceConstPtr;
 
       /** \brief Initialize the scheduler and set the number of threads to use.
         * \param nr_threads the number of hardware threads to use (0 sets the value back to automatic)
@@ -89,7 +87,7 @@ namespace pcl
       /** \brief weighting phase of particle filter method.
           calculate the likelihood of all of the particles and set the weights.
         */
-      void weight () override;
+      virtual void weight ();
 
     };
   }
@@ -98,4 +96,6 @@ namespace pcl
 //#include <pcl/tracking/impl/particle_filter_omp.hpp>
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/kld_adaptive_particle_filter_omp.hpp>
+#endif
+
 #endif

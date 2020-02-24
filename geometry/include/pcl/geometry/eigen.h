@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GEOMETRY_EIGEN_H
+#define PCL_GEOMETRY_EIGEN_H
 
 #ifdef __GNUC__
 #  pragma GCC system_header
@@ -46,3 +47,5 @@
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
+
+#endif // PCL_GEOMETRY_EIGEN_H

@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VISUALIZATION_EIGEN_H_
+#define PCL_VISUALIZATION_EIGEN_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -45,3 +46,5 @@
 
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
+
+#endif    // PCL_VISUALIZATION_EIGEN_H_

@@ -37,8 +37,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_TRIMMED_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_TRIMMED_H_
 
 #include <pcl/registration/correspondence_rejection.h>
 
@@ -67,8 +67,8 @@ namespace pcl
       using CorrespondenceRejector::getClassName;
 
       public:
-        using Ptr = shared_ptr<CorrespondenceRejectorTrimmed>;
-        using ConstPtr = shared_ptr<const CorrespondenceRejectorTrimmed>;
+        typedef boost::shared_ptr<CorrespondenceRejectorTrimmed> Ptr;
+        typedef boost::shared_ptr<const CorrespondenceRejectorTrimmed> ConstPtr;
 
         /** \brief Empty constructor. */
         CorrespondenceRejectorTrimmed () : 
@@ -79,7 +79,7 @@ namespace pcl
         }
 
         /** \brief Destructor. */
-        ~CorrespondenceRejectorTrimmed () {}
+        virtual ~CorrespondenceRejectorTrimmed () {}
 
         /** \brief Set the expected ratio of overlap between point clouds (in
           * terms of correspondences).
@@ -113,7 +113,7 @@ namespace pcl
           */
         void
         getRemainingCorrespondences (const pcl::Correspondences& original_correspondences,
-                                     pcl::Correspondences& remaining_correspondences) override;
+                                     pcl::Correspondences& remaining_correspondences);
 
       protected:
 
@@ -121,7 +121,7 @@ namespace pcl
           * \param[out] correspondences the set of resultant correspondences.
           */
         inline void 
-        applyRejection (pcl::Correspondences &correspondences) override
+        applyRejection (pcl::Correspondences &correspondences)
         {
           getRemainingCorrespondences (*input_correspondences_, correspondences);
         }
@@ -137,3 +137,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_rejection_trimmed.hpp>
+
+#endif    // PCL_REGISTRATION_CORRESPONDENCE_REJECTION_TRIMMED_H_

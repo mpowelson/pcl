@@ -43,7 +43,7 @@
 namespace openni_wrapper
 {
 
-OpenNIException::OpenNIException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message) noexcept
+OpenNIException::OpenNIException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message) throw ()
 : function_name_ (function_name)
 , file_name_ (file_name)
 , line_number_ (line_number)
@@ -54,11 +54,11 @@ OpenNIException::OpenNIException (const std::string& function_name, const std::s
   message_long_ = sstream.str();
 }
 
-OpenNIException::~OpenNIException () noexcept
+OpenNIException::~OpenNIException () throw ()
 {
 }
 
-OpenNIException& OpenNIException::operator = (const OpenNIException& exception) noexcept
+OpenNIException& OpenNIException::operator = (const OpenNIException& exception) throw ()
 {
   message_ = exception.message_;
   return *this;

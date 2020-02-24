@@ -34,8 +34,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#pragma once
+#ifndef PCL_POINT_CLOUD_COLOR_HANDLERS_H_
+#define PCL_POINT_CLOUD_COLOR_HANDLERS_H_
 
 #if defined __GNUC__
 #pragma GCC system_header
@@ -64,12 +64,12 @@ namespace pcl
     class PointCloudColorHandler
     {
       public:
-        using PointCloud = pcl::PointCloud<PointT>;
-        using PointCloudPtr = typename PointCloud::Ptr;
-        using PointCloudConstPtr = typename PointCloud::ConstPtr;
+        typedef pcl::PointCloud<PointT> PointCloud;
+        typedef typename PointCloud::Ptr PointCloudPtr;
+        typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
-        using Ptr = shared_ptr<PointCloudColorHandler<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandler<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandler<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandler<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandler () :
@@ -96,29 +96,13 @@ namespace pcl
         virtual std::string
         getFieldName () const = 0;
 
-        /** Obtain the actual color for the input dataset as a VTK data array.
-          * Deriving handlers should override this method. The default implementation is
-          * provided only for backwards compatibility with handlers that were written
-          * before PCL 1.10.0 and will be removed in future.
-          * \return smart pointer to VTK array if the operation was successful (the
-          * handler is capable and the input cloud was given), a null pointer otherwise */
-        virtual vtkSmartPointer<vtkDataArray>
-        getColor () const {
-          vtkSmartPointer<vtkDataArray> scalars;
-          getColor (scalars);
-          return scalars;
-        }
-
-        /** Obtain the actual color for the input dataset as a VTK data array.
-          * This virtual method should not be overriden or used. The default implementation
-          * is provided only for backwards compatibility with handlers that were written
-          * before PCL 1.10.0 and will be removed in future. */
-        [[deprecated("use getColor() without parameters instead")]]
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
         virtual bool
-        getColor (vtkSmartPointer<vtkDataArray> &scalars) const {
-          scalars = getColor ();
-          return scalars.Get() != nullptr;
-        }
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const = 0;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -153,13 +137,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerRandom : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRandom<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRandom<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRandom<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRandom<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRandom () :
@@ -183,10 +167,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("[random]"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         // Members derived from the base class
@@ -203,13 +190,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerCustom : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerCustom<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerCustom<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerCustom<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerCustom<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerCustom (double r, double g, double b)
@@ -243,10 +230,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return (""); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         // Members derived from the base class
@@ -266,13 +256,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerRGBField : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRGBField<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRGBField<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRGBField<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRGBField<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRGBField ()
@@ -294,10 +284,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("rgb"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -326,13 +319,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerHSVField : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerHSVField<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerHSVField<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerHSVField<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerHSVField<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerHSVField (const PointCloudConstPtr &cloud);
@@ -344,10 +337,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("hsv"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Class getName method. */
@@ -376,13 +372,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerGenericField : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerGenericField<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerGenericField<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerGenericField<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerGenericField<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerGenericField (const std::string &field_name)
@@ -406,10 +402,13 @@ namespace pcl
         /** \brief Get the name of the field used. */
         virtual std::string getFieldName () const { return (field_name_); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -442,13 +441,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerRGBAField : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRGBAField<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRGBAField<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRGBAField<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRGBAField<PointT> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRGBAField ()
@@ -470,10 +469,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("rgba"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -503,13 +505,13 @@ namespace pcl
     template <typename PointT>
     class PointCloudColorHandlerLabelField : public PointCloudColorHandler<PointT>
     {
-      using PointCloud = typename PointCloudColorHandler<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerLabelField<PointT> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerLabelField<PointT> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerLabelField<PointT> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerLabelField<PointT> > ConstPtr;
 
         /** \brief Constructor.
           * \param[in] static_mapping Use a static colormapping from label_id to color (default true) */
@@ -537,10 +539,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("label"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<PointT>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -571,12 +576,12 @@ namespace pcl
     class PCL_EXPORTS PointCloudColorHandler<pcl::PCLPointCloud2>
     {
       public:
-        using PointCloud = pcl::PCLPointCloud2;
-        using PointCloudPtr = PointCloud::Ptr;
-        using PointCloudConstPtr = PointCloud::ConstPtr;
+        typedef pcl::PCLPointCloud2 PointCloud;
+        typedef PointCloud::Ptr PointCloudPtr;
+        typedef PointCloud::ConstPtr PointCloudConstPtr;
 
-        using Ptr = shared_ptr<PointCloudColorHandler<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandler<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandler<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandler<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandler (const PointCloudConstPtr &cloud) :
@@ -598,29 +603,13 @@ namespace pcl
         virtual std::string
         getFieldName () const = 0;
 
-        /** Obtain the actual color for the input dataset as a VTK data array.
-          * Deriving handlers should override this method. The default implementation is
-          * provided only for backwards compatibility with handlers that were written
-          * before PCL 1.10.0 and will be removed in future.
-          * \return smart pointer to VTK array if the operation was successful (the
-          * handler is capable and the input cloud was given), a null pointer otherwise */
-        virtual vtkSmartPointer<vtkDataArray>
-        getColor () const {
-          vtkSmartPointer<vtkDataArray> scalars;
-          getColor (scalars);
-          return scalars;
-        }
-
-        /** Obtain the actual color for the input dataset as a VTK data array.
-          * This virtual method should not be overriden or used. The default implementation
-          * is provided only for backwards compatibility with handlers that were written
-          * before PCL 1.10.0 and will be removed in future. */
-        [[deprecated("use getColor() without parameters instead")]]
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
         virtual bool
-        getColor (vtkSmartPointer<vtkDataArray> &scalars) const {
-          scalars = getColor ();
-          return scalars.Get() != nullptr;
-        }
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const = 0;
 
         /** \brief Set the input cloud to be used.
           * \param[in] cloud the input cloud to be used by the handler
@@ -652,13 +641,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerRandom<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRandom<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRandom<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRandom<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRandom<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRandom (const PointCloudConstPtr &cloud) :
@@ -678,10 +667,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return ("[random]"); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -693,9 +685,9 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerCustom<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
         /** \brief Constructor. */
@@ -718,10 +710,13 @@ namespace pcl
         virtual std::string
         getFieldName () const { return (""); }
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Internal R, G, B holding the values given by the user. */
@@ -737,13 +732,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerRGBField<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRGBField<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRGBField<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRGBField<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRGBField<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRGBField (const PointCloudConstPtr &cloud);
@@ -751,10 +746,13 @@ namespace pcl
         /** \brief Empty destructor */
         virtual ~PointCloudColorHandlerRGBField () {}
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Get the name of the class. */
@@ -774,13 +772,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerHSVField<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerHSVField<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerHSVField<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerHSVField<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerHSVField<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerHSVField (const PointCloudConstPtr &cloud);
@@ -788,10 +786,13 @@ namespace pcl
         /** \brief Empty destructor */
         virtual ~PointCloudColorHandlerHSVField () {}
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Get the name of the class. */
@@ -818,13 +819,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerGenericField<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerGenericField<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerGenericField<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerGenericField<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerGenericField<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerGenericField (const PointCloudConstPtr &cloud,
@@ -833,10 +834,13 @@ namespace pcl
         /** \brief Empty destructor */
         virtual ~PointCloudColorHandlerGenericField () {}
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and 
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Get the name of the class. */
@@ -861,13 +865,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerRGBAField<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerRGBAField<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerRGBAField<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerRGBAField<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerRGBAField<PointCloud> > ConstPtr;
 
         /** \brief Constructor. */
         PointCloudColorHandlerRGBAField (const PointCloudConstPtr &cloud);
@@ -875,10 +879,13 @@ namespace pcl
         /** \brief Empty destructor */
         virtual ~PointCloudColorHandlerRGBAField () {}
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Get the name of the class. */
@@ -899,13 +906,13 @@ namespace pcl
     template <>
     class PCL_EXPORTS PointCloudColorHandlerLabelField<pcl::PCLPointCloud2> : public PointCloudColorHandler<pcl::PCLPointCloud2>
     {
-      using PointCloud = PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloud PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
-        using Ptr = shared_ptr<PointCloudColorHandlerLabelField<PointCloud> >;
-        using ConstPtr = shared_ptr<const PointCloudColorHandlerLabelField<PointCloud> >;
+        typedef boost::shared_ptr<PointCloudColorHandlerLabelField<PointCloud> > Ptr;
+        typedef boost::shared_ptr<const PointCloudColorHandlerLabelField<PointCloud> > ConstPtr;
 
         /** \brief Constructor.
           * \param[in] static_mapping Use a static colormapping from label_id to color (default true) */
@@ -915,10 +922,13 @@ namespace pcl
         /** \brief Empty destructor */
         virtual ~PointCloudColorHandlerLabelField () {}
 
-        vtkSmartPointer<vtkDataArray>
-        getColor () const override;
-
-        using PointCloudColorHandler<pcl::PCLPointCloud2>::getColor;
+        /** \brief Obtain the actual color for the input dataset as vtk scalars.
+          * \param[out] scalars the output scalars containing the color for the dataset
+          * \return true if the operation was successful (the handler is capable and
+          * the input cloud was given as a valid pointer), false otherwise
+          */
+        virtual bool
+        getColor (vtkSmartPointer<vtkDataArray> &scalars) const;
 
       protected:
         /** \brief Get the name of the class. */
@@ -936,3 +946,6 @@ namespace pcl
 }
 
 #include <pcl/visualization/impl/point_cloud_color_handlers.hpp>
+
+#endif      // PCL_POINT_CLOUD_COLOR_HANDLERS_H_
+

@@ -1,6 +1,5 @@
-#pragma once
-
-#include <boost/shared_ptr.hpp>
+#ifndef PCL_TRACKING_DISTANCE_COHERENCE_H_
+#define PCL_TRACKING_DISTANCE_COHERENCE_H_
 
 #include <pcl/tracking/coherence.h>
 
@@ -17,10 +16,7 @@ namespace pcl
     class DistanceCoherence: public PointCoherence<PointInT>
     {
     public:
-
-      using Ptr = shared_ptr<DistanceCoherence<PointInT> >;
-      using ConstPtr = shared_ptr<const DistanceCoherence<PointInT>>;
-
+      
       /** \brief initialize the weight to 1.0. */
       DistanceCoherence ()
       : PointCoherence<PointInT> ()
@@ -41,7 +37,7 @@ namespace pcl
         * \param source instance of source point.
         * \param target instance of target point.
         */
-      double computeCoherence (PointInT &source, PointInT &target) override;
+      double computeCoherence (PointInT &source, PointInT &target);
 
       /** \brief the weight of coherence.*/
       double weight_;
@@ -51,4 +47,8 @@ namespace pcl
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/distance_coherence.hpp>
+#endif
+
+// #include <pcl/tracking/impl/distance_coherence.hpp>
+
 #endif

@@ -48,8 +48,8 @@
 
 using namespace pcl::outofcore;
 
-using OctreeDisk = OutofcoreOctreeBase<OutofcoreOctreeDiskContainer<pcl::PointXYZ>, pcl::PointXYZ>;
-using OctreeDiskNode = OutofcoreOctreeBaseNode<OutofcoreOctreeDiskContainer<pcl::PointXY>, pcl::PointXYZ>;
+typedef OutofcoreOctreeBase<OutofcoreOctreeDiskContainer<pcl::PointXYZ>, pcl::PointXYZ> OctreeDisk;
+typedef OutofcoreOctreeBaseNode<OutofcoreOctreeDiskContainer<pcl::PointXY>, pcl::PointXYZ> OctreeDiskNode;
 
 int main (int, char** argv)
 {
@@ -80,7 +80,7 @@ int main (int, char** argv)
   OutofcoreDepthFirstIterator<pcl::PointXYZ, pcl::outofcore::OutofcoreOctreeDiskContainer<pcl::PointXYZ> > it (*octree);
   OctreeDisk::Iterator myit (*octree);
 
-  while ( *myit !=nullptr )
+  while ( *myit !=0 )
   {
     octree->printBoundingBox (**myit);
     myit++;

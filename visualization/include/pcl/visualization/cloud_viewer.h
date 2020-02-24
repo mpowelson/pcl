@@ -33,8 +33,8 @@
  *
  *
  */
-
-#pragma once
+#ifndef PCL_CLOUD_VIEWER_H_
+#define PCL_CLOUD_VIEWER_H_
 
 #include <pcl/visualization/pcl_visualizer.h> //pcl vis
 #include <boost/scoped_ptr.hpp> // scoped_ptr for pre-C++11
@@ -52,13 +52,10 @@ namespace pcl
     class PCL_EXPORTS CloudViewer : boost::noncopyable
     {
       public:
-        using Ptr = shared_ptr<CloudViewer>;
-        using ConstPtr = shared_ptr<const CloudViewer>;
-
-        using ColorACloud = pcl::PointCloud<pcl::PointXYZRGBA>;
-        using ColorCloud = pcl::PointCloud<pcl::PointXYZRGB>;
-        using GrayCloud = pcl::PointCloud<pcl::PointXYZI>;
-        using MonochromeCloud = pcl::PointCloud<pcl::PointXYZ>;
+        typedef pcl::PointCloud<pcl::PointXYZRGBA> ColorACloud;
+        typedef pcl::PointCloud<pcl::PointXYZRGB> ColorCloud;
+        typedef pcl::PointCloud<pcl::PointXYZI> GrayCloud;
+        typedef pcl::PointCloud<pcl::PointXYZ> MonochromeCloud;
 
         /** \brief Construct a cloud viewer, with a window name.
          * \param window_name This is displayed at the top of the window
@@ -109,7 +106,7 @@ namespace pcl
 
         /** Visualization callable function, may be used for running things on the UI thread.
          */
-        using VizCallable = std::function<void (pcl::visualization::PCLVisualizer&)>;
+        typedef boost::function1<void, pcl::visualization::PCLVisualizer&> VizCallable;
 
         /** \brief Run a callbable object on the UI thread. Will persist until removed
          * @param x Use boost::ref(x) for a function object that you would like to not copy
@@ -136,9 +133,9 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         inline boost::signals2::connection 
-        registerKeyboardCallback (void (*callback) (const pcl::visualization::KeyboardEvent&, void*), void* cookie = nullptr)
+        registerKeyboardCallback (void (*callback) (const pcl::visualization::KeyboardEvent&, void*), void* cookie = NULL)
         {
-          return (registerKeyboardCallback ([=] (const pcl::visualization::KeyboardEvent& e) { (*callback) (e, cookie); }));
+          return (registerKeyboardCallback (boost::bind (callback, _1, cookie)));
         }
         
         /** \brief Register a callback function for keyboard events
@@ -148,9 +145,9 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection 
-        registerKeyboardCallback (void (T::*callback) (const pcl::visualization::KeyboardEvent&, void*), T& instance, void* cookie = nullptr)
+        registerKeyboardCallback (void (T::*callback) (const pcl::visualization::KeyboardEvent&, void*), T& instance, void* cookie = NULL)
         {
-          return (registerKeyboardCallback ([=, &instance] (const pcl::visualization::KeyboardEvent& e) { (instance.*callback) (e, cookie); }));
+          return (registerKeyboardCallback (boost::bind (callback,  boost::ref (instance), _1, cookie)));
         }
         
         /** \brief Register a callback function for mouse events
@@ -159,9 +156,9 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         inline boost::signals2::connection 
-        registerMouseCallback (void (*callback) (const pcl::visualization::MouseEvent&, void*), void* cookie = nullptr)
+        registerMouseCallback (void (*callback) (const pcl::visualization::MouseEvent&, void*), void* cookie = NULL)
         {
-          return (registerMouseCallback ([=] (const pcl::visualization::MouseEvent& e) { (*callback) (e, cookie); }));
+          return (registerMouseCallback (boost::bind (callback, _1, cookie)));
         }
         
         /** \brief Register a callback function for mouse events
@@ -171,9 +168,9 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection 
-        registerMouseCallback (void (T::*callback) (const pcl::visualization::MouseEvent&, void*), T& instance, void* cookie = nullptr)
+        registerMouseCallback (void (T::*callback) (const pcl::visualization::MouseEvent&, void*), T& instance, void* cookie = NULL)
         {
-          return (registerMouseCallback ([=, &instance] (const pcl::visualization::MouseEvent& e) { (instance.*callback) (e, cookie); }));
+          return (registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
         }
 
         
@@ -183,9 +180,9 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         inline boost::signals2::connection 
-        registerPointPickingCallback (void (*callback) (const pcl::visualization::PointPickingEvent&, void*), void* cookie = nullptr)
+        registerPointPickingCallback (void (*callback) (const pcl::visualization::PointPickingEvent&, void*), void* cookie = NULL)
         {
-          return (registerPointPickingCallback ([=] (const pcl::visualization::PointPickingEvent& e) { (*callback) (e, cookie); }));
+          return (registerPointPickingCallback (boost::bind (callback, _1, cookie)));
         }
         
         /** \brief Register a callback function for point picking events
@@ -195,24 +192,26 @@ namespace pcl
           * \return              connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection 
-        registerPointPickingCallback (void (T::*callback) (const pcl::visualization::PointPickingEvent&, void*), T& instance, void* cookie = nullptr)
+        registerPointPickingCallback (void (T::*callback) (const pcl::visualization::PointPickingEvent&, void*), T& instance, void* cookie = NULL)
         {
-          return (registerPointPickingCallback ([=, &instance] (const pcl::visualization::PointPickingEvent& e) { (instance.*callback) (e, cookie); }));
+          return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
         }
         
       private:
         /** \brief Private implementation. */
         struct CloudViewer_impl;
-        boost::scoped_ptr<CloudViewer_impl> impl_;
+	boost::scoped_ptr<CloudViewer_impl> impl_;
         
         boost::signals2::connection 
-        registerMouseCallback (std::function<void (const pcl::visualization::MouseEvent&)>);
+        registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)>);
 
         boost::signals2::connection 
-        registerKeyboardCallback (std::function<void (const pcl::visualization::KeyboardEvent&)>);
+        registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)>);
 
         boost::signals2::connection 
-        registerPointPickingCallback (std::function<void (const pcl::visualization::PointPickingEvent&)>);
+        registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)>);
     };
   }
 }
+
+#endif /* CLOUD_VIEWER_H_ */

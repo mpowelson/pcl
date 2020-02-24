@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef CLOSING_BOUNDARY_H
+#define CLOSING_BOUNDARY_H
 
 #include <pcl/surface/on_nurbs/nurbs_data.h>
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
@@ -140,3 +141,5 @@ namespace pcl
 
   }
 }
+
+#endif

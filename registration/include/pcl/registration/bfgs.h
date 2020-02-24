@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_FOR_EIGEN_BFGS_H
+#define PCL_FOR_EIGEN_BFGS_H
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -12,7 +13,7 @@ namespace Eigen
   class PolynomialSolver<_Scalar,2> : public PolynomialSolverBase<_Scalar,2>
   {
     public:
-      using PS_Base = PolynomialSolverBase<_Scalar,2>;
+      typedef PolynomialSolverBase<_Scalar,2>    PS_Base;
       EIGEN_POLYNOMIAL_SOLVER_BASE_INHERITED_TYPES( PS_Base )
         
     public:
@@ -72,9 +73,9 @@ namespace Eigen
 template<typename _Scalar, int NX=Eigen::Dynamic>
 struct BFGSDummyFunctor
 {
-  using Scalar = _Scalar;
+  typedef _Scalar Scalar;
   enum { InputsAtCompileTime = NX };
-  using VectorType = Eigen::Matrix<Scalar,InputsAtCompileTime,1>;
+  typedef Eigen::Matrix<Scalar,InputsAtCompileTime,1> VectorType;
 
   const int m_inputs;
 
@@ -113,13 +114,13 @@ template<typename FunctorType>
 class BFGS
 {
 public:
-  using Scalar = typename FunctorType::Scalar;
-  using FVectorType = typename FunctorType::VectorType;
+  typedef typename FunctorType::Scalar Scalar;
+  typedef typename FunctorType::VectorType FVectorType;
 
   BFGS(FunctorType &_functor) 
       : pnorm(0), g0norm(0), iter(-1), functor(_functor) {  }
 
-  using Index = Eigen::DenseIndex;
+  typedef Eigen::DenseIndex Index;
 
   struct Parameters {
     Parameters()
@@ -340,11 +341,11 @@ BFGS<FunctorType>::minimizeOneStep(FVectorType  &x)
 
   if (delta_f < 0)
   {
-    Scalar del = std::max (-delta_f, 10 * std::numeric_limits<Scalar>::epsilon() * std::abs(f0));
+    Scalar del = std::max (-delta_f, 10 * std::numeric_limits<Scalar>::epsilon() * fabs(f0));
     alpha1 = std::min (1.0, 2.0 * del / (-fp0));
   }
   else
-    alpha1 = std::abs(parameters.step_size);
+    alpha1 = fabs(parameters.step_size);
 
   BFGSSpace::Status status = lineSearch(parameters.rho, parameters.sigma, 
                                         parameters.tau1, parameters.tau2, parameters.tau3, 
@@ -539,7 +540,7 @@ BFGS<FunctorType>::lineSearch(Scalar rho, Scalar sigma,
     fpalpha = applyDF (alpha);
 
     /* Fletcher's sigma test */
-    if (std::abs (fpalpha) <= -sigma * fp0)
+    if (fabs (fpalpha) <= -sigma * fp0)
     {
       alpha_new = alpha;
       return BFGSSpace::Success;
@@ -594,7 +595,7 @@ BFGS<FunctorType>::lineSearch(Scalar rho, Scalar sigma,
     {
       fpalpha = applyDF (alpha);
           
-      if (std::abs(fpalpha) <= -sigma * fp0)
+      if (fabs(fpalpha) <= -sigma * fp0)
       {
         alpha_new = alpha;
         return BFGSSpace::Success;  /* terminate */
@@ -613,3 +614,5 @@ BFGS<FunctorType>::lineSearch(Scalar rho, Scalar sigma,
   }
   return BFGSSpace::Success;
 }
+#endif // PCL_FOR_EIGEN_BFGS_H
+

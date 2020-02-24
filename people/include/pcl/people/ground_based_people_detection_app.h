@@ -38,7 +38,8 @@
  * Author: Matteo Munaro
  */
 
-#pragma once
+#ifndef PCL_PEOPLE_GROUND_BASED_PEOPLE_DETECTION_APP_H_
+#define PCL_PEOPLE_GROUND_BASED_PEOPLE_DETECTION_APP_H_
 
 #include <pcl/point_types.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
@@ -72,9 +73,9 @@ namespace pcl
     {
     public:
 
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef boost::shared_ptr<PointCloud> PointCloudPtr;
+      typedef boost::shared_ptr<const PointCloud> PointCloudConstPtr;
 
       /** \brief Constructor. */
       GroundBasedPeopleDetectionApp ();
@@ -371,3 +372,4 @@ namespace pcl
   } /* namespace people */
 } /* namespace pcl */
 #include <pcl/people/impl/ground_based_people_detection_app.hpp>
+#endif /* PCL_PEOPLE_GROUND_BASED_PEOPLE_DETECTION_APP_H_ */

@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_METHOD_TYPES_H_
+#define PCL_SAMPLE_CONSENSUS_METHOD_TYPES_H_
 
 namespace pcl
 {
@@ -50,3 +51,5 @@ namespace pcl
   const static int SAC_MLESAC  = 5;
   const static int SAC_PROSAC  = 6;
 }
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_METHOD_TYPES_H_

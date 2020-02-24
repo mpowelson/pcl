@@ -33,7 +33,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_CUDA_COMMON_POINT_TYPE_RGB_H_
+#define PCL_CUDA_COMMON_POINT_TYPE_RGB_H_
 
 #include <cuda.h>
 #include <pcl/cuda/cutil_math.h>
@@ -117,3 +118,5 @@ namespace cuda
 
 } // namespace
 } // namespace
+#endif  //#ifndef PCL_CUDA_COMMON_POINT_TYPE_RGB_H_
+

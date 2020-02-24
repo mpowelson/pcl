@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VISUALIZER_WINDOW_H__
+#define	PCL_VISUALIZER_WINDOW_H__
 
 #include <pcl/pcl_macros.h>
 #include <boost/signals2/signal.hpp>
@@ -91,9 +92,9 @@ namespace pcl
           */
         boost::signals2::connection
         registerKeyboardCallback (void (*callback) (const pcl::visualization::KeyboardEvent&, void*),
-                                  void* cookie = nullptr)
+                                  void* cookie = NULL)
         {
-          return registerKeyboardCallback ([=] (const pcl::visualization::KeyboardEvent& e) { (*callback) (e, cookie); });
+          return registerKeyboardCallback (boost::bind (callback, _1, cookie));
         }
 
         /**
@@ -105,9 +106,9 @@ namespace pcl
           */
         template<typename T> boost::signals2::connection
         registerKeyboardCallback (void (T::*callback) (const pcl::visualization::KeyboardEvent&, void*),
-                                  T& instance, void* cookie = nullptr)
+                                  T& instance, void* cookie = NULL)
         {
-          return registerKeyboardCallback ([=, &instance] (const pcl::visualization::KeyboardEvent& e) { (instance.*callback) (e, cookie); });
+          return registerKeyboardCallback (boost::bind (callback,  boost::ref (instance), _1, cookie));
         }
 
         /**
@@ -118,9 +119,9 @@ namespace pcl
           */
         boost::signals2::connection
         registerMouseCallback (void (*callback) (const pcl::visualization::MouseEvent&, void*),
-                               void* cookie = nullptr)
+                               void* cookie = NULL)
         {
-          return registerMouseCallback ([=] (const pcl::visualization::MouseEvent& e) { (*callback) (e, cookie); });
+          return registerMouseCallback (boost::bind (callback, _1, cookie));
         }
 
         /**
@@ -132,9 +133,9 @@ namespace pcl
           */
         template<typename T> boost::signals2::connection
         registerMouseCallback (void (T::*callback) (const pcl::visualization::MouseEvent&, void*),
-                               T& instance, void* cookie = nullptr)
+                               T& instance, void* cookie = NULL)
         {
-          return registerMouseCallback ([=, &instance] (const pcl::visualization::MouseEvent& e) { (instance.*callback) (e, cookie); });
+          return registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie));
         }
 
       protected: // methods
@@ -147,17 +148,17 @@ namespace pcl
           * @brief   registering a callback function for mouse events
           * @return  connection object that allows to disconnect the callback function.
           */
-         // param   the std function that will be registered as a callback for a mouse event
+         // param   the boost function that will be registered as a callback for a mouse event
         boost::signals2::connection
-        registerMouseCallback (std::function<void (const pcl::visualization::MouseEvent&)> );
+        registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)> );
 
         /**
-         * @brief   registering a callback std::function for keyboard events
+         * @brief   registering a callback boost::function for keyboard events
          * @return  connection object that allows to disconnect the callback function.
          */
-         // param   the std function that will be registered as a callback for a keyboard event
+         // param   the boost function that will be registered as a callback for a keyboard event
         boost::signals2::connection
-        registerKeyboardCallback (std::function<void (const pcl::visualization::KeyboardEvent&)> );
+        registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)> );
 
         void
         emitMouseEvent (unsigned long event_id);
@@ -180,9 +181,11 @@ namespace pcl
           }
 
           ExitMainLoopTimerCallback ();
+          ExitMainLoopTimerCallback (const ExitMainLoopTimerCallback& src);
+          ExitMainLoopTimerCallback& operator = (const ExitMainLoopTimerCallback& src);
 
-          void 
-          Execute (vtkObject*, unsigned long event_id, void* call_data) override;
+          virtual void 
+          Execute (vtkObject*, unsigned long event_id, void* call_data);
 
           int right_timer_id;
           Window* window;
@@ -196,9 +199,11 @@ namespace pcl
           }
 
           ExitCallback ();
+          ExitCallback (const ExitCallback &src);
+          ExitCallback& operator = (const ExitCallback &src);
  
-          void 
-          Execute (vtkObject*, unsigned long event_id, void*) override;
+          virtual void 
+          Execute (vtkObject*, unsigned long event_id, void*);
 
           Window* window;
         };
@@ -223,3 +228,6 @@ namespace pcl
     };
   }
 }
+
+#endif	/* __WINDOW_H__ */
+

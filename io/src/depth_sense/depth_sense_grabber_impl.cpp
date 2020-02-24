@@ -35,6 +35,8 @@
  *
  */
 
+#include <boost/lexical_cast.hpp>
+
 #include <pcl/common/io.h>
 #include <pcl/io/depth_sense_grabber.h>
 #include <pcl/io/depth_sense/depth_sense_grabber_impl.h>
@@ -48,7 +50,7 @@ pcl::io::depth_sense::DepthSenseGrabberImpl::DepthSenseGrabberImpl (DepthSenseGr
 , color_data_ (COLOR_SIZE * 3)
 , depth_buffer_ (new pcl::io::SingleBuffer<float> (SIZE))
 {
-  if (device_id.empty())
+  if (device_id == "")
     device_id_ = DepthSenseDeviceManager::getInstance ()->captureDevice (this);
   else if (device_id[0] == '#')
     device_id_ = DepthSenseDeviceManager::getInstance ()->captureDevice (this, boost::lexical_cast<int> (device_id.substr (1)) - 1);
@@ -59,7 +61,7 @@ pcl::io::depth_sense::DepthSenseGrabberImpl::DepthSenseGrabberImpl (DepthSenseGr
   point_cloud_rgba_signal_ = p_->createSignal<sig_cb_depth_sense_point_cloud_rgba> ();
 }
 
-pcl::io::depth_sense::DepthSenseGrabberImpl::~DepthSenseGrabberImpl () noexcept
+pcl::io::depth_sense::DepthSenseGrabberImpl::~DepthSenseGrabberImpl () throw ()
 {
   stop ();
 
@@ -98,7 +100,7 @@ pcl::io::depth_sense::DepthSenseGrabberImpl::stop ()
 float
 pcl::io::depth_sense::DepthSenseGrabberImpl::getFramesPerSecond () const
 {
-  std::lock_guard<std::mutex> lock (fps_mutex_);
+  boost::mutex::scoped_lock lock (fps_mutex_);
   return (frequency_.getFrequency ());
 }
 
@@ -110,7 +112,7 @@ pcl::io::depth_sense::DepthSenseGrabberImpl::setConfidenceThreshold (int thresho
 }
 
 void
-pcl::io::depth_sense::DepthSenseGrabberImpl::enableTemporalFiltering (DepthSenseGrabber::TemporalFilteringType type, std::size_t window_size)
+pcl::io::depth_sense::DepthSenseGrabberImpl::enableTemporalFiltering (DepthSenseGrabber::TemporalFilteringType type, size_t window_size)
 {
   if (temporal_filtering_type_ != type ||
       (type != DepthSenseGrabber::DepthSense_None && depth_buffer_->size () != window_size))
@@ -248,7 +250,7 @@ pcl::io::depth_sense::DepthSenseGrabberImpl::computeXYZ (PointCloud<Point>& clou
     while (point.point.x < WIDTH)
     {
       point.depth = (*depth_buffer_)[i];
-      if (std::isnan (point.depth))
+      if (pcl_isnan (point.depth))
       {
         cloud.points[i].x = nan;
         cloud.points[i].y = nan;

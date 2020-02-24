@@ -36,7 +36,8 @@
  * $id: $
  */
 
-#pragma once
+#ifndef PCL_SEEDED_HUE_SEGMENTATION_H_
+#define PCL_SEEDED_HUE_SEGMENTATION_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/point_types_conversion.h>
@@ -57,12 +58,12 @@ namespace pcl
     * \ingroup segmentation
     */
   void 
-  seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
-                         const search::Search<PointXYZRGB>::Ptr   &tree,
-                         float                                    tolerance,
-                         PointIndices                             &indices_in,
-                         PointIndices                             &indices_out,
-                         float                                    delta_hue = 0.0);
+  seededHueSegmentation (const PointCloud<PointXYZRGB>                           &cloud, 
+                         const boost::shared_ptr<search::Search<PointXYZRGB> >   &tree, 
+                         float                                                   tolerance, 
+                         PointIndices                                            &indices_in, 
+                         PointIndices                                            &indices_out, 
+                         float                                                   delta_hue = 0.0);
 
   /** \brief Decompose a region of space into clusters based on the Euclidean distance between points
     * \param[in] cloud the point cloud message
@@ -76,12 +77,12 @@ namespace pcl
     * \ingroup segmentation
     */
   void 
-  seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
-                         const search::Search<PointXYZRGBL>::Ptr  &tree,
-                         float                                    tolerance,
-                         PointIndices                             &indices_in,
-                         PointIndices                             &indices_out,
-                         float                                    delta_hue = 0.0);
+  seededHueSegmentation (const PointCloud<PointXYZRGB>                           &cloud, 
+                         const boost::shared_ptr<search::Search<PointXYZRGBL> >  &tree, 
+                         float                                                   tolerance, 
+                         PointIndices                                            &indices_in, 
+                         PointIndices                                            &indices_out, 
+                         float                                                   delta_hue = 0.0);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,22 +93,22 @@ namespace pcl
     */
   class SeededHueSegmentation: public PCLBase<PointXYZRGB>
   {
-    using BasePCLBase = PCLBase<PointXYZRGB>;
+    typedef PCLBase<PointXYZRGB> BasePCLBase;
 
     public:
-      using PointCloud = pcl::PointCloud<PointXYZRGB>;
-      using PointCloudPtr = PointCloud::Ptr;
-      using PointCloudConstPtr = PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointXYZRGB> PointCloud;
+      typedef PointCloud::Ptr PointCloudPtr;
+      typedef PointCloud::ConstPtr PointCloudConstPtr;
 
-      using KdTree = pcl::search::Search<PointXYZRGB>;
-      using KdTreePtr = pcl::search::Search<PointXYZRGB>::Ptr;
+      typedef pcl::search::Search<PointXYZRGB> KdTree;
+      typedef pcl::search::Search<PointXYZRGB>::Ptr KdTreePtr;
 
-      using PointIndicesPtr = PointIndices::Ptr;
-      using PointIndicesConstPtr = PointIndices::ConstPtr;
+      typedef PointIndices::Ptr PointIndicesPtr;
+      typedef PointIndices::ConstPtr PointIndicesConstPtr;
 
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       /** \brief Empty constructor. */
-      SeededHueSegmentation () : cluster_tolerance_ (0), delta_hue_ (0.0)
+      SeededHueSegmentation () : tree_ (), cluster_tolerance_ (0), delta_hue_ (0.0)
       {};
 
       /** \brief Provide a pointer to the search object.
@@ -171,3 +172,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/segmentation/impl/seeded_hue_segmentation.hpp>
 #endif
+
+#endif  //#ifndef PCL_SEEDED_HUE_SEGMENTATION_H_

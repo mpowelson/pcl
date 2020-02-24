@@ -53,12 +53,12 @@ namespace pcl
         struct PCL_EXPORTS Feature
         {
         public:
-            using PointType = PointXYZ;
-            using NormalType = PointXYZ;
+            typedef PointXYZ PointType;
+            typedef PointXYZ NormalType;
 
-            using PointCloud = DeviceArray<PointType>;
-            using Normals = DeviceArray<NormalType>;
-            using Indices = DeviceArray<int>;
+            typedef DeviceArray< PointType> PointCloud;
+            typedef DeviceArray<NormalType> Normals;
+            typedef DeviceArray<int> Indices;
 
             Feature();
 
@@ -94,7 +94,7 @@ namespace pcl
         {
         public:
             // float x, y, z, curvature; -> sizeof(PointXYZ) = 4 * sizeof(float)            
-            using NormalType = Feature::NormalType; 
+            typedef Feature::NormalType NormalType; 
 
             NormalEstimation();
             void compute(Normals& normals);
@@ -127,7 +127,7 @@ namespace pcl
         class PCL_EXPORTS PFHRGBEstimation : public FeatureFromNormals
         {
         public:
-            using PointType = PointXYZ; //16 bytes for xyzrgb
+            typedef PointXYZ PointType; //16 bytes for xyzrgb
             void compute(const PointCloud& cloud, const Normals& normals, const NeighborIndices& neighb_indices, DeviceArray2D<PFHRGBSignature250>& features);
             void compute(DeviceArray2D<PFHRGBSignature250>& features);
         private:
@@ -172,7 +172,7 @@ namespace pcl
         {
         public:
 
-            using PointType = PointXYZ; //16 bytes for xyzrgb
+            typedef PointXYZ PointType; //16 bytes for xyzrgb
             void compute(DeviceArray<PPFRGBSignature>& features);
         };
 
@@ -182,7 +182,7 @@ namespace pcl
         class PCL_EXPORTS PPFRGBRegionEstimation : public FeatureFromNormals
         {
         public:
-            using PointType = PointXYZ; //16 bytes for xyzrgb
+            typedef PointXYZ PointType; //16 bytes for xyzrgb
             void compute(DeviceArray<PPFRGBSignature>& features);
 
         private:
@@ -256,7 +256,7 @@ namespace pcl
         class PCL_EXPORTS SpinImageEstimation : public FeatureFromNormals
         {
         public:  
-            using SpinImage = Histogram<153>;
+            typedef Histogram<153> SpinImage;
 
             SpinImageEstimation (unsigned int image_width = 8,
                 double support_angle_cos = 0.0,   // when 0, this is bogus, so not applied

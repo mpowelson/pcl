@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_INTERNAL_H_
+#define PCL_TRACKING_INTERNAL_H_
 
 #include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/utils/safe_call.hpp>
@@ -12,11 +13,11 @@ namespace pcl
 	{
 		
 		struct float8 {	float	x, y, z, w, roll, pitch, yaw, weight;	};	
-		using StateType = float8;		
+		typedef float8 StateType;		
 
-		using PointType = float4;
-		using PixelRGB = uchar4;
-		using NormalType = float4;
+		typedef float4 PointType;
+		typedef uchar4 PixelRGB;
+		typedef float4 NormalType;
 		
 		
 		void 
@@ -47,3 +48,6 @@ namespace pcl
 			*/			
 	}
 }
+
+
+#endif // PCL_TRACKING_INTERNAL_H_

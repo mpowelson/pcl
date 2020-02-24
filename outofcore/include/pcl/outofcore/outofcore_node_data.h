@@ -36,7 +36,8 @@
  *  $Id: outofcore_node_data.h 6915 2012-08-22 10:54:21Z stfox88 $
  */
 
-#pragma once
+#ifndef PCL_OUTOFCORE_OCTREE_NODE_METADATA_H_
+#define PCL_OUTOFCORE_OCTREE_NODE_METADATA_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/outofcore/boost.h>
@@ -84,8 +85,8 @@ namespace pcl
 
       public:
         //public typedefs
-        using Ptr = shared_ptr<OutofcoreOctreeNodeMetadata>;
-        using ConstPtr = shared_ptr<const OutofcoreOctreeNodeMetadata>;
+        typedef boost::shared_ptr<OutofcoreOctreeNodeMetadata> Ptr;
+        typedef boost::shared_ptr<const OutofcoreOctreeNodeMetadata> ConstPtr;
   
         /** \brief Empty constructor */
         OutofcoreOctreeNodeMetadata ();
@@ -185,3 +186,5 @@ namespace pcl
     };
   }//namespace outofcore
 }//namespace pcl
+  
+#endif // PCL_OUTOFCORE_OCTREE_NODE_METADATA_H_

@@ -40,11 +40,6 @@
 #include <fstream>
 #include <iomanip>
 
-#include <QAbstractItemModel>
-#include <QCheckBox>
-#include <QColorDialog>
-#include <QSpinBox>
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::modeler::Parameter::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index)

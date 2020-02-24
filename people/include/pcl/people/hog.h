@@ -38,7 +38,8 @@
  * Non-SSE version of the code provided by Matteo Munaro, Stefano Ghidoni and Stefano Michieletto
  */
 
-#pragma once
+#ifndef PCL_PEOPLE_HOG_H_
+#define PCL_PEOPLE_HOG_H_
 
 #include <pcl/pcl_macros.h>
 
@@ -151,7 +152,7 @@ namespace pcl
        * \brief Platform independent aligned memory allocation (see also alFree).
        */ 
       void* 
-      alMalloc ( std::size_t size, int alignment ) const;
+      alMalloc ( size_t size, int alignment ) const;
       
       /** 
        * \brief Platform independent aligned memory de-allocation (see also alMalloc).
@@ -185,3 +186,4 @@ namespace pcl
     };
   } /* namespace people */
 } /* namespace pcl */
+#endif /* PCL_PEOPLE_HOG_H_ */

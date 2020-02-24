@@ -32,6 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/openni_grabber.h>
@@ -42,25 +44,22 @@
 #include <pcl/common/time.h>
 
 #include <boost/asio.hpp>
-
-#include <mutex>
-#include <thread>
-
+#include <boost/thread/thread.hpp>
 
 using boost::asio::ip::tcp;
-using namespace std::chrono_literals;
+
 
 struct PointCloudBuffers
 {
-  using Ptr = std::shared_ptr<PointCloudBuffers>;
+  typedef boost::shared_ptr<PointCloudBuffers> Ptr;
   std::vector<short> points;
   std::vector<unsigned char> rgb;
 };
 
 void
-CopyPointCloudToBuffers (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud, PointCloudBuffers& cloud_buffers)
+CopyPointCloudToBuffers (pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr cloud, PointCloudBuffers& cloud_buffers)
 {
-  const std::size_t nr_points = cloud->points.size ();
+  const size_t nr_points = cloud->points.size ();
 
   cloud_buffers.points.resize (nr_points*3);
   cloud_buffers.rgb.resize (nr_points*3);
@@ -68,15 +67,15 @@ CopyPointCloudToBuffers (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& clo
   const pcl::PointXYZ  bounds_min (-0.9f, -0.8f, 1.0f);
   const pcl::PointXYZ  bounds_max (0.9f, 3.0f, 3.3f);
 
-  std::size_t j = 0;
-  for (std::size_t i = 0; i < nr_points; ++i)
+  size_t j = 0;
+  for (size_t i = 0; i < nr_points; ++i)
   {
 
     const pcl::PointXYZRGBA& point = cloud->points[i];
 
-    if (!std::isfinite (point.x) || 
-        !std::isfinite (point.y) || 
-        !std::isfinite (point.z))
+    if (!pcl_isfinite (point.x) || 
+        !pcl_isfinite (point.y) || 
+        !pcl_isfinite (point.z))
       continue;
 
     if (point.x < bounds_min.x ||
@@ -110,9 +109,9 @@ class PCLMobileServer
 {
   public:
 
-    using Cloud = pcl::PointCloud<PointType>;
-    using CloudPtr = typename Cloud::Ptr;
-    using CloudConstPtr = typename Cloud::ConstPtr;
+    typedef pcl::PointCloud<PointType> Cloud;
+    typedef typename Cloud::Ptr CloudPtr;
+    typedef typename Cloud::ConstPtr CloudConstPtr;
 
     PCLMobileServer (const std::string& device_id = "", int port = 11111,
                      float leaf_size_x = 0.01, float leaf_size_y = 0.01, float leaf_size_z = 0.01)
@@ -133,7 +132,7 @@ class PCLMobileServer
       PointCloudBuffers::Ptr new_buffers = PointCloudBuffers::Ptr (new PointCloudBuffers);
       CopyPointCloudToBuffers (temp_cloud, *new_buffers);
 
-      std::lock_guard<std::mutex> lock (mutex_);
+      boost::mutex::scoped_lock lock (mutex_);
       filtered_cloud_ = temp_cloud;
       buffers_ = new_buffers;
     }
@@ -141,14 +140,14 @@ class PCLMobileServer
     PointCloudBuffers::Ptr
     getLatestBuffers ()
     {
-      std::lock_guard<std::mutex> lock (mutex_);
+      boost::mutex::scoped_lock lock (mutex_);
       return (buffers_);
     }
 
     CloudPtr
     getLatestPointCloud ()
     {
-      std::lock_guard<std::mutex> lock (mutex_);
+      boost::mutex::scoped_lock lock (mutex_);
       return (filtered_cloud_);
     }
 
@@ -156,13 +155,13 @@ class PCLMobileServer
     run ()
     {
       pcl::OpenNIGrabber grabber (device_id_);
-      std::function<void (const CloudConstPtr&)> handler_function = [this] (const CloudConstPtr& cloud) { handleIncomingCloud (cloud); };
+      boost::function<void (const CloudConstPtr&)> handler_function = boost::bind (&PCLMobileServer::handleIncomingCloud, this, _1);
       grabber.registerCallback (handler_function);
       grabber.start ();
 
       // wait for first cloud
       while (!getLatestPointCloud ())
-        std::this_thread::sleep_for(10ms);
+        boost::this_thread::sleep (boost::posix_time::milliseconds (10));
 
       viewer_.showCloud (getLatestPointCloud ());
 
@@ -218,7 +217,7 @@ class PCLMobileServer
 
     int port_;
     std::string device_id_;
-    std::mutex mutex_;
+    boost::mutex mutex_;
 
     pcl::VoxelGrid<PointType> voxel_grid_filter_;
     pcl::visualization::CloudViewer viewer_;
@@ -248,7 +247,7 @@ main (int argc, char ** argv)
 
   int port = 11111;
   float leaf_x = 0.01f, leaf_y = 0.01f, leaf_z = 0.01f;
-  std::string device_id;
+  std::string device_id = "";
 
   pcl::console::parse_argument (argc, argv, "-port", port);
   pcl::console::parse_3x_arguments (argc, argv, "-leaf", leaf_x, leaf_y, leaf_z, false);

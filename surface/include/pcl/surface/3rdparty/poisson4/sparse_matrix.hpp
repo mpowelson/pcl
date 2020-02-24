@@ -208,10 +208,7 @@ namespace pcl
     {
       if( _contiguous )
       {
-        if (count > _maxEntriesPerRow)
-        {
-          POISSON_THROW_EXCEPTION (pcl::poisson::PoissonBadArgumentException, "Attempted to set row size on contiguous matrix larger than max row size: (requested)"<< count << " > (maximum)" << _maxEntriesPerRow );
-        }
+        if( count>_maxEntriesPerRow ) fprintf( stderr , "[ERROR] Cannot set row size on contiguous matrix: %d<=%d\n" , count , _maxEntriesPerRow ) , exit( 0 );
         rowSizes[row] = count;
       }
       else if( row>=0 && row<rows )
@@ -742,7 +739,7 @@ namespace pcl
         for( int i=0 ; i<dim ; i++ ) _d[i] = _r[i] = _b[i] - _r[i];
       }
       double delta_new = 0 , delta_0;
-      for( std::size_t i=0 ; i<dim ; i++ ) delta_new += _r[i] * _r[i];
+      for( size_t i=0 ; i<dim ; i++ ) delta_new += _r[i] * _r[i];
       delta_0 = delta_new;
       if( delta_new<eps )
       {
@@ -773,7 +770,7 @@ namespace pcl
 
         double delta_old = delta_new;
         delta_new = 0;
-        for( std::size_t i=0 ; i<dim ; i++ ) delta_new += _r[i] * _r[i];
+        for( size_t i=0 ; i<dim ; i++ ) delta_new += _r[i] * _r[i];
         T2 beta = T2( delta_new / delta_old );
 #pragma omp parallel for num_threads( threads ) schedule( static )
         for( int i=0 ; i<dim ; i++ ) _d[i] = _r[i] + _d[i] * beta;

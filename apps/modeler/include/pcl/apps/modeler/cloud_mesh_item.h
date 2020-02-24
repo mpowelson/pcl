@@ -33,11 +33,11 @@
  *
  *
  */
+#ifndef PCL_MODELER_CLOUD_MESH_ITEM_H_
+#define PCL_MODELER_CLOUD_MESH_ITEM_H_
 
-#pragma once
-
-#include <QTreeWidgetItem>
-
+#include <pcl/apps/modeler/qt.h>
+#include <boost/shared_ptr.hpp>
 #include <pcl/apps/modeler/abstract_item.h>
 #include <pcl/apps/modeler/cloud_mesh.h>
 
@@ -56,13 +56,12 @@ namespace pcl
         CloudMeshItem(QTreeWidgetItem* parent, const CloudMeshItem& cloud_mesh_item);
         ~CloudMeshItem();
 
-        inline CloudMesh::Ptr&
+        inline boost::shared_ptr<CloudMesh>&
         getCloudMesh()
         {
           return cloud_mesh_;
         }
-
-        inline const CloudMesh::Ptr&
+        inline const boost::shared_ptr<CloudMesh>&
         getCloudMesh() const
         {
           return cloud_mesh_;
@@ -80,25 +79,25 @@ namespace pcl
         void
         updateChannels();
 
-        std::string
-        getItemName() const override {return "Cloud Mesh Item";}
+        virtual std::string
+        getItemName() const {return "Cloud Mesh Item";}
 
         void
         updateRenderWindow();
 
       protected:
-        void
-        prepareContextMenu(QMenu* menu) const override;
+        virtual void
+        prepareContextMenu(QMenu* menu) const;
 
-        void
-        prepareProperties(ParameterDialog* parameter_dialog) override;
+        virtual void
+        prepareProperties(ParameterDialog* parameter_dialog);
 
-        void
-        setProperties() override;
+        virtual void
+        setProperties();
 
       private:
         std::string                           filename_;
-        CloudMesh::Ptr                        cloud_mesh_;
+        boost::shared_ptr<CloudMesh>          cloud_mesh_;
 
         DoubleParameter*                      translation_x_;
         DoubleParameter*                      translation_y_;
@@ -109,3 +108,5 @@ namespace pcl
     };
   }
 }
+
+#endif // PCL_MODELER_CLOUD_MESH_ITEM_H_

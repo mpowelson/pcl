@@ -60,13 +60,13 @@ pclviewer.h
 
 .. literalinclude:: sources/qt_colorize_cloud/pclviewer.h
    :language: cpp
-   :lines: 41-56
+   :lines: 42-57
 
 These are the public slots triggered by the buttons in the UI.
 
 .. literalinclude:: sources/qt_colorize_cloud/pclviewer.h
    :language: cpp
-   :lines: 58-85
+   :lines: 59-86
 
 These are the protected members of our class;
   * ``viewer_`` is the visualizer object

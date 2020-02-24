@@ -37,11 +37,11 @@
  *
  */
 
-#pragma once
+#ifndef PCL_TRACKING_TRACKER_H_
+#define PCL_TRACKING_TRACKER_H_
 
 #include <pcl/tracking/tracking.h>
 #include <pcl/pcl_base.h>
-#include <pcl/pcl_macros.h>
 #include <pcl/search/search.h>
 
 namespace pcl
@@ -62,24 +62,24 @@ namespace pcl
       using PCLBase<PointInT>::indices_;
       using PCLBase<PointInT>::input_;
       
-      using BaseClass = PCLBase<PointInT>;
-      using Ptr = shared_ptr< Tracker<PointInT, StateT> >;
-      using ConstPtr = shared_ptr< const Tracker<PointInT, StateT> >;
+      typedef PCLBase<PointInT> BaseClass;
+      typedef boost::shared_ptr< Tracker<PointInT, StateT> > Ptr;
+      typedef boost::shared_ptr< const Tracker<PointInT, StateT> > ConstPtr;
 
-      using SearchPtr = typename pcl::search::Search<PointInT>::Ptr;
-      using SearchConstPtr = typename pcl::search::Search<PointInT>::ConstPtr;
-
-      using PointCloudIn = pcl::PointCloud<PointInT>;
-      using PointCloudInPtr = typename PointCloudIn::Ptr;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef boost::shared_ptr<pcl::search::Search<PointInT> > SearchPtr;
+      typedef boost::shared_ptr<const pcl::search::Search<PointInT> > SearchConstPtr;
+            
+      typedef pcl::PointCloud<PointInT> PointCloudIn;
+      typedef typename PointCloudIn::Ptr PointCloudInPtr;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
       
-      using PointCloudState = pcl::PointCloud<StateT>;
-      using PointCloudStatePtr = typename PointCloudState::Ptr;
-      using PointCloudStateConstPtr = typename PointCloudState::ConstPtr;
+      typedef pcl::PointCloud<StateT> PointCloudState;
+      typedef typename PointCloudState::Ptr PointCloudStatePtr;
+      typedef typename PointCloudState::ConstPtr PointCloudStateConstPtr;
       
     public:
       /** \brief Empty constructor. */
-      Tracker (): search_ () {}
+      Tracker (): tracker_name_ (), search_ () {}
       
       /** \brief Base method for tracking for all points given in 
         * <setInputCloud (), setIndices ()> using the indices in setIndices () 
@@ -126,9 +126,11 @@ namespace pcl
       computeTracking () = 0;
       
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
   }
 }
 
 #include <pcl/tracking/impl/tracker.hpp>
+
+#endif

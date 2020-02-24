@@ -35,11 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef SPARSE_MAT_H
+#define SPARSE_MAT_H
 
 #include <vector>
 #include <map>
-#include <cstdio>
+#include <stdio.h>
 
 namespace pcl
 {
@@ -108,3 +109,5 @@ namespace pcl
 
   }
 }
+
+#endif /* SPARSEMAT_H_ */

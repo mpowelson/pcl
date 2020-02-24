@@ -34,7 +34,6 @@
  * Author: Julius Kammerl (julius@kammerl.de)
  */
 
-#include <thread>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -47,9 +46,9 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdio>
+#include <stdio.h>
 #include <sstream>
-#include <cstdlib>
+#include <stdlib.h>
 #include <iostream>
 #include <string>
 
@@ -61,7 +60,6 @@ using namespace pcl;
 using namespace pcl::io;
 
 using namespace std;
-using namespace std::chrono_literals;
 
 char usage[] = "\n"
   "  PCL organized point cloud stream compression\n"
@@ -107,7 +105,7 @@ do \
 }while(false)
 
 void
-print_usage (const std::string &msg)
+print_usage (std::string msg)
 {
   std::cerr << msg << std::endl;
   std::cout << usage << std::endl;
@@ -152,25 +150,25 @@ class SimpleOpenNIViewer
       if (!bRawImageEncoding_)
       {
         // create a new grabber for OpenNI devices
-        pcl::OpenNIGrabber interface {};
+        pcl::Grabber* interface = new pcl::OpenNIGrabber();
 
         // make callback function from member function
-        std::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f =
-          [this] (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud) { cloud_cb_ (cloud); };
+        boost::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f =
+          boost::bind (&SimpleOpenNIViewer::cloud_cb_, this, _1);
 
         // connect callback function for desired signal. In this case its a point cloud with color values
-        boost::signals2::connection c = interface.registerCallback (f);
+        boost::signals2::connection c = interface->registerCallback (f);
 
         // start receiving point clouds
-        interface.start ();
+        interface->start ();
 
 
         while (!outputFile_.fail())
         {
-          std::this_thread::sleep_for(1s);
+          boost::this_thread::sleep(boost::posix_time::seconds(1));
         }
 
-        interface.stop ();
+        interface->stop ();
       }
 
     }
@@ -214,23 +212,23 @@ struct EventHelper
   }
 
   void
-  image_callback (const openni_wrapper::Image::Ptr &image,
-                  const openni_wrapper::DepthImage::Ptr &depth_image, float)
+  image_callback (const boost::shared_ptr<openni_wrapper::Image> &image,
+                  const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image, float)
   {
 
-    std::vector<std::uint16_t> disparity_data;
-    std::vector<std::uint8_t> rgb_data;
+    vector<uint16_t> disparity_data;
+    vector<uint8_t> rgb_data;
 
-    std::uint32_t width=depth_image->getWidth ();
-    std::uint32_t height=depth_image->getHeight ();
+    uint32_t width=depth_image->getWidth ();
+    uint32_t height=depth_image->getHeight ();
 
     disparity_data.resize(width*height);
-    depth_image->fillDepthImageRaw (width, height, &disparity_data[0], static_cast<unsigned int> (width * sizeof (std::uint16_t)));
+    depth_image->fillDepthImageRaw (width, height, &disparity_data[0], static_cast<unsigned int> (width * sizeof (uint16_t)));
 
     if (image->getEncoding() != openni_wrapper::Image::RGB)
     {
       rgb_data.resize(width*height*3);
-      image->fillRGB(width, height, &rgb_data[0], static_cast<unsigned int> (width * sizeof (std::uint8_t) * 3));
+      image->fillRGB(width, height, &rgb_data[0], static_cast<unsigned int> (width * sizeof (uint8_t) * 3));
     }
 
     organizedEncoder_->encodeRawDisparityMapWithColorImage (disparity_data, rgb_data, width, height, outputFile_, doColorEncoding_, bGrayScaleConversion_, bShowStatistics_, pngLevel_);
@@ -243,27 +241,24 @@ struct EventHelper
     if (!bRawImageEncoding_)
     {
       // create a new grabber for OpenNI devices
-      pcl::OpenNIGrabber interface {};
+      pcl::Grabber* interface = new pcl::OpenNIGrabber ();
 
       // make callback function from member function
-      std::function<void
-      (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f = [this] (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud)
-      {
-        cloud_cb_ (cloud);
-      };
+      boost::function<void
+      (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f = boost::bind (&EventHelper::cloud_cb_, this, _1);
 
       // connect callback function for desired signal. In this case its a point cloud with color values
-      boost::signals2::connection c = interface.registerCallback (f);
+      boost::signals2::connection c = interface->registerCallback (f);
 
       // start receiving point clouds
-      interface.start ();
+      interface->start ();
 
       while (!outputFile_.fail ())
       {
-        std::this_thread::sleep_for(1s);
+        boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
 
-      interface.stop ();
+      interface->stop ();
     } else
     {
       pcl::OpenNIGrabber::Mode image_mode = pcl::OpenNIGrabber::OpenNI_Default_Mode;
@@ -274,20 +269,13 @@ struct EventHelper
       // Set the depth output format
       grabber.getDevice ()->setDepthOutputFormat (static_cast<openni_wrapper::OpenNIDevice::DepthMode> (depthformat));
 
-      std::function<void (const openni_wrapper::Image::Ptr&,
-                          const openni_wrapper::DepthImage::Ptr&,
-                          float) > image_cb = [this] (const openni_wrapper::Image::Ptr& img,
-                                                      const openni_wrapper::DepthImage::Ptr& depth,
-                                                      float f)
-      {
-        image_callback (img, depth, f);
-      };
+      boost::function<void (const boost::shared_ptr<openni_wrapper::Image>&, const boost::shared_ptr<openni_wrapper::DepthImage>&, float) > image_cb = boost::bind (&EventHelper::image_callback, this, _1, _2, _3);
       boost::signals2::connection image_connection = grabber.registerCallback (image_cb);
 
       grabber.start ();
       while (!outputFile_.fail())
       {
-        std::this_thread::sleep_for(1s);
+        boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
       grabber.stop ();
 
@@ -462,7 +450,7 @@ main (int argc, char **argv)
 
         std::cout << "Disconnected!" << std::endl;
 
-        std::this_thread::sleep_for(3s);
+        boost::this_thread::sleep(boost::posix_time::seconds(3));
 
       }
       catch (std::exception& e)

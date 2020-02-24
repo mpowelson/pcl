@@ -34,19 +34,18 @@
  * $Id$
  *
  */
+#ifndef PCL_PCL_VISUALIZER_ACTOR_MAP_H_
+#define PCL_PCL_VISUALIZER_ACTOR_MAP_H_
 
-#pragma once
-
-#include <pcl/visualization/boost.h>
 #include <pcl/visualization/point_cloud_handlers.h>
+#include <vector>
+#include <map>
 #include <pcl/PCLPointCloud2.h>
-
+#include <boost/unordered_map.hpp>
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>
-
-#include <map>
-#include <unordered_map>
-#include <vector>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/visualization/boost.h>
 
 template <typename T> class vtkSmartPointer;
 class vtkLODActor;
@@ -58,13 +57,13 @@ namespace pcl
   {
     class PCL_EXPORTS CloudActor
     {
-      using GeometryHandler = PointCloudGeometryHandler<pcl::PCLPointCloud2>;
-      using GeometryHandlerPtr = GeometryHandler::Ptr;
-      using GeometryHandlerConstPtr = GeometryHandler::ConstPtr;
+      typedef PointCloudGeometryHandler<pcl::PCLPointCloud2> GeometryHandler;
+      typedef GeometryHandler::Ptr GeometryHandlerPtr;
+      typedef GeometryHandler::ConstPtr GeometryHandlerConstPtr;
 
-      using ColorHandler = PointCloudColorHandler<pcl::PCLPointCloud2>;
-      using ColorHandlerPtr = ColorHandler::Ptr;
-      using ColorHandlerConstPtr = ColorHandler::ConstPtr;
+      typedef PointCloudColorHandler<pcl::PCLPointCloud2> ColorHandler;
+      typedef ColorHandler::Ptr ColorHandlerPtr;
+      typedef ColorHandler::ConstPtr ColorHandlerConstPtr;
 
       public:
         CloudActor () : color_handler_index_ (0), geometry_handler_index_ (0) {}
@@ -97,13 +96,15 @@ namespace pcl
         vtkSmartPointer<vtkIdTypeArray> cells;
     };
 
-    using CloudActorMap = std::unordered_map<std::string, CloudActor>;
-    using CloudActorMapPtr = shared_ptr<CloudActorMap>;
+    typedef boost::unordered_map<std::string, CloudActor> CloudActorMap;
+    typedef boost::shared_ptr<CloudActorMap> CloudActorMapPtr;
 
-    using ShapeActorMap = std::unordered_map<std::string, vtkSmartPointer<vtkProp> >;
-    using ShapeActorMapPtr = shared_ptr<ShapeActorMap>;
+    typedef boost::unordered_map<std::string, vtkSmartPointer<vtkProp> > ShapeActorMap;
+    typedef boost::shared_ptr<ShapeActorMap> ShapeActorMapPtr;
 
-    using CoordinateActorMap = std::unordered_map<std::string, vtkSmartPointer<vtkProp> >;
-    using CoordinateActorMapPtr = shared_ptr<CoordinateActorMap>;
+    typedef boost::unordered_map<std::string, vtkSmartPointer<vtkProp> > CoordinateActorMap;
+    typedef boost::shared_ptr<CoordinateActorMap> CoordinateActorMapPtr;
   }
 }
+
+#endif

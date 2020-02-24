@@ -37,12 +37,12 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MOMENT_OF_INERTIA_ESIMATION_H_
+#define PCL_MOMENT_OF_INERTIA_ESIMATION_H_
 
 #include <vector>
-#include <cmath>
+#include <math.h>
 #include <pcl/features/feature.h>
-#include <pcl/pcl_macros.h>
 #include <pcl/PointIndices.h>
 
 namespace pcl
@@ -63,34 +63,34 @@ namespace pcl
       using PCLBase <PointT>::initCompute;
       using PCLBase <PointT>::deinitCompute;
 
-      using PointCloudConstPtr = typename pcl::PCLBase<PointT>::PointCloudConstPtr;
-      using PointIndicesConstPtr = typename pcl::PCLBase<PointT>::PointIndicesConstPtr;
+      typedef typename pcl::PCLBase <PointT>::PointCloudConstPtr PointCloudConstPtr;
+      typedef typename pcl::PCLBase <PointT>::PointIndicesConstPtr PointIndicesConstPtr;
 
     public:
 
       /** \brief Provide a pointer to the input dataset
         * \param[in] cloud the const boost shared pointer to a PointCloud message
         */
-      void
-      setInputCloud (const PointCloudConstPtr& cloud) override;
+      virtual void
+      setInputCloud (const PointCloudConstPtr& cloud);
 
       /** \brief Provide a pointer to the vector of indices that represents the input data.
         * \param[in] indices a pointer to the vector of indices that represents the input data.
         */
-      void
-      setIndices (const IndicesPtr& indices) override;
+      virtual void
+      setIndices (const IndicesPtr& indices);
 
       /** \brief Provide a pointer to the vector of indices that represents the input data.
         * \param[in] indices a pointer to the vector of indices that represents the input data.
         */
-      void
-      setIndices (const IndicesConstPtr& indices) override;
+      virtual void
+      setIndices (const IndicesConstPtr& indices);
 
       /** \brief Provide a pointer to the vector of indices that represents the input data.
         * \param[in] indices a pointer to the vector of indices that represents the input data.
         */
-      void
-      setIndices (const PointIndicesConstPtr& indices) override;
+      virtual void
+      setIndices (const PointIndicesConstPtr& indices);
 
       /** \brief Set the indices for the points laying within an interest region of 
         * the point cloud.
@@ -100,14 +100,14 @@ namespace pcl
         * \param[in] nb_rows the number of rows to be considered row_start included
         * \param[in] nb_cols the number of columns to be considered col_start included
         */
-      void
-      setIndices (std::size_t row_start, std::size_t col_start, std::size_t nb_rows, std::size_t nb_cols) override;
+      virtual void
+      setIndices (size_t row_start, size_t col_start, size_t nb_rows, size_t nb_cols);
 
       /** \brief Constructor that sets default values for member variables. */
       MomentOfInertiaEstimation ();
 
       /** \brief Virtual destructor which frees the memory. */
-      
+      virtual
       ~MomentOfInertiaEstimation ();
 
       /** \brief This method allows to set the angle step. It is used for the rotation
@@ -349,7 +349,7 @@ namespace pcl
       Eigen::Matrix3f obb_rotational_matrix_;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
@@ -357,4 +357,6 @@ namespace pcl
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/moment_of_inertia_estimation.hpp>
+#endif
+
 #endif

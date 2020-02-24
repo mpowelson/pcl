@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTER_H_
+#define PCL_FILTER_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/common/io.h>
@@ -86,13 +87,13 @@ namespace pcl
       using PCLBase<PointT>::indices_;
       using PCLBase<PointT>::input_;
 
-      using Ptr = shared_ptr<Filter<PointT> >;
-      using ConstPtr = shared_ptr<const Filter<PointT> >;
+      typedef boost::shared_ptr< Filter<PointT> > Ptr;
+      typedef boost::shared_ptr< const Filter<PointT> > ConstPtr;
 
 
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       /** \brief Empty constructor.
         * \param[in] extract_removed_indices set to true if the filtered data indices should be saved in a
@@ -100,12 +101,13 @@ namespace pcl
         */
       Filter (bool extract_removed_indices = false) :
         removed_indices_ (new std::vector<int>),
+        filter_name_ (),
         extract_removed_indices_ (extract_removed_indices)
       {
       }
 
       /** \brief Empty destructor */
-      ~Filter () {}
+      virtual ~Filter () {}
 
       /** \brief Get the point indices being removed */
       inline IndicesConstPtr const
@@ -192,12 +194,12 @@ namespace pcl
   class PCL_EXPORTS Filter<pcl::PCLPointCloud2> : public PCLBase<pcl::PCLPointCloud2>
   {
     public:
-      using Ptr = shared_ptr<Filter<pcl::PCLPointCloud2> >;
-      using ConstPtr = shared_ptr<const Filter<pcl::PCLPointCloud2> >;
+      typedef boost::shared_ptr< Filter<pcl::PCLPointCloud2> > Ptr;
+      typedef boost::shared_ptr< const Filter<pcl::PCLPointCloud2> > ConstPtr;
 
-      using PCLPointCloud2 = pcl::PCLPointCloud2;
-      using PCLPointCloud2Ptr = PCLPointCloud2::Ptr;
-      using PCLPointCloud2ConstPtr = PCLPointCloud2::ConstPtr;
+      typedef pcl::PCLPointCloud2 PCLPointCloud2;
+      typedef PCLPointCloud2::Ptr PCLPointCloud2Ptr;
+      typedef PCLPointCloud2::ConstPtr PCLPointCloud2ConstPtr;
 
       /** \brief Empty constructor.
         * \param[in] extract_removed_indices set to true if the filtered data indices should be saved in a
@@ -205,12 +207,13 @@ namespace pcl
         */
       Filter (bool extract_removed_indices = false) :
         removed_indices_ (new std::vector<int>),
-        extract_removed_indices_ (extract_removed_indices)
+        extract_removed_indices_ (extract_removed_indices),
+        filter_name_ ()
       {
       }
 
       /** \brief Empty destructor */
-      ~Filter () {}
+      virtual ~Filter () {}
 
       /** \brief Get the point indices being removed */
       inline IndicesConstPtr const
@@ -266,3 +269,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/filter.hpp>
 #endif
+
+#endif  //#ifndef PCL_FILTER_H_

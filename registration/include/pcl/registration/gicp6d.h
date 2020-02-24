@@ -36,9 +36,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GICP6D_H_
+#define PCL_GICP6D_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_representation.h>
@@ -60,7 +60,7 @@ namespace pcl
       };
       float data_lab[4];
     };
-    PCL_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
   /** \brief A custom point type for position and CIELAB color value */
@@ -104,8 +104,8 @@ namespace pcl
    */
   class PCL_EXPORTS GeneralizedIterativeClosestPoint6D : public GeneralizedIterativeClosestPoint<PointXYZRGBA, PointXYZRGBA>
   {
-    using PointSource = PointXYZRGBA;
-    using PointTarget = PointXYZRGBA;
+    typedef PointXYZRGBA PointSource;
+    typedef PointXYZRGBA PointTarget;
 
     public:
 
@@ -121,7 +121,7 @@ namespace pcl
        * \param[in] cloud the input point cloud source
        */
       void
-      setInputSource (const PointCloudSourceConstPtr& cloud) override;
+      setInputSource (const PointCloudSourceConstPtr& cloud);
 
       /** \brief Provide a pointer to the input target
        * (e.g., the point cloud that we want to align the input source to)
@@ -129,7 +129,7 @@ namespace pcl
        * \param[in] cloud the input point cloud target
        */
       void
-      setInputTarget (const PointCloudTargetConstPtr& target) override;
+      setInputTarget (const PointCloudTargetConstPtr& target);
 
     protected:
 
@@ -139,7 +139,7 @@ namespace pcl
        */
       void
       computeTransformation (PointCloudSource& output,
-          const Eigen::Matrix4f& guess) override;
+          const Eigen::Matrix4f& guess);
 
       /** \brief Search for the closest nearest neighbor of a given point.
        * \param query the point to search a nearest neighbour for
@@ -169,8 +169,8 @@ namespace pcl
           using PointRepresentation<PointXYZLAB>::trivial_;
 
         public:
-          using Ptr = shared_ptr<MyPointRepresentation>;
-          using ConstPtr = shared_ptr<const MyPointRepresentation>;
+          typedef boost::shared_ptr<MyPointRepresentation> Ptr;
+          typedef boost::shared_ptr<const MyPointRepresentation> ConstPtr;
 
           MyPointRepresentation ()
           {
@@ -178,7 +178,7 @@ namespace pcl
             trivial_ = false;
           }
 
-          
+          virtual
           ~MyPointRepresentation ()
           {
           }
@@ -189,8 +189,8 @@ namespace pcl
             return Ptr (new MyPointRepresentation (*this));
           }
 
-          void
-          copyToFloatArray (const PointXYZLAB &p, float * out) const override
+          virtual void
+          copyToFloatArray (const PointXYZLAB &p, float * out) const
           {
             // copy all of the six values
             out[0] = p.x;
@@ -206,3 +206,5 @@ namespace pcl
       MyPointRepresentation point_rep_;
   };
 }
+
+#endif //#ifndef PCL_GICP6D_H_

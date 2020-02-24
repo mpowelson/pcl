@@ -38,7 +38,8 @@
 /// from the cloud as well as the ability to undo the removal.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
+#ifndef DELETE_COMMAND_H_
+#define DELETE_COMMAND_H_
 
 #include <pcl/apps/point_cloud_editor/command.h>
 #include <pcl/apps/point_cloud_editor/localTypes.h>
@@ -51,25 +52,43 @@ class DeleteCommand : public Command
     /// @brief Constructor
     /// @param selection_ptr A shared pointer pointing to the selection object.
     /// @param cloud_ptr A shared pointer pointing to the cloud object.
-    DeleteCommand (SelectionPtr selection_ptr, const CloudPtr& cloud_ptr);
-
-    /// @brief Copy constructor - commands are non-copyable
-    DeleteCommand (const DeleteCommand& c) = delete;
-
-    /// @brief Equal operator - commands are non-copyable
-    DeleteCommand&
-    operator= (const DeleteCommand&) = delete;
-
+    DeleteCommand (SelectionPtr selection_ptr, CloudPtr cloud_ptr);
+   
+    /// @brief Destructor
+    ~DeleteCommand ()
+    {
+    }
+    
   protected:
     /// @brief Removes the selected points and maintains a backup for undo.
     void 
-    execute () override;
+    execute ();
     
     /// @brief Returns the deleted points to the cloud, Order is not preserved.
     void 
-    undo () override;
+    undo ();
 
   private:
+    /// @brief Default constructor - object is not default constructable
+    DeleteCommand ():  deleted_selection_(CloudPtr())
+    {
+      assert(false);
+    }
+    
+    /// @brief Copy constructor - commands are non-copyable
+    DeleteCommand (const DeleteCommand& c)
+      : deleted_selection_(c.deleted_selection_)
+    {
+      assert(false);
+    }
+
+    /// @brief Equal operator - commands are non-copyable
+    DeleteCommand&
+    operator= (const DeleteCommand&)
+    {
+      assert(false); return (*this);
+    }
+
     /// a pointer pointing to the cloud
     CloudPtr cloud_ptr_;
 
@@ -83,3 +102,5 @@ class DeleteCommand : public Command
     /// a copy buffer which backs up the points deleted from the cloud.
     CopyBuffer deleted_cloud_buffer_;
 };
+
+#endif // DELETE_COMMAND_H_

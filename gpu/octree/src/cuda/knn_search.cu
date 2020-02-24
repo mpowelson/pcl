@@ -34,9 +34,8 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
-#include <limits>
-
 #include "internal.hpp"
+#include "pcl/gpu/utils/device/limits.hpp"
 #include "pcl/gpu/utils/device/warp.hpp"
 
 #include "utils/copygen.hpp"
@@ -46,7 +45,7 @@
 
 namespace pcl { namespace device { namespace knn_search
 {   
-    using PointType = OctreeImpl::PointType;
+    typedef OctreeImpl::PointType PointType;
     
     struct Batch
     {           
@@ -82,7 +81,7 @@ namespace pcl { namespace device { namespace knn_search
     struct Warp_knnSearch
     {   
     public:                        
-        using OctreeIterator = OctreeIteratorDeviceNS;
+        typedef OctreeIteratorDeviceNS OctreeIterator;
 
         const Batch& batch;
 
@@ -95,7 +94,7 @@ namespace pcl { namespace device { namespace knn_search
         OctreeIterator iterator;     
 
         __device__ __forceinline__ Warp_knnSearch(const Batch& batch_arg, int query_index_arg) 
-            : batch(batch_arg), query_index(query_index_arg), min_distance(std::numeric_limits<float>::max()), min_idx(0), iterator(batch.octree) { }
+            : batch(batch_arg), query_index(query_index_arg), min_distance(numeric_limits<float>::max()), min_idx(0), iterator(batch.octree) { }
 
         __device__ __forceinline__ void launch(bool active)
         {              
@@ -107,7 +106,7 @@ namespace pcl { namespace device { namespace knn_search
             else                
                 query_index = -1;    
 
-            while(__any_sync(0xFFFFFFFF, active))
+            while(__any(active))
             {                
                 int leaf = -1;
            
@@ -164,7 +163,7 @@ namespace pcl { namespace device { namespace knn_search
 
         __device__ __forceinline__ void processLeaf(int node_idx)
         {   
-            int mask = __ballot_sync(0xFFFFFFFF, node_idx != -1);            
+            int mask = __ballot(node_idx != -1);            
 
             unsigned int laneId = Warp::laneId();
             unsigned int warpId = Warp::id();
@@ -228,7 +227,7 @@ namespace pcl { namespace device { namespace knn_search
             __shared__ volatile int   index[CTA_SIZE];
 			
             int tid = threadIdx.x;
-			dist2[tid] = std::numeric_limits<float>::max();
+			dist2[tid] = pcl::device::numeric_limits<float>::max();
 
 			//serial step
             for (int idx = Warp::laneId(); idx < length; idx += Warp::STRIDE)
@@ -311,7 +310,7 @@ namespace pcl { namespace device { namespace knn_search
                                 
         bool active = query_index < batch.queries_num;
 
-        if (__all_sync(0xFFFFFFFF, active == false)) 
+        if (__all(active == false)) 
             return;
 
         Warp_knnSearch search(batch, query_index);
@@ -323,7 +322,7 @@ namespace pcl { namespace device { namespace knn_search
 
 void pcl::device::OctreeImpl::nearestKSearchBatch(const Queries& queries, int /*k*/, NeighborIndices& results) const
 {              
-    using BatchType = pcl::device::knn_search::Batch;
+    typedef pcl::device::knn_search::Batch BatchType;
 
     BatchType batch;      
     batch.octree = octreeGlobal;

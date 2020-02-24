@@ -10,20 +10,18 @@ using namespace std;
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/console/parse.h>
 
-#include <mutex>
-
 std::string device_id = "#1";
 
 float angular_resolution = -1.0f;
 
-std::mutex depth_image_mutex;
-openni_wrapper::DepthImage::Ptr depth_image_ptr;
+boost::mutex depth_image_mutex;
+boost::shared_ptr<openni_wrapper::DepthImage> depth_image_ptr;
 bool received_new_depth_data = false;
 
 struct EventHelper
 {
   void
-  depth_image_cb (const openni_wrapper::DepthImage::Ptr& depth_image)
+  depth_image_cb (const boost::shared_ptr<openni_wrapper::DepthImage>& depth_image)
   {
     if (depth_image_mutex.try_lock ())
     {
@@ -37,7 +35,7 @@ struct EventHelper
 void
 printUsage (const char* progName)
 {
-  std::cout << "\n\nUsage: "<<progName<<" [options] [scene.pcd] <model.pcl> [model_2.pcl] ... [model_n.pcl]\n\n"
+  cout << "\n\nUsage: "<<progName<<" [options] [scene.pcd] <model.pcl> [model_2.pcl] ... [model_n.pcl]\n\n"
        << "Options:\n"
        << "-------------------------------------------\n"
        << "-d <device_id>  set the device id (default \""<<device_id<<"\")\n"
@@ -57,9 +55,9 @@ int main (int argc, char** argv)
     return 0;
   }
   if (pcl::console::parse (argc, argv, "-d", device_id) >= 0)
-    std::cout << "Using device id \""<<device_id<<"\".\n";
+    cout << "Using device id \""<<device_id<<"\".\n";
   if (pcl::console::parse (argc, argv, "-r", angular_resolution) >= 0)
-    std::cout << "Setting angular resolution to "<<angular_resolution<<"deg.\n";
+    cout << "Setting angular resolution to "<<angular_resolution<<"deg.\n";
   angular_resolution = pcl::deg2rad (angular_resolution);
   
   pcl::visualization::RangeImageVisualizer range_image_widget ("Range Image");
@@ -79,7 +77,7 @@ int main (int argc, char** argv)
   {
     for (unsigned deviceIdx = 0; deviceIdx < driver.getNumberDevices (); ++deviceIdx)
     {
-      std::cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx)
+      cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx)
            << ", product: " << driver.getProductName (deviceIdx) << ", connected: "
            << (int) driver.getBus (deviceIdx) << " @ " << (int) driver.getAddress (deviceIdx)
            << ", serial number: \'" << driver.getSerialNumber (deviceIdx) << "\'\n";
@@ -87,22 +85,22 @@ int main (int argc, char** argv)
   }
   else
   {
-    std::cout << "\nNo devices connected.\n\n";
+    cout << "\nNo devices connected.\n\n";
     return 1;
   }
   
   pcl::Grabber* interface = new pcl::OpenNIGrabber (device_id);
   EventHelper event_helper;
   
-  std::function<void (const openni_wrapper::DepthImage::Ptr&) > f_depth_image =
-    [&] (const openni_wrapper::DepthImage::Ptr& depth) { event_helper.depth_image_cb (depth); };
+  boost::function<void (const boost::shared_ptr<openni_wrapper::DepthImage>&) > f_depth_image =
+    boost::bind (&EventHelper::depth_image_cb, &event_helper, _1);
   boost::signals2::connection c_depth_image = interface->registerCallback (f_depth_image);
   
-  std::cout << "Starting grabber\n";
+  cout << "Starting grabber\n";
   interface->start ();
-  std::cout << "Done\n";
+  cout << "Done\n";
   
-  pcl::RangeImagePlanar::Ptr range_image_planar_ptr (new pcl::RangeImagePlanar);
+  boost::shared_ptr<pcl::RangeImagePlanar> range_image_planar_ptr (new pcl::RangeImagePlanar);
   pcl::RangeImagePlanar& range_image_planar = *range_image_planar_ptr;
   
   while (!viewer.wasStopped ())
@@ -117,7 +115,7 @@ int main (int argc, char** argv)
       received_new_depth_data = false;
 
       int frame_id = depth_image_ptr->getFrameID ();
-      std::cout << "Visualizing frame "<<frame_id<<"\n";
+      cout << "Visualizing frame "<<frame_id<<"\n";
       const unsigned short* depth_map = depth_image_ptr->getDepthMetaData ().Data ();
       int width = depth_image_ptr->getWidth (), height = depth_image_ptr->getHeight ();
       float center_x = width/2, center_y = height/2;

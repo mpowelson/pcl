@@ -35,9 +35,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_IO_OPENNI2_FRAME_LISTENER_H_
+#define PCL_IO_OPENNI2_FRAME_LISTENER_H_
 
-#include <functional>
+#include <boost/function.hpp>
 
 #include "OpenNI.h"
 
@@ -48,7 +49,7 @@ namespace pcl
     namespace openni2
     {
 
-      using StreamCallbackFunction = std::function<void(openni::VideoStream& stream)>;
+      typedef boost::function<void(openni::VideoStream& stream)> StreamCallbackFunction;
 
       /* Each NewFrameListener may only listen to one VideoStream at a time.
       **/
@@ -57,15 +58,15 @@ namespace pcl
         public:
 
           OpenNI2FrameListener ()
-          {}
+            : callback_(0) {}
           OpenNI2FrameListener (StreamCallbackFunction cb)
-            : callback_(std::move(cb)) {}
+            : callback_(cb) {}
 
-          ~OpenNI2FrameListener ()
+          virtual ~OpenNI2FrameListener ()
           { };
 
           inline void
-          onNewFrame (openni::VideoStream& stream) override
+          onNewFrame (openni::VideoStream& stream)
           {
             if (callback_)
               callback_(stream);
@@ -74,7 +75,7 @@ namespace pcl
           void
           setCallback (StreamCallbackFunction cb)
           {
-            callback_ = std::move(cb);
+            callback_ = cb;
           }
 
         private:
@@ -84,3 +85,5 @@ namespace pcl
     } // namespace
   }
 }
+
+#endif // PCL_IO_OPENNI2_FRAME_LISTENER_H_

@@ -34,7 +34,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MODELER_DOWNSAMPLE_WORKER_H_
+#define PCL_MODELER_DOWNSAMPLE_WORKER_H_
 
 #include <pcl/apps/modeler/abstract_worker.h>
 
@@ -47,21 +48,21 @@ namespace pcl
     class VoxelGridDownampleWorker : public AbstractWorker 
     {
       public:
-        VoxelGridDownampleWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=nullptr);
-        ~VoxelGridDownampleWorker();
+        VoxelGridDownampleWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=0);
+        ~VoxelGridDownampleWorker(void);
 
       protected:
-        std::string
-        getName () const override {return ("Down Sample");}
+        virtual std::string
+        getName () const {return ("Down Sample");}
 
-        void
-        initParameters(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        initParameters(CloudMeshItem* cloud_mesh_item);
 
-        void
-        setupParameters() override;
+        virtual void
+        setupParameters();
 
-        void
-        processImpl(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        processImpl(CloudMeshItem* cloud_mesh_item);
 
       private:
         double x_min_, x_max_;
@@ -76,3 +77,5 @@ namespace pcl
 
   }
 }
+
+#endif // PCL_MODELER_DOWNSAMPLE_WORKER_H_

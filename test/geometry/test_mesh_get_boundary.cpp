@@ -49,23 +49,23 @@
 template <bool IsManifoldT>
 struct MeshTraits
 {
-    using VertexData = pcl::geometry::NoData;
-    using HalfEdgeData = pcl::geometry::NoData;
-    using EdgeData = pcl::geometry::NoData;
-    using FaceData = pcl::geometry::NoData;
-    using IsManifold = std::integral_constant <bool, IsManifoldT>;
+    typedef pcl::geometry::NoData                        VertexData;
+    typedef pcl::geometry::NoData                        HalfEdgeData;
+    typedef pcl::geometry::NoData                        EdgeData;
+    typedef pcl::geometry::NoData                        FaceData;
+    typedef boost::integral_constant <bool, IsManifoldT> IsManifold;
 };
 
-using ManifoldMesh = pcl::geometry::PolygonMesh<MeshTraits<true> >;
-using NonManifoldMesh = pcl::geometry::PolygonMesh<MeshTraits<false> >;
+typedef pcl::geometry::PolygonMesh <MeshTraits <true > > ManifoldMesh;
+typedef pcl::geometry::PolygonMesh <MeshTraits <false> > NonManifoldMesh;
 
-using MeshTypes = testing::Types <ManifoldMesh, NonManifoldMesh>;
+typedef testing::Types <ManifoldMesh, NonManifoldMesh> MeshTypes;
 
 template <class MeshT>
 class TestGetBoundary : public testing::Test
 {
   protected:
-    using Mesh = MeshT;
+    typedef MeshT Mesh;
 };
 
 TYPED_TEST_CASE (TestGetBoundary, MeshTypes);
@@ -74,11 +74,11 @@ TYPED_TEST_CASE (TestGetBoundary, MeshTypes);
 
 TYPED_TEST (TestGetBoundary, GetBoundaryHalfEdges)
 {
-  using Mesh = typename TestFixture::Mesh;
+  typedef typename TestFixture::Mesh Mesh;
 
 
-  using VertexIndices = typename Mesh::VertexIndices;
-  using HalfEdgeIndices = typename Mesh::HalfEdgeIndices;
+  typedef typename Mesh::VertexIndices   VertexIndices;
+  typedef typename Mesh::HalfEdgeIndices HalfEdgeIndices;
 
   //  0 -  1 -  2 -  3
   //  |    |    |    |

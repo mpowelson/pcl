@@ -5,10 +5,10 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_GLOBAL_PIPELINE_H_
+#define REC_FRAMEWORK_GLOBAL_PIPELINE_H_
 
-#include <flann/flann.hpp>
-
+#include <flann/flann.h>
 #include <pcl/common/common.h>
 #include <pcl/apps/3d_rec_framework/pc_source/source.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/global/global_estimator.h>
@@ -21,7 +21,7 @@ namespace pcl
     template<typename PointInT>
     class PCL_EXPORTS GlobalClassifier {
       public:
-      using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
+      typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
 
       virtual void
       setNN (int nn) = 0;
@@ -73,9 +73,9 @@ namespace pcl
           }
         } sortIndexScoresOp;
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
-        using DistT = Distance<float>;
-        using ModelT = Model<PointInT>;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
+        typedef Distance<float> DistT;
+        typedef Model<PointInT> ModelT;
 
         /** \brief Directory where the trained structure will be saved */
         std::string training_dir_;
@@ -84,15 +84,15 @@ namespace pcl
         PointInTPtr input_;
 
         /** \brief Model data source */
-        std::shared_ptr<pcl::rec_3d_framework::Source<PointInT>> source_;
+        typename boost::shared_ptr<pcl::rec_3d_framework::Source<PointInT> > source_;
 
         /** \brief Computes a feature */
-        std::shared_ptr<GlobalEstimator<PointInT, FeatureT>> estimator_;
+        typename boost::shared_ptr<GlobalEstimator<PointInT, FeatureT> > estimator_;
 
         /** \brief Descriptor name */
         std::string descr_name_;
 
-        using flann_model = std::pair<ModelT, std::vector<float> >;
+        typedef std::pair<ModelT, std::vector<float> > flann_model;
         flann::Matrix<float> flann_data_;
         flann::Index<DistT> * flann_index_;
         std::vector<flann_model> flann_models_;
@@ -111,8 +111,8 @@ namespace pcl
 
           flann::Matrix<float> flann_data (new float[models.size () * models[0].second.size ()], models.size (), models[0].second.size ());
 
-          for (std::size_t i = 0; i < data.rows; ++i)
-            for (std::size_t j = 0; j < data.cols; ++j)
+          for (size_t i = 0; i < data.rows; ++i)
+            for (size_t j = 0; j < data.cols; ++j)
             {
               flann_data.ptr ()[i * data.cols + j] = models[i].second[j];
             }
@@ -141,19 +141,19 @@ namespace pcl
         }
 
         void
-        setNN (int nn) override
+        setNN (int nn)
         {
           NN_ = nn;
         }
 
         void
-        getCategory (std::vector<std::string> & categories) override
+        getCategory (std::vector<std::string> & categories)
         {
           categories = categories_;
         }
 
         void
-        getConfidence (std::vector<float> & conf) override
+        getConfidence (std::vector<float> & conf)
         {
           conf = confidences_;
         }
@@ -170,13 +170,13 @@ namespace pcl
          */
 
         void
-        classify () override;
+        classify ();
 
         /**
          * \brief Sets the model data source_
          */
         void
-        setDataSource (std::shared_ptr<Source<PointInT>>& source)
+        setDataSource (typename boost::shared_ptr<Source<PointInT> > & source)
         {
           source_ = source;
         }
@@ -186,13 +186,13 @@ namespace pcl
          */
 
         void
-        setFeatureEstimator (std::shared_ptr<GlobalEstimator<PointInT, FeatureT>>& feat)
+        setFeatureEstimator (typename boost::shared_ptr<GlobalEstimator<PointInT, FeatureT> > & feat)
         {
           estimator_ = feat;
         }
 
         void
-        setIndices (std::vector<int> & indices) override
+        setIndices (std::vector<int> & indices)
         {
           indices_ = indices;
         }
@@ -201,7 +201,7 @@ namespace pcl
          * \brief Sets the input cloud to be classified
          */
         void
-        setInputCloud (const PointInTPtr & cloud) override
+        setInputCloud (const PointInTPtr & cloud)
         {
           input_ = cloud;
         }
@@ -220,3 +220,4 @@ namespace pcl
       };
   }
 }
+#endif /* REC_FRAMEWORK_GLOBAL_PIPELINE_H_ */

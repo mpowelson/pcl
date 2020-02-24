@@ -52,7 +52,8 @@ main (int argc, char** argv)
   ism.setTrainingClasses (training_classes);
   ism.setSamplingSize (2.0f);
 
-  pcl::ism::ImplicitShapeModelEstimation<153, pcl::PointXYZ, pcl::Normal>::ISMModelPtr model (new pcl::features::ISMModel);
+  pcl::ism::ImplicitShapeModelEstimation<153, pcl::PointXYZ, pcl::Normal>::ISMModelPtr model = boost::shared_ptr<pcl::features::ISMModel>
+    (new pcl::features::ISMModel);
   ism.trainISM (model);
 
   std::string file ("trained_ism_model.txt");
@@ -69,7 +70,7 @@ main (int argc, char** argv)
   normal_estimator.setInputCloud (testing_cloud);
   normal_estimator.compute (*testing_normals);
 
-  pcl::features::ISMVoteList<pcl::PointXYZ>::Ptr vote_list = ism.findObjects (
+  boost::shared_ptr<pcl::features::ISMVoteList<pcl::PointXYZ> > vote_list = ism.findObjects (
     model,
     testing_cloud,
     testing_normals,
@@ -89,7 +90,7 @@ main (int argc, char** argv)
   point.g = 255;
   point.b = 255;
 
-  for (std::size_t i_point = 0; i_point < testing_cloud->points.size (); i_point++)
+  for (size_t i_point = 0; i_point < testing_cloud->points.size (); i_point++)
   {
     point.x = testing_cloud->points[i_point].x;
     point.y = testing_cloud->points[i_point].y;
@@ -101,7 +102,7 @@ main (int argc, char** argv)
   point.r = 255;
   point.g = 0;
   point.b = 0;
-  for (std::size_t i_vote = 0; i_vote < strongest_peaks.size (); i_vote++)
+  for (size_t i_vote = 0; i_vote < strongest_peaks.size (); i_vote++)
   {
     point.x = strongest_peaks[i_vote].x;
     point.y = strongest_peaks[i_vote].y;

@@ -35,7 +35,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef _PCL_IO_BOOST_H_
+#define _PCL_IO_BOOST_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -45,7 +46,15 @@
 #ifndef __CUDACC__
 #include <boost/version.hpp>
 #include <boost/numeric/conversion/cast.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/bind.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/function.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/mpl/fold.hpp>
@@ -55,10 +64,15 @@
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#if BOOST_VERSION >= 104700
+#include <boost/chrono.hpp>
+#endif
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <boost/shared_array.hpp>
+#if BOOST_VERSION >= 104900
 #include <boost/interprocess/permissions.hpp>
+#endif
 #include <boost/iostreams/device/mapped_file.hpp>
 #define BOOST_PARAMETER_MAX_ARITY 7
 #include <boost/signals2.hpp>
@@ -67,3 +81,5 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 #endif
+#endif    // _PCL_IO_BOOST_H_
+

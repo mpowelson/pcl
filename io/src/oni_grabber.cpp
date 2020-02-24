@@ -48,7 +48,7 @@
 
 namespace
 {
-  union RGBValue
+  typedef union
   {
     struct /*anonymous*/
     {
@@ -59,7 +59,7 @@ namespace
     };
     float float_value;
     long long_value;
-  };
+  } RGBValue;
 }
 
 namespace pcl
@@ -67,7 +67,10 @@ namespace pcl
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ONIGrabber::ONIGrabber (const std::string& file_name, bool repeat, bool stream)
-  : rgb_frame_id_ ("/openni_rgb_optical_frame")
+  : rgb_sync_ ()
+  , ir_sync_ ()
+  , device_ ()
+  , rgb_frame_id_ ("/openni_rgb_optical_frame")
   , depth_frame_id_ ("/openni_depth_optical_frame")
   , running_ (false)
   , image_width_ ()
@@ -111,13 +114,7 @@ ONIGrabber::ONIGrabber (const std::string& file_name, bool repeat, bool stream)
     image_depth_image_signal_ = createSignal <sig_cb_openni_image_depth_image> ();
     point_cloud_rgb_signal_   = createSignal <sig_cb_openni_point_cloud_rgb> ();
     point_cloud_rgba_signal_   = createSignal <sig_cb_openni_point_cloud_rgba> ();
-    rgb_sync_.addCallback ([this] (const openni_wrapper::Image::Ptr& image,
-                                   const openni_wrapper::DepthImage::Ptr& depth_image,
-                                   unsigned long,
-                                   unsigned long)
-    {
-      imageDepthImageCallback (image, depth_image);
-    });
+    rgb_sync_.addCallback (boost::bind(&ONIGrabber::imageDepthImageCallback, this, _1, _2));
   }
 
   image_callback_handle = device_->registerImageCallback (&ONIGrabber::imageCallback, *this);
@@ -140,7 +137,7 @@ ONIGrabber::ONIGrabber (const std::string& file_name, bool repeat, bool stream)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ONIGrabber::~ONIGrabber() noexcept
+ONIGrabber::~ONIGrabber() throw ()
 {
   try
   {
@@ -250,12 +247,13 @@ ONIGrabber::getFramesPerSecond () const
 {
   if (device_->isStreaming())
     return (static_cast<float> (device_->getDepthOutputMode ().nFPS));
-  return (0);
+  else
+    return (0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-ONIGrabber::imageCallback(openni_wrapper::Image::Ptr image, void*)
+ONIGrabber::imageCallback(boost::shared_ptr<openni_wrapper::Image> image, void*)
 {
   if (num_slots<sig_cb_openni_point_cloud_rgb> () > 0 ||
       num_slots<sig_cb_openni_point_cloud_rgba> () > 0 ||
@@ -270,7 +268,7 @@ ONIGrabber::imageCallback(openni_wrapper::Image::Ptr image, void*)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-ONIGrabber::depthCallback(openni_wrapper::DepthImage::Ptr depth_image, void*)
+ONIGrabber::depthCallback(boost::shared_ptr<openni_wrapper::DepthImage> depth_image, void*)
 {
   if (num_slots<sig_cb_openni_point_cloud_rgb> () > 0 ||
       num_slots<sig_cb_openni_point_cloud_rgba> () > 0 ||
@@ -292,7 +290,7 @@ ONIGrabber::depthCallback(openni_wrapper::DepthImage::Ptr depth_image, void*)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-ONIGrabber::irCallback(openni_wrapper::IRImage::Ptr ir_image, void*)
+ONIGrabber::irCallback(boost::shared_ptr<openni_wrapper::IRImage> ir_image, void*)
 {
   if (num_slots<sig_cb_openni_point_cloud_i > () > 0 ||
       num_slots<sig_cb_openni_ir_depth_image > () > 0)
@@ -306,7 +304,7 @@ ONIGrabber::irCallback(openni_wrapper::IRImage::Ptr ir_image, void*)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-ONIGrabber::imageDepthImageCallback(const openni_wrapper::Image::Ptr &image, const openni_wrapper::DepthImage::Ptr &depth_image)
+ONIGrabber::imageDepthImageCallback(const boost::shared_ptr<openni_wrapper::Image> &image, const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image)
 {
   // check if we have color point cloud slots
   if (point_cloud_rgb_signal_->num_slots () > 0)
@@ -327,7 +325,7 @@ ONIGrabber::imageDepthImageCallback(const openni_wrapper::Image::Ptr &image, con
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-ONIGrabber::irDepthImageCallback(const openni_wrapper::IRImage::Ptr &ir_image, const openni_wrapper::DepthImage::Ptr &depth_image)
+ONIGrabber::irDepthImageCallback(const boost::shared_ptr<openni_wrapper::IRImage> &ir_image, const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image)
 {
   // check if we have color point cloud slots
   if (point_cloud_i_signal_->num_slots() > 0)
@@ -342,7 +340,7 @@ ONIGrabber::irDepthImageCallback(const openni_wrapper::IRImage::Ptr &ir_image, c
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::PointCloud<pcl::PointXYZ>::Ptr 
-ONIGrabber::convertToXYZPointCloud(const openni_wrapper::DepthImage::Ptr& depth_image) const
+ONIGrabber::convertToXYZPointCloud(const boost::shared_ptr<openni_wrapper::DepthImage>& depth_image) const
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud <pcl::PointXYZ>);
 
@@ -353,24 +351,24 @@ ONIGrabber::convertToXYZPointCloud(const openni_wrapper::DepthImage::Ptr& depth_
 
   cloud->points.resize (cloud->height * cloud->width);
 
-  float constant = 1.0f / device_->getDepthFocalLength (depth_width_);
+  register float constant = 1.0f / device_->getDepthFocalLength (depth_width_);
 
   if (device_->isDepthRegistered ())
     cloud->header.frame_id = rgb_frame_id_;
   else
     cloud->header.frame_id = depth_frame_id_;
 
-  int centerX = (cloud->width >> 1);
+  register int centerX = (cloud->width >> 1);
   int centerY = (cloud->height >> 1);
 
   float bad_point = std::numeric_limits<float>::quiet_NaN ();
 
   // we have to use Data, since operator[] uses assert -> Debug-mode very slow!
-  const unsigned short* depth_map = depth_image->getDepthMetaData ().Data ();
+  register const unsigned short* depth_map = depth_image->getDepthMetaData ().Data ();
   if (depth_image->getWidth () != depth_width_ || depth_image->getHeight () != depth_height_)
   {
     static unsigned buffer_size = 0;
-    static boost::shared_array<unsigned short> depth_buffer ((unsigned short*)nullptr);
+    static boost::shared_array<unsigned short> depth_buffer ((unsigned short*)(NULL));
 
     if (buffer_size < depth_width_ * depth_height_)
     {
@@ -381,10 +379,10 @@ ONIGrabber::convertToXYZPointCloud(const openni_wrapper::DepthImage::Ptr& depth_
     depth_map = depth_buffer.get ();
   }
 
-  int depth_idx = 0;
+  register int depth_idx = 0;
   for (int v = -centerY; v < centerY; ++v)
   {
-    for (int u = -centerX; u < centerX; ++u, ++depth_idx)
+    for (register int u = -centerX; u < centerX; ++u, ++depth_idx)
     {
       pcl::PointXYZ& pt = cloud->points[depth_idx];
       // Check for invalid measurements
@@ -406,14 +404,14 @@ ONIGrabber::convertToXYZPointCloud(const openni_wrapper::DepthImage::Ptr& depth_
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr ONIGrabber::convertToXYZRGBPointCloud (
-    const openni_wrapper::Image::Ptr &image,
-    const openni_wrapper::DepthImage::Ptr &depth_image) const
+    const boost::shared_ptr<openni_wrapper::Image> &image, 
+    const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image) const
 {
   static unsigned rgb_array_size = 0;
-  static boost::shared_array<unsigned char> rgb_array((unsigned char*)nullptr);
-  static unsigned char* rgb_buffer = nullptr;
+  static boost::shared_array<unsigned char> rgb_array((unsigned char*)(NULL));
+  static unsigned char* rgb_buffer = 0;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+  boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> > cloud(new pcl::PointCloud<pcl::PointXYZRGB> ());
 
   cloud->header.frame_id = rgb_frame_id_;
   cloud->height = depth_height_;
@@ -423,14 +421,14 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr ONIGrabber::convertToXYZRGBPointCloud (
   cloud->points.resize(cloud->height * cloud->width);
 
   float constant = 1.0f / device_->getImageFocalLength(cloud->width);
-  int centerX = (cloud->width >> 1);
+  register int centerX = (cloud->width >> 1);
   int centerY = (cloud->height >> 1);
 
-  const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
+  register const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
   if (depth_image->getWidth() != depth_width_ || depth_image->getHeight() != depth_height_)
   {
     static unsigned buffer_size = 0;
-    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)nullptr);
+    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)(NULL));
 
     if (buffer_size < depth_width_ * depth_height_)
     {
@@ -452,7 +450,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr ONIGrabber::convertToXYZRGBPointCloud (
   image->fillRGB(image_width_, image_height_, rgb_buffer, image_width_ * 3);
 
   // depth_image already has the desired dimensions, but rgb_msg may be higher res.
-  int color_idx = 0, depth_idx = 0;
+  register int color_idx = 0, depth_idx = 0;
   RGBValue color;
   color.Alpha = 0;
 
@@ -460,7 +458,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr ONIGrabber::convertToXYZRGBPointCloud (
 
   for (int v = -centerY; v < centerY; ++v)
   {
-    for (int u = -centerX; u < centerX; ++u, color_idx += 3, ++depth_idx)
+    for (register int u = -centerX; u < centerX; ++u, color_idx += 3, ++depth_idx)
     {
       pcl::PointXYZRGB& pt = cloud->points[depth_idx];
       /// @todo Different values for these cases
@@ -490,14 +488,14 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr ONIGrabber::convertToXYZRGBPointCloud (
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::PointCloud<pcl::PointXYZRGBA>::Ptr ONIGrabber::convertToXYZRGBAPointCloud (
-    const openni_wrapper::Image::Ptr &image,
-    const openni_wrapper::DepthImage::Ptr &depth_image) const
+    const boost::shared_ptr<openni_wrapper::Image> &image, 
+    const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image) const
 {
   static unsigned rgb_array_size = 0;
-  static boost::shared_array<unsigned char> rgb_array((unsigned char*)nullptr);
-  static unsigned char* rgb_buffer = nullptr;
+  static boost::shared_array<unsigned char> rgb_array((unsigned char*)(NULL));
+  static unsigned char* rgb_buffer = 0;
 
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGBA>);
+  boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGBA> > cloud (new pcl::PointCloud<pcl::PointXYZRGBA> ());
 
   cloud->header.frame_id = rgb_frame_id_;
   cloud->height = depth_height_;
@@ -507,14 +505,14 @@ pcl::PointCloud<pcl::PointXYZRGBA>::Ptr ONIGrabber::convertToXYZRGBAPointCloud (
   cloud->points.resize(cloud->height * cloud->width);
 
   float constant = 1.0f / device_->getImageFocalLength(cloud->width);
-  int centerX = (cloud->width >> 1);
+  register int centerX = (cloud->width >> 1);
   int centerY = (cloud->height >> 1);
 
-  const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
+  register const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
   if (depth_image->getWidth() != depth_width_ || depth_image->getHeight() != depth_height_)
   {
     static unsigned buffer_size = 0;
-    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)nullptr);
+    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)(NULL));
 
     if (buffer_size < depth_width_ * depth_height_)
     {
@@ -536,7 +534,7 @@ pcl::PointCloud<pcl::PointXYZRGBA>::Ptr ONIGrabber::convertToXYZRGBAPointCloud (
   image->fillRGB(image_width_, image_height_, rgb_buffer, image_width_ * 3);
 
   // depth_image already has the desired dimensions, but rgb_msg may be higher res.
-  int color_idx = 0, depth_idx = 0;
+  register int color_idx = 0, depth_idx = 0;
   RGBValue color;
   color.Alpha = 0;
 
@@ -544,7 +542,7 @@ pcl::PointCloud<pcl::PointXYZRGBA>::Ptr ONIGrabber::convertToXYZRGBAPointCloud (
 
   for (int v = -centerY; v < centerY; ++v)
   {
-    for (int u = -centerX; u < centerX; ++u, color_idx += 3, ++depth_idx)
+    for (register int u = -centerX; u < centerX; ++u, color_idx += 3, ++depth_idx)
     {
       pcl::PointXYZRGBA& pt = cloud->points[depth_idx];
       /// @todo Different values for these cases
@@ -566,17 +564,17 @@ pcl::PointCloud<pcl::PointXYZRGBA>::Ptr ONIGrabber::convertToXYZRGBAPointCloud (
       color.Red = rgb_buffer[color_idx];
       color.Green = rgb_buffer[color_idx + 1];
       color.Blue = rgb_buffer[color_idx + 2];
-      pt.rgba = static_cast<std::uint32_t> (color.long_value);
+      pt.rgba = static_cast<uint32_t> (color.long_value);
     }
   }
   return (cloud);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-pcl::PointCloud<pcl::PointXYZI>::Ptr ONIGrabber::convertToXYZIPointCloud(const openni_wrapper::IRImage::Ptr &ir_image,
-  const openni_wrapper::DepthImage::Ptr &depth_image) const
+pcl::PointCloud<pcl::PointXYZI>::Ptr ONIGrabber::convertToXYZIPointCloud(const boost::shared_ptr<openni_wrapper::IRImage> &ir_image,
+  const boost::shared_ptr<openni_wrapper::DepthImage> &depth_image) const
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  boost::shared_ptr<pcl::PointCloud<pcl::PointXYZI> > cloud(new pcl::PointCloud<pcl::PointXYZI > ());
 
   cloud->header.frame_id = rgb_frame_id_;
   cloud->height = depth_height_;
@@ -586,17 +584,17 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr ONIGrabber::convertToXYZIPointCloud(const o
   cloud->points.resize(cloud->height * cloud->width);
 
   float constant = 1.0f / device_->getImageFocalLength(cloud->width);
-  int centerX = (cloud->width >> 1);
+  register int centerX = (cloud->width >> 1);
   int centerY = (cloud->height >> 1);
 
-  const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
-  const XnIRPixel* ir_map = ir_image->getMetaData().Data();
+  register const XnDepthPixel* depth_map = depth_image->getDepthMetaData().Data();
+  register const XnIRPixel* ir_map = ir_image->getMetaData().Data();
 
   if (depth_image->getWidth() != depth_width_ || depth_image->getHeight() != depth_height_)
   {
     static unsigned buffer_size = 0;
-    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)nullptr);
-    static boost::shared_array<unsigned short> ir_buffer((unsigned short*)nullptr);
+    static boost::shared_array<unsigned short> depth_buffer((unsigned short*)(NULL));
+    static boost::shared_array<unsigned short> ir_buffer((unsigned short*)(NULL));
 
     if (buffer_size < depth_width_ * depth_height_)
     {
@@ -612,12 +610,12 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr ONIGrabber::convertToXYZIPointCloud(const o
     ir_map = ir_buffer.get ();
   }
 
-  int depth_idx = 0;
+  register int depth_idx = 0;
   float bad_point = std::numeric_limits<float>::quiet_NaN();
 
   for (int v = -centerY; v < centerY; ++v)
   {
-    for (int u = -centerX; u < centerX; ++u, ++depth_idx)
+    for (register int u = -centerX; u < centerX; ++u, ++depth_idx)
     {
       pcl::PointXYZI& pt = cloud->points[depth_idx];
       /// @todo Different values for these cases

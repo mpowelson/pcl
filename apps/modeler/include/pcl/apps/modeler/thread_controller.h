@@ -34,9 +34,10 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MODELER_THREAD_CONTROLLER_H_
+#define PCL_MODELER_THREAD_CONTROLLER_H_
 
-#include <QObject>
+#include <pcl/apps/modeler/qt.h>
 
 namespace pcl
 {
@@ -51,7 +52,7 @@ namespace pcl
 
       public:
         ThreadController();
-        ~ThreadController();
+        ~ThreadController(void);
 
         bool
         runWorker(AbstractWorker* worker);
@@ -67,3 +68,5 @@ namespace pcl
 
   }
 }
+
+#endif // PCL_MODELER_THREAD_CONTROLLER_H_

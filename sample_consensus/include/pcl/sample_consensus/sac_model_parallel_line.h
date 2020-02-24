@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_MODEL_PARALLEL_LINE_H_
+#define PCL_SAMPLE_CONSENSUS_MODEL_PARALLEL_LINE_H_
 
 #include <pcl/sample_consensus/sac_model_line.h>
 
@@ -67,12 +68,11 @@ namespace pcl
     public:
       using SampleConsensusModel<PointT>::model_name_;
 
-      using PointCloud = typename SampleConsensusModelLine<PointT>::PointCloud;
-      using PointCloudPtr = typename SampleConsensusModelLine<PointT>::PointCloudPtr;
-      using PointCloudConstPtr = typename SampleConsensusModelLine<PointT>::PointCloudConstPtr;
+      typedef typename SampleConsensusModelLine<PointT>::PointCloud PointCloud;
+      typedef typename SampleConsensusModelLine<PointT>::PointCloudPtr PointCloudPtr;
+      typedef typename SampleConsensusModelLine<PointT>::PointCloudConstPtr PointCloudConstPtr;
 
-      using Ptr = shared_ptr<SampleConsensusModelParallelLine<PointT> >;
-      using ConstPtr = shared_ptr<const SampleConsensusModelParallelLine<PointT>>;
+      typedef boost::shared_ptr<SampleConsensusModelParallelLine> Ptr;
 
       /** \brief Constructor for base SampleConsensusModelParallelLine.
         * \param[in] cloud the input point cloud dataset
@@ -107,7 +107,7 @@ namespace pcl
       }
 
       /** \brief Empty destructor */
-      ~SampleConsensusModelParallelLine () {}
+      virtual ~SampleConsensusModelParallelLine () {}
 
       /** \brief Set the axis along which we need to search for a line.
         * \param[in] ax the axis along which we need to search for a line
@@ -136,7 +136,7 @@ namespace pcl
       void
       selectWithinDistance (const Eigen::VectorXf &model_coefficients,
                             const double threshold,
-                            std::vector<int> &inliers) override;
+                            std::vector<int> &inliers);
 
       /** \brief Count all the points which respect the given model coefficients as inliers.
         *
@@ -144,9 +144,9 @@ namespace pcl
         * \param[in] threshold maximum admissible distance threshold for determining the inliers from the outliers
         * \return the resultant number of inliers
         */
-      std::size_t
+      virtual int
       countWithinDistance (const Eigen::VectorXf &model_coefficients,
-                           const double threshold) const override;
+                           const double threshold) const;
 
       /** \brief Compute all squared distances from the cloud data to a given line model.
         * \param[in] model_coefficients the coefficients of a line model that we need to compute distances to
@@ -154,11 +154,11 @@ namespace pcl
         */
       void
       getDistancesToModel (const Eigen::VectorXf &model_coefficients,
-                           std::vector<double> &distances) const override;
+                           std::vector<double> &distances) const;
 
-      /** \brief Return a unique id for this model (SACMODEL_PARALLEL_LINE). */
+      /** \brief Return an unique id for this model (SACMODEL_PARALLEL_LINE). */
       inline pcl::SacModel
-      getModelType () const override { return (SACMODEL_PARALLEL_LINE); }
+      getModelType () const { return (SACMODEL_PARALLEL_LINE); }
 
     protected:
       using SampleConsensusModel<PointT>::sample_size_;
@@ -167,8 +167,8 @@ namespace pcl
       /** \brief Check whether a model is valid given the user constraints.
         * \param[in] model_coefficients the set of model coefficients
         */
-      bool
-      isModelValid (const Eigen::VectorXf &model_coefficients) const override;
+      virtual bool
+      isModelValid (const Eigen::VectorXf &model_coefficients) const;
 
       /** \brief The axis along which we need to search for a line. */
       Eigen::Vector3f axis_;
@@ -181,3 +181,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/sample_consensus/impl/sac_model_parallel_line.hpp>
 #endif
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_MODEL_PARALLEL_LINE_H_

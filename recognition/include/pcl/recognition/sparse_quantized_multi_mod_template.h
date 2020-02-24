@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_SPARSE_QUANTIZED_MULTI_MOD_TEMPLATE
+#define PCL_FEATURES_SPARSE_QUANTIZED_MULTI_MOD_TEMPLATE
 
 #include <vector>
 
@@ -57,7 +58,7 @@ namespace pcl
     /** \brief y-position. */
     int y;
     /** \brief the index of the corresponding modality. */
-    std::size_t modality_index;
+    size_t modality_index;
     /** \brief the quantized value attached to the feature. */
     unsigned char quantized_value;
 
@@ -108,7 +109,7 @@ namespace pcl
   struct SparseQuantizedMultiModTemplate
   {
     /** \brief Constructor. */
-    SparseQuantizedMultiModTemplate () {}
+    SparseQuantizedMultiModTemplate () : features (), region () {}
 
     /** \brief The storage for the multi-modality features. */
     std::vector<QuantizedMultiModFeature> features;
@@ -151,3 +152,5 @@ namespace pcl
   };
 
 }
+
+#endif 

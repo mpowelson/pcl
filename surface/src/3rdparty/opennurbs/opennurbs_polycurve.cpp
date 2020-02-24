@@ -29,7 +29,7 @@ ON_PolyCurve::ON_PolyCurve( int capacity )
 }
 
 ON_PolyCurve::ON_PolyCurve( const ON_PolyCurve& src )
-              : ON_Curve(src), m_segment(src.Count()), m_t(src.Count()+1)
+              : m_segment(src.Count()), m_t(src.Count()+1)
 {
   *this = src;
 }
@@ -1111,7 +1111,7 @@ static ON_NurbsCurve* ChangeArcEnd( const ON_ArcCurve* arc, ON_3dPoint P, ON_3dP
   return nc;
 }
 
-bool ON_PolyCurve::CloseGap( int gap_index, int )
+bool ON_PolyCurve::CloseGap( int gap_index, int ends_to_modify )
 {
   const int count = m_segment.Count();
 

@@ -35,11 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef COMMANDS_H_
+#define COMMANDS_H_
 
+#include <pcl/apps/cloud_composer/qt.h>
+#include <pcl/pcl_exports.h>
 #include <pcl/apps/cloud_composer/items/cloud_item.h>
-
-#include <QUndoCommand>
 
 namespace pcl
 {
@@ -55,22 +56,22 @@ namespace pcl
 
 
     
-    class CloudCommand : public QUndoCommand
+    class PCL_EXPORTS CloudCommand : public QUndoCommand
     {
       public: 
-        CloudCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        CloudCommand (ConstItemList input_data, QUndoCommand* parent = 0);
         
-        
+        virtual
         ~CloudCommand ();
         
         virtual bool
         runCommand (AbstractTool* tool) = 0;
 
-        void 
-        undo ()  override = 0;
+        virtual void 
+        undo ()  = 0;
         
-        void
-        redo () override = 0;
+        virtual void
+        redo () = 0;
         
         //QList <CloudComposerItem*> 
        // executeToolOnTemplateCloud (AbstractTool* tool, ConstItemList &input_data);
@@ -81,7 +82,7 @@ namespace pcl
         inline void
         setInputData (ConstItemList input_data)
         {
-          original_data_ = std::move(input_data);
+          original_data_ = input_data;
         }
       protected:
         /** \brief Removes the original item(s) from the model and replaces with the replacement(s)
@@ -89,11 +90,11 @@ namespace pcl
          *  This stores the removed items in removed_items_
          */
         bool 
-        replaceOriginalWithNew (const QList <const CloudComposerItem*>& originals, const QList <CloudComposerItem*>& new_items);
+        replaceOriginalWithNew (QList <const CloudComposerItem*> originals, QList <CloudComposerItem*> new_items);
         
         /** \brief This removes new_items from the model and restores originals */
         bool
-        restoreOriginalRemoveNew (const QList <const CloudComposerItem*>& originals, const QList <CloudComposerItem*>& new_items);
+        restoreOriginalRemoveNew (QList <const CloudComposerItem*> originals, QList <CloudComposerItem*> new_items);
         
         ConstItemList original_data_;
         
@@ -118,95 +119,95 @@ namespace pcl
         int template_type_;
     };
     
-    class ModifyItemCommand : public CloudCommand
+    class PCL_EXPORTS ModifyItemCommand : public CloudCommand
     {
       public: 
-        ModifyItemCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        ModifyItemCommand (ConstItemList input_data, QUndoCommand* parent = 0);
     
-        bool
-        runCommand (AbstractTool* tool) override;
+        virtual bool
+        runCommand (AbstractTool* tool);
         
-        void
-        undo () override;
+        virtual void
+        undo ();
       
-        void
-        redo () override;
+        virtual void
+        redo ();
       private: 
         
       
       
     };
     
-    class NewItemCloudCommand : public CloudCommand
+    class PCL_EXPORTS NewItemCloudCommand : public CloudCommand
     {
       public: 
-        NewItemCloudCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        NewItemCloudCommand (ConstItemList input_data, QUndoCommand* parent = 0);
       
-        bool
-        runCommand (AbstractTool* tool) override;
+        virtual bool
+        runCommand (AbstractTool* tool);
         
-        void
-        undo () override;
+        virtual void
+        undo ();
       
-        void
-        redo () override;
+        virtual void
+        redo ();
 
     };
     
 
-    class SplitCloudCommand : public CloudCommand
+    class PCL_EXPORTS SplitCloudCommand : public CloudCommand
     {
       public: 
-        SplitCloudCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        SplitCloudCommand (ConstItemList input_data, QUndoCommand* parent = 0);
       
-        bool
-        runCommand (AbstractTool* tool) override;
+        virtual bool
+        runCommand (AbstractTool* tool);
         
-        void
-        undo () override;
+        virtual void
+        undo ();
       
-        void
-        redo () override;
+        virtual void
+        redo ();
       private:
 
     };  
     
-    class DeleteItemCommand : public CloudCommand
+    class PCL_EXPORTS DeleteItemCommand : public CloudCommand
     {
       public: 
-        DeleteItemCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        DeleteItemCommand (ConstItemList input_data, QUndoCommand* parent = 0);
       
-        bool
-        runCommand (AbstractTool* tool) override;
+        virtual bool
+        runCommand (AbstractTool* tool);
         
-        void
-        undo () override;
+        virtual void
+        undo ();
       
-        void
-        redo () override;
+        virtual void
+        redo ();
       private:
     };
     
-    class MergeCloudCommand : public CloudCommand
+    class PCL_EXPORTS MergeCloudCommand : public CloudCommand
     {
       public: 
         /** \brief Construct for a merge command
          *  \param[in] input_data Input list of CloudItem s from the project model which will be merged
          *  \param[in] temporary_clouds Input list of CloudItems which 
          */
-        MergeCloudCommand (ConstItemList input_data, QUndoCommand* parent = nullptr);
+        MergeCloudCommand (ConstItemList input_data, QUndoCommand* parent = 0);
       
-        bool
-        runCommand (AbstractTool* tool) override;
+        virtual bool
+        runCommand (AbstractTool* tool);
         
-        void
-        undo () override;
+        virtual void
+        undo ();
       
-        void
-        redo () override;
+        virtual void
+        redo ();
         
         inline void
-        setSelectedIndicesMap( const QMap <CloudItem*, pcl::PointIndices::Ptr >& selected_item_index_map)
+        setSelectedIndicesMap( const QMap <CloudItem*, pcl::PointIndices::Ptr > selected_item_index_map)
         {
           selected_item_index_map_ = selected_item_index_map;
         }
@@ -218,3 +219,4 @@ namespace pcl
 } 
 
 Q_DECLARE_METATYPE (ConstItemList);
+#endif //COMMANDS_H_

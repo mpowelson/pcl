@@ -38,16 +38,15 @@
  *
  */
 
-#pragma once
+#ifndef PCL_ICP_H_
+#define PCL_ICP_H_
 
 // PCL includes
-#include <pcl/make_shared.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 #include <pcl/registration/registration.h>
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/registration/transformation_estimation_point_to_plane_lls.h>
-#include <pcl/registration/transformation_estimation_symmetric_point_to_plane_lls.h>
 #include <pcl/registration/correspondence_estimation.h>
 #include <pcl/registration/default_convergence_criteria.h>
 
@@ -95,19 +94,19 @@ namespace pcl
   class IterativeClosestPoint : public Registration<PointSource, PointTarget, Scalar>
   {
     public:
-      using PointCloudSource = typename Registration<PointSource, PointTarget, Scalar>::PointCloudSource;
-      using PointCloudSourcePtr = typename PointCloudSource::Ptr;
-      using PointCloudSourceConstPtr = typename PointCloudSource::ConstPtr;
+      typedef typename Registration<PointSource, PointTarget, Scalar>::PointCloudSource PointCloudSource;
+      typedef typename PointCloudSource::Ptr PointCloudSourcePtr;
+      typedef typename PointCloudSource::ConstPtr PointCloudSourceConstPtr;
 
-      using PointCloudTarget = typename Registration<PointSource, PointTarget, Scalar>::PointCloudTarget;
-      using PointCloudTargetPtr = typename PointCloudTarget::Ptr;
-      using PointCloudTargetConstPtr = typename PointCloudTarget::ConstPtr;
+      typedef typename Registration<PointSource, PointTarget, Scalar>::PointCloudTarget PointCloudTarget;
+      typedef typename PointCloudTarget::Ptr PointCloudTargetPtr;
+      typedef typename PointCloudTarget::ConstPtr PointCloudTargetConstPtr;
 
-      using PointIndicesPtr = PointIndices::Ptr;
-      using PointIndicesConstPtr = PointIndices::ConstPtr;
+      typedef PointIndices::Ptr PointIndicesPtr;
+      typedef PointIndices::ConstPtr PointIndicesConstPtr;
 
-      using Ptr = shared_ptr<IterativeClosestPoint<PointSource, PointTarget, Scalar> >;
-      using ConstPtr = shared_ptr<const IterativeClosestPoint<PointSource, PointTarget, Scalar> >;
+      typedef boost::shared_ptr<IterativeClosestPoint<PointSource, PointTarget, Scalar> > Ptr;
+      typedef boost::shared_ptr<const IterativeClosestPoint<PointSource, PointTarget, Scalar> > ConstPtr;
 
       using Registration<PointSource, PointTarget, Scalar>::reg_name_;
       using Registration<PointSource, PointTarget, Scalar>::getClassName;
@@ -133,7 +132,7 @@ namespace pcl
       using Registration<PointSource, PointTarget, Scalar>::correspondence_rejectors_;
 
       typename pcl::registration::DefaultConvergenceCriteria<Scalar>::Ptr convergence_criteria_;
-      using Matrix4 = typename Registration<PointSource, PointTarget, Scalar>::Matrix4;
+      typedef typename Registration<PointSource, PointTarget, Scalar>::Matrix4 Matrix4;
 
       /** \brief Empty constructor. */
       IterativeClosestPoint () 
@@ -154,7 +153,7 @@ namespace pcl
       };
 
       /** \brief Empty destructor */
-      ~IterativeClosestPoint () {}
+      virtual ~IterativeClosestPoint () {}
 
       /** \brief Returns a pointer to the DefaultConvergenceCriteria used by the IterativeClosestPoint class.
         * This allows to check the convergence state after the align() method as well as to configure
@@ -175,31 +174,32 @@ namespace pcl
         *
         * \param[in] cloud the input point cloud source
         */
-      void
-      setInputSource (const PointCloudSourceConstPtr &cloud) override
+      virtual void
+      setInputSource (const PointCloudSourceConstPtr &cloud)
       {
         Registration<PointSource, PointTarget, Scalar>::setInputSource (cloud);
-        const auto fields = pcl::getFields<PointSource> ();
+        std::vector<pcl::PCLPointField> fields;
+        pcl::getFields (*cloud, fields);
         source_has_normals_ = false;
-        for (const auto &field : fields)
+        for (size_t i = 0; i < fields.size (); ++i)
         {
-          if      (field.name == "x") x_idx_offset_ = field.offset;
-          else if (field.name == "y") y_idx_offset_ = field.offset;
-          else if (field.name == "z") z_idx_offset_ = field.offset;
-          else if (field.name == "normal_x") 
+          if      (fields[i].name == "x") x_idx_offset_ = fields[i].offset;
+          else if (fields[i].name == "y") y_idx_offset_ = fields[i].offset;
+          else if (fields[i].name == "z") z_idx_offset_ = fields[i].offset;
+          else if (fields[i].name == "normal_x") 
           {
             source_has_normals_ = true;
-            nx_idx_offset_ = field.offset;
+            nx_idx_offset_ = fields[i].offset;
           }
-          else if (field.name == "normal_y") 
+          else if (fields[i].name == "normal_y") 
           {
             source_has_normals_ = true;
-            ny_idx_offset_ = field.offset;
+            ny_idx_offset_ = fields[i].offset;
           }
-          else if (field.name == "normal_z") 
+          else if (fields[i].name == "normal_z") 
           {
             source_has_normals_ = true;
-            nz_idx_offset_ = field.offset;
+            nz_idx_offset_ = fields[i].offset;
           }
         }
       }
@@ -209,15 +209,16 @@ namespace pcl
         *
         * \param[in] cloud the input point cloud target
         */
-      void
-      setInputTarget (const PointCloudTargetConstPtr &cloud) override
+      virtual void
+      setInputTarget (const PointCloudTargetConstPtr &cloud)
       {
         Registration<PointSource, PointTarget, Scalar>::setInputTarget (cloud);
-        const auto fields = pcl::getFields<PointSource> ();
+        std::vector<pcl::PCLPointField> fields;
+        pcl::getFields (*cloud, fields);
         target_has_normals_ = false;
-        for (const auto &field : fields)
+        for (size_t i = 0; i < fields.size (); ++i)
         {
-          if (field.name == "normal_x" || field.name == "normal_y" || field.name == "normal_z") 
+          if (fields[i].name == "normal_x" || fields[i].name == "normal_y" || fields[i].name == "normal_z") 
           {
             target_has_normals_ = true;
             break;
@@ -260,18 +261,18 @@ namespace pcl
         * \param output the transformed input point cloud dataset using the rigid transformation found
         * \param guess the initial guess of the transformation to compute
         */
-      void 
-      computeTransformation (PointCloudSource &output, const Matrix4 &guess) override;
+      virtual void 
+      computeTransformation (PointCloudSource &output, const Matrix4 &guess);
 
       /** \brief Looks at the Estimators and Rejectors and determines whether their blob-setter methods need to be called */
       virtual void
       determineRequiredBlobData ();
 
       /** \brief XYZ fields offset. */
-      std::size_t x_idx_offset_, y_idx_offset_, z_idx_offset_;
+      size_t x_idx_offset_, y_idx_offset_, z_idx_offset_;
 
       /** \brief Normal fields offset. */
-      std::size_t nx_idx_offset_, ny_idx_offset_, nz_idx_offset_;
+      size_t nx_idx_offset_, ny_idx_offset_, nz_idx_offset_;
 
       /** \brief The correspondence type used for correspondence estimation. */
       bool use_reciprocal_correspondence_;
@@ -289,96 +290,34 @@ namespace pcl
     * IterativeClosestPoint, that uses a transformation estimated based on
     * Point to Plane distances by default.
     *
-    * By default, this implementation uses the traditional point to plane objective
-    * and computes point to plane distances using the normals of the target point
-    * cloud. It also provides the option (through setUseSymmetricObjective) of
-    * using the symmetric objective function of [Rusinkiewicz 2019]. This objective
-    * uses the normals of both the source and target point cloud and has a similar
-    * computational cost to the traditional point to plane objective while also
-    * offering improved convergence speed and a wider basin of convergence.
-    *
-    * Note that this implementation not demean the point clouds which can lead
-    * to increased numerical error. If desired, a user can demean the point cloud,
-    * run iterative closest point, and composite the resulting ICP transformation
-    * with the translations from demeaning to obtain a transformation between
-    * the original point clouds.
-    *
-    * \author Radu B. Rusu, Matthew Cong
+    * \author Radu B. Rusu
     * \ingroup registration
     */
   template <typename PointSource, typename PointTarget, typename Scalar = float>
   class IterativeClosestPointWithNormals : public IterativeClosestPoint<PointSource, PointTarget, Scalar>
   {
     public:
-      using PointCloudSource = typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::PointCloudSource;
-      using PointCloudTarget = typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::PointCloudTarget;
-      using Matrix4 = typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::Matrix4;
+      typedef typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::PointCloudSource PointCloudSource;
+      typedef typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::PointCloudTarget PointCloudTarget;
+      typedef typename IterativeClosestPoint<PointSource, PointTarget, Scalar>::Matrix4 Matrix4;
 
       using IterativeClosestPoint<PointSource, PointTarget, Scalar>::reg_name_;
       using IterativeClosestPoint<PointSource, PointTarget, Scalar>::transformation_estimation_;
       using IterativeClosestPoint<PointSource, PointTarget, Scalar>::correspondence_rejectors_;
 
-      using Ptr = shared_ptr<IterativeClosestPoint<PointSource, PointTarget, Scalar> >;
-      using ConstPtr = shared_ptr<const IterativeClosestPoint<PointSource, PointTarget, Scalar> >;
+      typedef boost::shared_ptr<IterativeClosestPoint<PointSource, PointTarget, Scalar> > Ptr;
+      typedef boost::shared_ptr<const IterativeClosestPoint<PointSource, PointTarget, Scalar> > ConstPtr;
 
       /** \brief Empty constructor. */
-      IterativeClosestPointWithNormals ()
+      IterativeClosestPointWithNormals () 
       {
         reg_name_ = "IterativeClosestPointWithNormals";
-        setUseSymmetricObjective (false);
-        setEnforceSameDirectionNormals (true);
+        transformation_estimation_.reset (new pcl::registration::TransformationEstimationPointToPlaneLLS<PointSource, PointTarget, Scalar> ());
         //correspondence_rejectors_.add
       };
       
       /** \brief Empty destructor */
       virtual ~IterativeClosestPointWithNormals () {}
-
-      /** \brief Set whether to use a symmetric objective function or not
-        *
-        * \param[in] use_symmetric_objective whether to use a symmetric objective function or not
-        */
-      inline void
-      setUseSymmetricObjective (bool use_symmetric_objective)
-      {
-        use_symmetric_objective_ = use_symmetric_objective;
-        if (use_symmetric_objective_)
-        {
-            auto symmetric_transformation_estimation = pcl::make_shared<pcl::registration::TransformationEstimationSymmetricPointToPlaneLLS<PointSource, PointTarget, Scalar> > ();
-            symmetric_transformation_estimation->setEnforceSameDirectionNormals (enforce_same_direction_normals_);
-            transformation_estimation_ = symmetric_transformation_estimation;
-        }
-        else
-        {
-            transformation_estimation_.reset (new pcl::registration::TransformationEstimationPointToPlaneLLS<PointSource, PointTarget, Scalar> ());
-        }
-      }
-
-      /** \brief Obtain whether a symmetric objective is used or not */
-      inline bool
-      getUseSymmetricObjective () const
-      {
-        return use_symmetric_objective_;
-      }
-
-        /** \brief Set whether or not to negate source or target normals on a per-point basis such that they point in the same direction. Only applicable to the symmetric objective function.
-        *
-        * \param[in] enforce_same_direction_normals whether to negate source or target normals on a per-point basis such that they point in the same direction.
-        */
-      inline void
-      setEnforceSameDirectionNormals (bool enforce_same_direction_normals)
-      {
-        enforce_same_direction_normals_ = enforce_same_direction_normals;
-        auto symmetric_transformation_estimation = boost::dynamic_pointer_cast<pcl::registration::TransformationEstimationSymmetricPointToPlaneLLS<PointSource, PointTarget, Scalar> >(transformation_estimation_);
-        if (symmetric_transformation_estimation)
-            symmetric_transformation_estimation->setEnforceSameDirectionNormals (enforce_same_direction_normals_);
-      }
-
-      /** \brief Obtain whether source or target normals are negated on a per-point basis such that they point in the same direction or not */
-      inline bool
-      getEnforceSameDirectionNormals () const
-      {
-        return enforce_same_direction_normals_;
-      }
 
     protected:
 
@@ -392,13 +331,9 @@ namespace pcl
       transformCloud (const PointCloudSource &input, 
                       PointCloudSource &output, 
                       const Matrix4 &transform);
-
-      /** \brief Type of objective function (asymmetric vs. symmetric) used for transform estimation */
-      bool use_symmetric_objective_;
-      /** \brief Whether or not to negate source and/or target normals such that they point in the same direction in the symmetric objective function */
-      bool enforce_same_direction_normals_;
   };
-
 }
 
 #include <pcl/registration/impl/icp.hpp>
+
+#endif  //#ifndef PCL_ICP_H_

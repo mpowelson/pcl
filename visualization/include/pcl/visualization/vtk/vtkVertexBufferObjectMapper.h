@@ -19,7 +19,8 @@
 // device-specific poly data mappers, that actually do the mapping to the
 // rendering/graphics hardware/software.
 
-#pragma once
+#ifndef __vtkVertexBufferObjectMapper_h
+#define __vtkVertexBufferObjectMapper_h
 
 #include <pcl/pcl_exports.h>
 
@@ -47,7 +48,7 @@ public:
 
   // Description:
   // This calls RenderPiece (in a for loop is streaming is necessary).
-  void Render(vtkRenderer *ren, vtkActor *act) override;
+  virtual void Render(vtkRenderer *ren, vtkActor *act);
 
   // Description:
   // Specify the input data to map.
@@ -63,13 +64,13 @@ public:
 
   // Description:
   // Update that sets the update piece first.
-  void Update() override;
+  void Update();
 
   // Description:
   // Return bounding box (array of six doubles) of data expressed as
   // (xmin,xmax, ymin,ymax, zmin,zmax).
-  double *GetBounds() override;
-  void GetBounds(double bounds[6]) override 
+  virtual double *GetBounds();
+  virtual void GetBounds(double bounds[6]) 
     {this->Superclass::GetBounds(bounds);};
   
   // Description:
@@ -120,7 +121,7 @@ protected:
 
   vtkSmartPointer<vtkShaderProgram2> program;
 
-  int FillInputPortInformation(int, vtkInformation*) override;
+  virtual int FillInputPortInformation(int, vtkInformation*);
 
   void createShaders(vtkOpenGLRenderWindow* win);
   void createVBOs(vtkRenderWindow* win);
@@ -132,3 +133,5 @@ private:
   vtkVertexBufferObjectMapper(const vtkVertexBufferObjectMapper&);  // Not implemented.
   void operator=(const vtkVertexBufferObjectMapper&);  // Not implemented.
 };
+
+#endif

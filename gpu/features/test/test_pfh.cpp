@@ -34,6 +34,14 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+    #define GTEST_USE_OWN_TR1_TUPLE 0
+#endif
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+    #define GTEST_USE_OWN_TR1_TUPLE 0
+#endif
+
 #include "gtest/gtest.h"
 
 #include <pcl/point_types.h>
@@ -57,11 +65,11 @@ TEST(PCL_FeaturesGPU, pfh_low_level)
 
     source.estimateNormals();
     source.findRadiusNeghbors();
-    std::cout << "max_radius_nn_size: " << source.max_nn_size << std::endl;
+    cout << "max_radius_nn_size: " << source.max_nn_size << endl;
                    
-    std::vector<int> data;
+    vector<int> data;
     source.getNeghborsArray(data);
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
     
     //uploading data to GPU
@@ -80,7 +88,7 @@ TEST(PCL_FeaturesGPU, pfh_low_level)
     pfh_gpu.compute(cloud_gpu, normals_gpu, indices, pfh125_features);
 
     int stub;
-    std::vector<PFHSignature125> downloaded;
+    vector<PFHSignature125> downloaded;
     pfh125_features.download(downloaded, stub);
 
     pcl::PFHEstimation<PointXYZ, Normal, PFHSignature125> fe;
@@ -93,15 +101,15 @@ TEST(PCL_FeaturesGPU, pfh_low_level)
     PointCloud<PFHSignature125> pfhs;
     fe.compute (pfhs);
 
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PFHSignature125& gpu = downloaded[i];
         PFHSignature125& cpu = pfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -124,11 +132,11 @@ TEST(PCL_FeaturesGPU, pfh_high_level1)
     //source.generateSurface();
     //source.generateIndices();
 
-    std::cout << "!indices, !surface" << std::endl;
+    cout << "!indices, !surface" << endl;
 
     PointCloud<Normal>::Ptr& normals = source.normals;
 
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(normals->points.begin(), normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
 
     //uploading data to GPU
@@ -169,18 +177,18 @@ TEST(PCL_FeaturesGPU, pfh_high_level1)
     fe.compute (fpfhs);
 
     int stub;
-    std::vector<PFHSignature125> downloaded;
+    vector<PFHSignature125> downloaded;
     fpfhs_gpu.download(downloaded, stub);
 
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PFHSignature125& gpu = downloaded[i];
         PFHSignature125& cpu = fpfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -202,11 +210,11 @@ TEST(PCL_FeaturesGPU, pfh_high_level2)
     //source.generateSurface();
     source.generateIndices();
 
-    std::cout << "indices, !surface" << std::endl;
+    cout << "indices, !surface" << endl;
 
     PointCloud<Normal>::Ptr& normals = source.normals;
 
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(normals->points.begin(), normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
 
     //uploading data to GPU
@@ -247,18 +255,18 @@ TEST(PCL_FeaturesGPU, pfh_high_level2)
     fe.compute (fpfhs);
 
     int stub;
-    std::vector<PFHSignature125> downloaded;
+    vector<PFHSignature125> downloaded;
     fpfhs_gpu.download(downloaded, stub);
 
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PFHSignature125& gpu = downloaded[i];
         PFHSignature125& cpu = fpfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -280,11 +288,11 @@ TEST(PCL_FeaturesGPU, pfh_high_level3)
     source.generateSurface();
     //source.generateIndices();
 
-    std::cout << "!indices, surface" << std::endl;
+    cout << "!indices, surface" << endl;
 
     PointCloud<Normal>::Ptr& normals = source.normals_surface;
 
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(normals->points.begin(), normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
 
     //uploading data to GPU
@@ -325,18 +333,18 @@ TEST(PCL_FeaturesGPU, pfh_high_level3)
     fe.compute (fpfhs);
 
     int stub;
-    std::vector<PFHSignature125> downloaded;
+    vector<PFHSignature125> downloaded;
     fpfhs_gpu.download(downloaded, stub);
 
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PFHSignature125& gpu = downloaded[i];
         PFHSignature125& cpu = fpfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -358,11 +366,11 @@ TEST(PCL_FeaturesGPU, pfh_high_level4)
     source.generateSurface();
     source.generateIndices();
 
-    std::cout << "indices, surface" << std::endl;
+    cout << "indices, surface" << endl;
 
     PointCloud<Normal>::Ptr& normals = source.normals_surface;
 
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(normals->points.begin(), normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
 
     //uploading data to GPU
@@ -403,18 +411,18 @@ TEST(PCL_FeaturesGPU, pfh_high_level4)
     fe.compute (fpfhs);
 
     int stub;
-    std::vector<PFHSignature125> downloaded;
+    vector<PFHSignature125> downloaded;
     fpfhs_gpu.download(downloaded, stub);
 
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PFHSignature125& gpu = downloaded[i];
         PFHSignature125& cpu = fpfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHSignature125)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -436,11 +444,11 @@ TEST(PCL_FeaturesGPU, pfhrgb)
     //source.generateSurface();
     //source.generateIndices();
 
-    std::cout << "!indices, !surface" << std::endl;
+    cout << "!indices, !surface" << endl;
 
     PointCloud<Normal>::Ptr& normals = source.normals;
 
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(normals->points.begin(), normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
 
     //uploading data to GPU
@@ -472,7 +480,7 @@ TEST(PCL_FeaturesGPU, pfhrgb)
 
     PointCloud<PointXYZRGB>::Ptr cloud_XYZRGB(new PointCloud<PointXYZRGB>());
     cloud_XYZRGB->points.clear();
-    for(std::size_t i = 0; i < source.cloud->points.size(); ++i)               
+    for(size_t i = 0; i < source.cloud->points.size(); ++i)               
     {
         const PointXYZ& p = source.cloud->points[i];
         PointXYZRGB o;
@@ -502,18 +510,18 @@ TEST(PCL_FeaturesGPU, pfhrgb)
     fe.compute (fpfhs);
 
     int stub;
-    std::vector<PFHRGBSignature250> downloaded;
+    vector<PFHRGBSignature250> downloaded;
     fpfhs_gpu.download(downloaded, stub);
 
-    for(std::size_t i = 170; i < downloaded.size(); ++i)
+    for(size_t i = 170; i < downloaded.size(); ++i)
     {
         PFHRGBSignature250& gpu = downloaded[i];
         PFHRGBSignature250& cpu = fpfhs.points[i];
         
-        std::size_t FSize = sizeof(PFHRGBSignature250)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(PFHRGBSignature250)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];

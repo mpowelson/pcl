@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_ICP_NL_H_
+#define PCL_ICP_NL_H_
 
 // PCL includes
 #include <pcl/registration/icp.h>
@@ -73,10 +74,10 @@ namespace pcl
 
     public:
 
-      using Ptr = shared_ptr< IterativeClosestPointNonLinear<PointSource, PointTarget, Scalar> >;
-      using ConstPtr = shared_ptr< const IterativeClosestPointNonLinear<PointSource, PointTarget, Scalar> >;
+      typedef boost::shared_ptr< IterativeClosestPointNonLinear<PointSource, PointTarget, Scalar> > Ptr;
+      typedef boost::shared_ptr< const IterativeClosestPointNonLinear<PointSource, PointTarget, Scalar> > ConstPtr;
 
-      using Matrix4 = typename Registration<PointSource, PointTarget, Scalar>::Matrix4;
+      typedef typename Registration<PointSource, PointTarget, Scalar>::Matrix4 Matrix4;
 
       /** \brief Empty constructor. */
       IterativeClosestPointNonLinear ()
@@ -88,3 +89,5 @@ namespace pcl
       }
   };
 }
+
+#endif  //#ifndef PCL_ICP_NL_H_

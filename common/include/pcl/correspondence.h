@@ -35,18 +35,17 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#pragma once
+#ifndef PCL_COMMON_CORRESPONDENCE_H_
+#define PCL_COMMON_CORRESPONDENCE_H_
 
 #ifdef __GNUC__
 #pragma GCC system_header 
 #endif
 
-#include <pcl/make_shared.h>
+#include <boost/shared_ptr.hpp>
 #include <Eigen/StdVector>
 #include <Eigen/Geometry>
 #include <pcl/pcl_exports.h>
-#include <pcl/pcl_macros.h>
 
 namespace pcl
 {
@@ -59,35 +58,40 @@ namespace pcl
   struct Correspondence
   {
     /** \brief Index of the query (source) point. */
-    int index_query = 0;
+    int index_query;
     /** \brief Index of the matching (target) point. Set to -1 if no correspondence found. */
-    int index_match = -1;
+    int index_match;
     /** \brief Distance between the corresponding points, or the weight denoting the confidence in correspondence estimation */
     union
     {
-      float distance = std::numeric_limits<float>::max();
+      float distance;
       float weight;
     };
     
     /** \brief Standard constructor. 
       * Sets \ref index_query to 0, \ref index_match to -1, and \ref distance to FLT_MAX.
       */
-    inline Correspondence () = default;
+    inline Correspondence () : index_query (0), index_match (-1), 
+                               distance (std::numeric_limits<float>::max ())
+    {}
 
     /** \brief Constructor. */
     inline Correspondence (int _index_query, int _index_match, float _distance) : 
       index_query (_index_query), index_match (_index_match), distance (_distance)
     {}
 
-    PCL_MAKE_ALIGNED_OPERATOR_NEW
+    /** \brief Empty destructor. */
+    virtual ~Correspondence () {}
+    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
-
+  
   /** \brief overloaded << operator */
   PCL_EXPORTS std::ostream& operator << (std::ostream& os, const Correspondence& c);
 
-  using Correspondences = std::vector< pcl::Correspondence, Eigen::aligned_allocator<pcl::Correspondence> >;
-  using CorrespondencesPtr = shared_ptr<Correspondences>;
-  using CorrespondencesConstPtr = shared_ptr<const Correspondences >;
+  typedef std::vector< pcl::Correspondence, Eigen::aligned_allocator<pcl::Correspondence> > Correspondences;
+  typedef boost::shared_ptr<Correspondences> CorrespondencesPtr;
+  typedef boost::shared_ptr<const Correspondences > CorrespondencesConstPtr;
 
   /**
     * \brief Get the query points of correspondences that are present in
@@ -118,9 +122,15 @@ namespace pcl
     Eigen::Vector3f point1;  //!< The 3D position of the point in the first coordinate frame
     Eigen::Vector3f point2;  //!< The 3D position of the point in the second coordinate frame
 
-    PCL_MAKE_ALIGNED_OPERATOR_NEW
+    /** \brief Empty constructor. */
+    PointCorrespondence3D () : point1 (), point2 () {}
+
+    /** \brief Empty destructor. */
+    virtual ~PointCorrespondence3D () {}
+    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
-  using PointCorrespondences3DVector = std::vector<PointCorrespondence3D, Eigen::aligned_allocator<PointCorrespondence3D> >;
+  typedef std::vector<PointCorrespondence3D, Eigen::aligned_allocator<PointCorrespondence3D> > PointCorrespondences3DVector;
 
   /**
     * \brief Representation of a (possible) correspondence between two points (e.g. from feature matching),
@@ -131,10 +141,12 @@ namespace pcl
   {
     Eigen::Affine3f transformation;  //!< The transformation to go from the coordinate system
                                         //!< of point2 to the coordinate system of point1
+    /** \brief Empty destructor. */
+    virtual ~PointCorrespondence6D () {}
 
-    PCL_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
-  using PointCorrespondences6DVector = std::vector<PointCorrespondence6D, Eigen::aligned_allocator<PointCorrespondence6D> >;
+  typedef std::vector<PointCorrespondence6D, Eigen::aligned_allocator<PointCorrespondence6D> > PointCorrespondences6DVector;
 
   /**
     * \brief Comparator to enable us to sort a vector of PointCorrespondences according to their scores using
@@ -147,3 +159,5 @@ namespace pcl
     return (pc1.distance > pc2.distance);
   }
 }
+
+#endif /* PCL_COMMON_CORRESPONDENCE_H_ */

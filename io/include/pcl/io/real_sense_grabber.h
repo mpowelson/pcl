@@ -35,16 +35,16 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_REAL_SENSE_GRABBER_H
+#define PCL_IO_REAL_SENSE_GRABBER_H
+
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <pcl/io/grabber.h>
-#include <pcl/make_shared.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/time.h>
-
-#include <memory>
-#include <thread>
 
 namespace pcl
 {
@@ -66,11 +66,13 @@ namespace pcl
 
     public:
 
-      using Ptr = shared_ptr<RealSenseGrabber>;
-      using ConstPtr = shared_ptr<const RealSenseGrabber>;
+      typedef
+        void (sig_cb_real_sense_point_cloud)
+          (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr&);
 
-      using sig_cb_real_sense_point_cloud = void(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr&);
-      using sig_cb_real_sense_point_cloud_rgba = void(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&);
+      typedef
+        void (sig_cb_real_sense_point_cloud_rgba)
+          (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&);
 
       /** A descriptor for capturing mode.
         *
@@ -140,7 +142,7 @@ namespace pcl
       RealSenseGrabber (const std::string& device_id = "", const Mode& mode = Mode (), bool strict = false);
 
       virtual
-      ~RealSenseGrabber () noexcept;
+      ~RealSenseGrabber () throw ();
 
       virtual void
       start ();
@@ -175,7 +177,7 @@ namespace pcl
         * \note if the grabber is running and the new parameters are different
         * from the current parameters, grabber will be restarted. */
       void
-      enableTemporalFiltering (TemporalFilteringType type, std::size_t window_size);
+      enableTemporalFiltering (TemporalFilteringType type, size_t window_size);
 
       /** Disable temporal filtering. */
       void
@@ -235,13 +237,13 @@ namespace pcl
       boost::signals2::signal<sig_cb_real_sense_point_cloud>* point_cloud_signal_;
       boost::signals2::signal<sig_cb_real_sense_point_cloud_rgba>* point_cloud_rgba_signal_;
 
-      std::shared_ptr<pcl::io::real_sense::RealSenseDevice> device_;
+      boost::shared_ptr<pcl::io::real_sense::RealSenseDevice> device_;
 
       bool is_running_;
       unsigned int confidence_threshold_;
 
       TemporalFilteringType temporal_filtering_type_;
-      std::size_t temporal_filtering_window_size_;
+      size_t temporal_filtering_window_size_;
 
       /// Capture mode requested by the user at construction time
       Mode mode_requested_;
@@ -263,13 +265,16 @@ namespace pcl
       bool need_xyzrgba_;
 
       EventFrequency frequency_;
-      mutable std::mutex fps_mutex_;
+      mutable boost::mutex fps_mutex_;
 
-      std::thread thread_;
+      boost::thread thread_;
 
       /// Depth buffer to perform temporal filtering of the depth images
-      std::shared_ptr<pcl::io::Buffer<unsigned short> > depth_buffer_;
+      boost::shared_ptr<pcl::io::Buffer<unsigned short> > depth_buffer_;
 
   };
 
 }
+
+#endif /* PCL_IO_REAL_SENSE_GRABBER_H */
+

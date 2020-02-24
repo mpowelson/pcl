@@ -35,14 +35,21 @@
  *
  */
 
+#ifndef SELECTED_TRACKBALL_STYLE_INTERACTOR_H_
+#define SELECTED_TRACKBALL_STYLE_INTERACTOR_H_
+
 #include <pcl/apps/cloud_composer/point_selectors/interactor_style_switch.h>
+#include <pcl/apps/cloud_composer/qt.h>
+
+
+
 
 namespace pcl
 {
   namespace cloud_composer
   {
       
-    class SelectedTrackballStyleInteractor : public vtkInteractorStyleTrackballActor
+    class PCL_EXPORTS SelectedTrackballStyleInteractor : public vtkInteractorStyleTrackballActor
     {     
       public:
         static SelectedTrackballStyleInteractor* New();
@@ -50,7 +57,7 @@ namespace pcl
         
         SelectedTrackballStyleInteractor ();
         
-        ~SelectedTrackballStyleInteractor ();
+        virtual ~SelectedTrackballStyleInteractor ();
                
         /** \brief Pass a pointer to the actor map
           * \param[in] actors the actor map that will be used with this style
@@ -69,27 +76,27 @@ namespace pcl
         setRendererCollection (vtkSmartPointer<vtkRendererCollection> &rens) { renderers_ = rens; }
 
         /** \brief Function called on left mouse button click, ie, beginning of trackball */
-        void
-        OnLeftButtonDown () override;
+        virtual void
+        OnLeftButtonDown ();
         
-        void
-        OnRightButtonDown () override;
+        virtual void
+        OnRightButtonDown ();
         
         /** \brief Function called on left mouse button release, ie, end of trackball*/
-        void
-        OnLeftButtonUp () override;
+        virtual void
+        OnLeftButtonUp ();
         
-        void
-        OnRightButtonUp () override;
+        virtual void
+        OnRightButtonUp ();
 
-        void 
-        Rotate() override;
-        void 
-        Spin() override;
-        void 
-        Pan() override;
-        void 
-        UniformScale() override;
+        virtual void 
+        Rotate();
+        virtual void 
+        Spin();
+        virtual void 
+        Pan();
+        virtual void 
+        UniformScale();
         
         /** \brief Event emitted once a valid selection has been made */
         int manipulation_complete_event_;
@@ -118,3 +125,7 @@ namespace pcl
   }
   
 }
+
+#endif // SELECTED_TRACKBALL_STYLE_INTERACTOR_H_
+        
+        

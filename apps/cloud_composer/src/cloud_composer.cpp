@@ -1,3 +1,4 @@
+#include <pcl/apps/cloud_composer/qt.h>
 #include <pcl/apps/cloud_composer/cloud_composer.h>
 #include <pcl/apps/cloud_composer/project_model.h>
 #include <pcl/apps/cloud_composer/cloud_viewer.h>
@@ -9,10 +10,6 @@
 #include <pcl/apps/cloud_composer/toolbox_model.h>
 #include <pcl/apps/cloud_composer/signal_multiplexer.h>
 #include <pcl/apps/cloud_composer/point_selectors/interactor_style_switch.h>
-
-#include <QMessageBox>
-#include <QPluginLoader>
-#include <QUndoGroup>
 
 /////////////////////////////////////////////////////////////
 pcl::cloud_composer::ComposerMainWindow::ComposerMainWindow (QWidget *parent)
@@ -33,7 +30,7 @@ pcl::cloud_composer::ComposerMainWindow::ComposerMainWindow (QWidget *parent)
   qRegisterMetaType<CloudView> ("CloudView");
   qRegisterMetaType<ConstItemList> ("ConstComposerItemList");
   
-  current_model_ = nullptr;
+  current_model_ = 0;
   
   multiplexer_ = new SignalMultiplexer (this);
   
@@ -294,7 +291,7 @@ pcl::cloud_composer::ComposerMainWindow::on_action_new_project__triggered (/*QSt
     int k = 2;
     while (name_model_map_.contains (name + tr ("-%1").arg (k)))
       ++k;
-    name += tr ("-%1").arg (k);
+    name = name + tr ("-%1").arg (k);
   }
   //qDebug () << "Setting name";
   new_project_model->setName (name);

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEST_FPCS_DATA_H_
+#define TEST_FPCS_DATA_H_
 
 const int nr_threads = 1;
 const float approx_overlap = 0.9f;
@@ -11,3 +12,5 @@ const float transform_from_fpcs [4][4] = {
   { -0.0139f, 0.5627f, 0.8265f, 0.0521f },
   { 0.f, 0.f, 0.f, 1.f }
 };
+
+#endif // TEST_FPCS_DATA_H_

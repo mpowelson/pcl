@@ -34,7 +34,7 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
-#include <cassert>
+#include <assert.h>
 
 #include <pcl/gpu/utils/repacks.hpp>
 #include "internal.hpp"

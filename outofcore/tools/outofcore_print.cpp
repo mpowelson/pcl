@@ -62,7 +62,7 @@ namespace ba = boost::accumulators;
 
 // todo: Read clouds as PCLPointCloud2 so we don't need to define PointT explicitly.
 //       This also requires our octree to take PCLPointCloud2 as an input.
-using PointT = pcl::PointXYZ;
+typedef pcl::PointXYZ PointT;
 
 using namespace pcl;
 using namespace pcl::outofcore;
@@ -77,17 +77,17 @@ using pcl::console::print;
 
 #include <boost/foreach.hpp>
 
-using OctreeDisk = OutofcoreOctreeBase<>;
-using OctreeDiskNode = OutofcoreOctreeBaseNode<>;
-using OctreeBreadthFirstIterator = OutofcoreBreadthFirstIterator<>;
-using OctreeDepthFirstIterator = OutofcoreDepthFirstIterator<>;
+typedef OutofcoreOctreeBase<> OctreeDisk;
+typedef OutofcoreOctreeBaseNode<> OctreeDiskNode;
+typedef OutofcoreBreadthFirstIterator<> OctreeBreadthFirstIterator;
+typedef OutofcoreDepthFirstIterator<> OctreeDepthFirstIterator;
 
-using AlignedPointT = Eigen::aligned_allocator<PointT>;
+typedef Eigen::aligned_allocator<PointT> AlignedPointT;
 
 void
-printDepth(std::size_t depth)
+printDepth(size_t depth)
 {
-  for (std::size_t i = 0; i < depth; i++)
+  for (size_t i = 0; i < depth; i++)
     PCL_INFO ("  ");
 }
 
@@ -98,7 +98,7 @@ printNode(OctreeDiskNode *)
 }
 
 int
-outofcorePrint (boost::filesystem::path tree_root, std::size_t print_depth, bool bounding_box=false, bool pcd=false, 
+outofcorePrint (boost::filesystem::path tree_root, size_t print_depth, bool bounding_box=false, bool pcd=false, 
 		bool point_count=false, bool breadth_first=false)
 {
   std::cout << boost::filesystem::absolute (tree_root) << std::endl;
@@ -113,15 +113,15 @@ outofcorePrint (boost::filesystem::path tree_root, std::size_t print_depth, bool
   PCL_INFO (" Bounding Box: <%lf, %lf, %lf> - <%lf, %lf, %lf>\n", min[0], min[1], min[2], max[0], max[1], max[2]);
 
   // Cloud depth
-  std::uint64_t depth = octree->getTreeDepth ();
+  uint64_t depth = octree->getTreeDepth ();
   PCL_INFO (" Depth: %ld\n", depth);
   if (print_depth > depth)
     print_depth = depth;
 
   // Cloud point counts at each level
-  std::vector<std::uint64_t> lodPoints = octree->getNumPointsVector ();
+  std::vector<boost::uint64_t> lodPoints = octree->getNumPointsVector ();
   PCL_INFO (" Points:\n");
-  for (std::uint64_t i = 0; i < lodPoints.size (); i++)
+  for (boost::uint64_t i = 0; i < lodPoints.size (); i++)
     PCL_INFO ("   %d: %d\n", i, lodPoints[i]);
 
   // Cloud voxel side length
@@ -133,17 +133,17 @@ outofcorePrint (boost::filesystem::path tree_root, std::size_t print_depth, bool
   PCL_INFO(" Voxel Count: %d\n", voxel_centers.size ());
 
   // Point data for statistics
-  std::vector<std::uint64_t> pointsPerVoxel;
-	ba::accumulator_set<std::uint64_t, ba::features< ba::tag::min,  ba::tag::max, ba::tag::mean,  ba::tag::variance> > acc;
+  std::vector<boost::uint64_t> pointsPerVoxel;
+	ba::accumulator_set<boost::uint64_t, ba::features< ba::tag::min,  ba::tag::max, ba::tag::mean,  ba::tag::variance> > acc;
 
   if (!breadth_first)
   {
     OctreeDisk::DepthFirstIterator depth_first_it (*octree);
 
-    while ( *depth_first_it !=nullptr )
+    while ( *depth_first_it !=0 )
     {
       OctreeDiskNode *node = *depth_first_it;
-      std::size_t node_depth = node->getDepth();
+      size_t node_depth = node->getDepth();
 
       printDepth(node_depth);
       std::string metadata_relative_file = node->getMetadataFilename ().string ();
@@ -183,10 +183,10 @@ outofcorePrint (boost::filesystem::path tree_root, std::size_t print_depth, bool
   {
     OctreeDisk::BreadthFirstIterator breadth_first_it (*octree);
     breadth_first_it.setMaxDepth (static_cast<unsigned int> (print_depth));
-    while ( *breadth_first_it !=nullptr )
+    while ( *breadth_first_it !=0 )
     {
       OctreeDiskNode *node = *breadth_first_it;
-      std::size_t node_depth = node->getDepth();
+      size_t node_depth = node->getDepth();
 
       printDepth(node_depth);
       std::string metadata_relative_file = node->getMetadataFilename ().string ();

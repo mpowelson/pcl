@@ -34,24 +34,17 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/make_shared.h>
 #include <pcl/io/openni_grabber.h>
+#include <boost/thread/condition.hpp>
+#include <boost/circular_buffer.hpp>
+#include <csignal>
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/time.h> //fps calculations
+
 #include <pcl/gpu/containers/kernel_containers.h>
 #include <pcl/io/png_io.h>
-#include <pcl/console/print.h>
-
-#include <boost/circular_buffer.hpp>
-
-#include <condition_variable>
-#include <csignal>
 #include <ctime>
-#include <functional>
-#include <mutex>
-#include <thread>
-
-using namespace std::chrono_literals;
+#include <pcl/console/print.h>
 
 #define FPS_CALC(_WHAT_) \
 do \
@@ -69,7 +62,7 @@ do \
 }while(false)
 
 bool is_done = false;
-std::mutex io_mutex;
+boost::mutex io_mutex;
 
 const int BUFFER_SIZE = 1000;
 static int counter = 1;
@@ -85,9 +78,6 @@ class MapsBuffer
     
     struct MapsRgb
     {
-      using Ptr = pcl::shared_ptr<MapsRgb>;
-      using ConstPtr = pcl::shared_ptr<const MapsRgb>;
-
       pcl::gpu::PtrStepSz<const PixelRGB> rgb_;
       pcl::gpu::PtrStepSz<const unsigned short> depth_;      
       double time_stamp_;
@@ -96,29 +86,29 @@ class MapsBuffer
     MapsBuffer () {}    
     
     bool 
-    pushBack (MapsRgb::ConstPtr); // thread-save wrapper for push_back() method of ciruclar_buffer
+    pushBack (boost::shared_ptr<const MapsRgb>); // thread-save wrapper for push_back() method of ciruclar_buffer
 
-    MapsRgb::ConstPtr
+    boost::shared_ptr<const MapsRgb>
     getFront (bool); // thread-save wrapper for front() method of ciruclar_buffer
                 
     inline bool 
     isFull ()
     {
-      std::lock_guard<std::mutex> buff_lock (bmutex_);
+      boost::mutex::scoped_lock buff_lock (bmutex_);
       return (buffer_.full ());
     }
                 
     inline bool
     isEmpty ()
     {
-      std::lock_guard<std::mutex> buff_lock (bmutex_);
+      boost::mutex::scoped_lock buff_lock (bmutex_);
       return (buffer_.empty ());
     }
                 
     inline int 
     getSize ()
     {
-      std::lock_guard<std::mutex> buff_lock (bmutex_);
+      boost::mutex::scoped_lock buff_lock (bmutex_);
       return (int (buffer_.size ()));
     }
                 
@@ -131,28 +121,28 @@ class MapsBuffer
     inline void 
     setCapacity (int buff_size)
     {
-      std::lock_guard<std::mutex> buff_lock (bmutex_);
+      boost::mutex::scoped_lock buff_lock (bmutex_);
       buffer_.set_capacity (buff_size);
     }
   
   private:
-    MapsBuffer (const MapsBuffer&) = delete; // Disabled copy constructor
-    MapsBuffer& operator =(const MapsBuffer&) = delete; // Disabled assignment operator
+    MapsBuffer (const MapsBuffer&); // Disabled copy constructor
+    MapsBuffer& operator =(const MapsBuffer&); // Disabled assignment operator
 
-    std::mutex bmutex_;
-    std::condition_variable buff_empty_;
-    boost::circular_buffer<MapsRgb::ConstPtr> buffer_;
+    boost::mutex bmutex_;
+    boost::condition_variable buff_empty_;
+    boost::circular_buffer<boost::shared_ptr<const MapsRgb> > buffer_;                                     
 
 };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool 
-MapsBuffer::pushBack(MapsRgb::ConstPtr maps_rgb )
+MapsBuffer::pushBack(boost::shared_ptr<const MapsRgb> maps_rgb )
 {
   bool retVal = false;
   {
-    std::lock_guard<std::mutex> buff_lock (bmutex_);
+    boost::mutex::scoped_lock buff_lock (bmutex_);
     if (!buffer_.full ())
       retVal = true;
     buffer_.push_back (maps_rgb);
@@ -163,18 +153,18 @@ MapsBuffer::pushBack(MapsRgb::ConstPtr maps_rgb )
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-MapsBuffer::MapsRgb::ConstPtr
+boost::shared_ptr< const MapsBuffer::MapsRgb > 
 MapsBuffer::getFront(bool print)
 {
-  MapsBuffer::MapsRgb::ConstPtr depth_rgb;
+  boost::shared_ptr< const MapsBuffer::MapsRgb > depth_rgb;
   {
-    std::unique_lock<std::mutex> buff_lock (bmutex_);
+    boost::mutex::scoped_lock buff_lock (bmutex_);
     while (buffer_.empty ())
     {
       if (is_done)
         break;
       {
-        std::lock_guard<std::mutex> io_lock (io_mutex);
+        boost::mutex::scoped_lock io_lock (io_mutex);
               //std::cout << "No data in buffer_ yet or buffer is empty." << std::endl;
       }
       buff_empty_.wait (buff_lock);
@@ -197,7 +187,7 @@ std::vector<MapsBuffer::PixelRGB> source_image_data_;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void 
-writeToDisk (const MapsBuffer::MapsRgb::ConstPtr& map_rbg)
+writeToDisk (const boost::shared_ptr<const MapsBuffer::MapsRgb>& map_rbg)
 {
   //save rgb
   std::stringstream ss;
@@ -220,8 +210,8 @@ writeToDisk (const MapsBuffer::MapsRgb::ConstPtr& map_rbg)
 }
 
 void
-grabberMapsCallBack(const openni_wrapper::Image::Ptr& image_wrapper, const openni_wrapper::DepthImage::Ptr& depth_wrapper, float)
-{
+grabberMapsCallBack(const boost::shared_ptr<openni_wrapper::Image>& image_wrapper, const boost::shared_ptr<openni_wrapper::DepthImage>& depth_wrapper, float)
+{  
   MapsBuffer::MapsRgb rgb_depth;
   rgb_depth.time_stamp_ = pcl::getTime();  
   
@@ -240,12 +230,15 @@ grabberMapsCallBack(const openni_wrapper::Image::Ptr& image_wrapper, const openn
   source_image_data_.resize(rgb_depth.rgb_.cols * rgb_depth.rgb_.rows);
   image_wrapper->fillRGB(rgb_depth.rgb_.cols, rgb_depth.rgb_.rows, (unsigned char*)&source_image_data_[0]);
   rgb_depth.rgb_.data = &source_image_data_[0];    
-
+  
+  // make it a shared pointer
+  boost::shared_ptr<MapsBuffer::MapsRgb> ptr (new MapsBuffer::MapsRgb (rgb_depth));
+  
   // push to buffer
-  if (!buff.pushBack (pcl::make_shared<MapsBuffer::MapsRgb> (rgb_depth)))
+  if (!buff.pushBack (ptr))
   {
     {
-      std::lock_guard<std::mutex> io_lock(io_mutex);
+      boost::mutex::scoped_lock io_lock(io_mutex);
       PCL_WARN ("Warning! Buffer was full, overwriting data\n");
     }
   }
@@ -259,15 +252,9 @@ void
 grabAndSend ()
 {
   pcl::Grabber* interface = new pcl::OpenNIGrabber ();
+  //boost::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& )> f = boost::bind(&grabberCallBack, _1);
 
-  std::function<void (const openni_wrapper::Image::Ptr&,
-                      const openni_wrapper::DepthImage::Ptr&,
-                      float)> f = [] (const openni_wrapper::Image::Ptr& img,
-                                      const openni_wrapper::DepthImage::Ptr& depth,
-                                      float constant)
-  {
-    grabberMapsCallBack (img, depth, constant);
-  };
+  boost::function<void (const boost::shared_ptr<openni_wrapper::Image>&, const boost::shared_ptr<openni_wrapper::DepthImage>&, float constant)> f = boost::bind (&grabberMapsCallBack, _1, _2, _3);
 
 
   interface->registerCallback (f);
@@ -277,7 +264,7 @@ grabAndSend ()
   {
     if (is_done)
       break;
-    std::this_thread::sleep_for(1s);
+    boost::this_thread::sleep (boost::posix_time::seconds (1));
   }
   interface->stop ();
 }
@@ -296,7 +283,7 @@ receiveAndProcess ()
   }
 
   {
-    std::lock_guard<std::mutex> io_lock (io_mutex);
+    boost::mutex::scoped_lock io_lock (io_mutex);
     PCL_INFO ("Writing remaining %d maps in the buffer to disk...\n", buff.getSize ());
   }
   while (!buff.isEmpty ())
@@ -309,7 +296,7 @@ receiveAndProcess ()
 void 
 ctrlC (int)
 {
-  std::lock_guard<std::mutex> io_lock (io_mutex);
+  boost::mutex::scoped_lock io_lock (io_mutex);
   std::cout << std::endl;
   PCL_WARN ("Ctrl-C detected, exit condition set to true\n");
   is_done = true;
@@ -332,15 +319,15 @@ main (int argc, char** argv)
   buff.setCapacity (buff_size);
   std::cout << "Starting the producer and consumer threads..." << std::endl;
   std::cout << "Press Ctrl-C to end" << std::endl;
-  std::thread producer (grabAndSend);
-  std::this_thread::sleep_for(2s);
-  std::thread consumer (receiveAndProcess);
-  std::thread consumer2 (receiveAndProcess);
-  std::thread consumer3 (receiveAndProcess);
+  boost::thread producer (grabAndSend);
+  boost::this_thread::sleep (boost::posix_time::seconds (2));
+  boost::thread consumer (receiveAndProcess);
+  boost::thread consumer2 (receiveAndProcess);
+  boost::thread consumer3 (receiveAndProcess);
   signal (SIGINT, ctrlC);
   producer.join ();
   {
-    std::lock_guard<std::mutex> io_lock (io_mutex);
+    boost::mutex::scoped_lock io_lock (io_mutex);
     PCL_WARN ("Producer done\n");
   }
   consumer.join ();

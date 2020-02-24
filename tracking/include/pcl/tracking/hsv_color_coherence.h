@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_HSV_COLOR_COHERENCE_H_
+#define PCL_TRACKING_HSV_COLOR_COHERENCE_H_
 
 #include <pcl/tracking/coherence.h>
 
@@ -16,8 +17,6 @@ namespace pcl
     class HSVColorCoherence: public PointCoherence<PointInT>
     {
       public:
-        using Ptr = shared_ptr<HSVColorCoherence<PointInT> >;
-        using ConstPtr = shared_ptr<const HSVColorCoherence<PointInT> >;
 
         /** \brief initialize the weights of the computation.
             weight_, h_weight_, s_weight_ default to 1.0 and
@@ -78,7 +77,7 @@ namespace pcl
           * \param[in] target instance of target point.
           */
         double 
-        computeCoherence (PointInT &source, PointInT &target) override;
+        computeCoherence (PointInT &source, PointInT &target);
 
         /** \brief the weight of coherence (w) */
         double weight_;
@@ -96,6 +95,10 @@ namespace pcl
   }
 }
 
+// #include <pcl/tracking/impl/hsv_color_coherence.hpp>
+
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/hsv_color_coherence.hpp>
+#endif
+
 #endif

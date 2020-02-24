@@ -33,7 +33,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_POLYNOMIAL_CALCULATIONS_H_
+#define PCL_POLYNOMIAL_CALCULATIONS_H_
 
 #include <pcl/common/eigen.h>
 #include <pcl/common/bivariate_polynomial.h>
@@ -49,17 +50,21 @@ namespace pcl
   class PolynomialCalculationsT 
   {
     public:
+      // =====CONSTRUCTOR & DESTRUCTOR=====
+      PolynomialCalculationsT ();
+      ~PolynomialCalculationsT ();
+      
       // =====PUBLIC STRUCTS=====
       //! Parameters used in this class
       struct Parameters
       {
-        Parameters () { setZeroValue (1e-6);}
+        Parameters () : zero_value (), sqr_zero_value () { setZeroValue (1e-6);}
         //! Set zero_value
         void
         setZeroValue (real new_zero_value);
 
-        real zero_value = {};       //!< Every value below this is considered to be zero
-        real sqr_zero_value = {};   //!< sqr of the above
+        real zero_value;       //!< Every value below this is considered to be zero
+        real sqr_zero_value;   //!< sqr of the above
       };
       
       // =====PUBLIC METHODS=====
@@ -102,27 +107,29 @@ namespace pcl
       
     protected:  
       // =====PROTECTED METHODS=====
-      //! check if std::abs(d)<zeroValue
+      //! check if fabs(d)<zeroValue
       inline bool
       isNearlyZero (real d) const 
       { 
-        return (std::abs (d) < parameters_.zero_value);
+        return (fabs (d) < parameters_.zero_value);
       }
       
-      //! check if sqrt(std::abs(d))<zeroValue
+      //! check if sqrt(fabs(d))<zeroValue
       inline bool
       sqrtIsNearlyZero (real d) const 
       { 
-        return (std::abs (d) < parameters_.sqr_zero_value);
+        return (fabs (d) < parameters_.sqr_zero_value);
       }
       
       // =====PROTECTED MEMBERS=====
       Parameters parameters_;
   };
 
-  using PolynomialCalculationsd = PolynomialCalculationsT<double>;
-  using PolynomialCalculations = PolynomialCalculationsT<float>;
+  typedef PolynomialCalculationsT<double> PolynomialCalculationsd;
+  typedef PolynomialCalculationsT<float>  PolynomialCalculations;
 
 }  // end namespace
 
 #include <pcl/common/impl/polynomial_calculations.hpp>
+
+#endif

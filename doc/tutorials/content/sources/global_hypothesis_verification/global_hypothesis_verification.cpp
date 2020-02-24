@@ -294,11 +294,11 @@ main (int argc,
   std::vector<int> model_good_keypoints_indices;
   std::vector<int> scene_good_keypoints_indices;
 
-  for (std::size_t i = 0; i < scene_descriptors->size (); ++i)
+  for (size_t i = 0; i < scene_descriptors->size (); ++i)
   {
     std::vector<int> neigh_indices (1);
     std::vector<float> neigh_sqr_dists (1);
-    if (!std::isfinite (scene_descriptors->at (i).descriptor[0]))  //skipping NaNs
+    if (!pcl_isfinite (scene_descriptors->at (i).descriptor[0]))  //skipping NaNs
     {
       continue;
     }
@@ -376,12 +376,12 @@ main (int argc,
    */
   if (rototranslations.size () <= 0)
   {
-    std::cout << "*** No instances found! ***" << std::endl;
+    cout << "*** No instances found! ***" << endl;
     return (0);
   }
   else
   {
-    std::cout << "Recognized Instances: " << rototranslations.size () << std::endl << std::endl;
+    cout << "Recognized Instances: " << rototranslations.size () << endl << endl;
   }
 
   /**
@@ -389,7 +389,7 @@ main (int argc,
    */
   std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
 
-  for (std::size_t i = 0; i < rototranslations.size (); ++i)
+  for (size_t i = 0; i < rototranslations.size (); ++i)
   {
     pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
     pcl::transformPointCloud (*model, *rotated_model, rototranslations[i]);
@@ -402,9 +402,9 @@ main (int argc,
   std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
   if (true)
   {
-    std::cout << "--- ICP ---------" << std::endl;
+    cout << "--- ICP ---------" << endl;
 
-    for (std::size_t i = 0; i < rototranslations.size (); ++i)
+    for (size_t i = 0; i < rototranslations.size (); ++i)
     {
       pcl::IterativeClosestPoint<PointType, PointType> icp;
       icp.setMaximumIterations (icp_max_iter_);
@@ -414,24 +414,24 @@ main (int argc,
       pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
       icp.align (*registered);
       registered_instances.push_back (registered);
-      std::cout << "Instance " << i << " ";
+      cout << "Instance " << i << " ";
       if (icp.hasConverged ())
       {
-        std::cout << "Aligned!" << std::endl;
+        cout << "Aligned!" << endl;
       }
       else
       {
-        std::cout << "Not Aligned!" << std::endl;
+        cout << "Not Aligned!" << endl;
       }
     }
 
-    std::cout << "-----------------" << std::endl << std::endl;
+    cout << "-----------------" << endl << endl;
   }
 
   /**
    * Hypothesis Verification
    */
-  std::cout << "--- Hypotheses Verification ---" << std::endl;
+  cout << "--- Hypotheses Verification ---" << endl;
   std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
 
   pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
@@ -455,14 +455,14 @@ main (int argc,
   {
     if (hypotheses_mask[i])
     {
-      std::cout << "Instance " << i << " is GOOD! <---" << std::endl;
+      cout << "Instance " << i << " is GOOD! <---" << endl;
     }
     else
     {
-      std::cout << "Instance " << i << " is bad!" << std::endl;
+      cout << "Instance " << i << " is bad!" << endl;
     }
   }
-  std::cout << "-------------------------------" << std::endl;
+  cout << "-------------------------------" << endl;
 
   /**
    *  Visualization
@@ -500,7 +500,7 @@ main (int argc,
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "scene_good_keypoints");
   }
 
-  for (std::size_t i = 0; i < instances.size (); ++i)
+  for (size_t i = 0; i < instances.size (); ++i)
   {
     std::stringstream ss_instance;
     ss_instance << "instance_" << i;
@@ -511,7 +511,7 @@ main (int argc,
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, clusterStyle.size, ss_instance.str ());
 
     CloudStyle registeredStyles = hypotheses_mask[i] ? style_green : style_cyan;
-    ss_instance << "_registered" << std::endl;
+    ss_instance << "_registered" << endl;
     pcl::visualization::PointCloudColorHandlerCustom<PointType> registered_instance_color_handler (registered_instances[i], registeredStyles.r,
                                                                                                    registeredStyles.g, registeredStyles.b);
     viewer.addPointCloud (registered_instances[i], registered_instance_color_handler, ss_instance.str ());

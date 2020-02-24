@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_ASCII_IO_H_
+#define PCL_IO_ASCII_IO_H_
 
 #include <pcl/io/file_io.h>
 #include <pcl/PCLPointField.h>
@@ -54,7 +55,7 @@ namespace pcl
   {
     public:
       ASCIIReader ();
-      ~ASCIIReader ();
+      virtual ~ASCIIReader ();
       using FileReader::read;
 
       /* Load only the meta information (number of points, their types, etc),
@@ -77,10 +78,10 @@ namespace pcl
         * add a 512 byte header in front of the actual file, so set the offset
         * to the next byte after the header (e.g., 513).
         */
-      int
+      virtual int
       readHeader (const std::string &file_name, pcl::PCLPointCloud2 &cloud,
                   Eigen::Vector4f &origin, Eigen::Quaternionf &orientation,
-                  int &file_version, int &data_type, unsigned int &data_idx, const int offset = 0) override ;
+                  int &file_version, int &data_type, unsigned int &data_idx, const int offset = 0) ;
 
 
       /** \brief Read a point cloud data from a FILE file and store it into a pcl/PCLPointCloud2.
@@ -95,10 +96,10 @@ namespace pcl
         * add a 512 byte header in front of the actual file, so set the offset
         * to the next byte after the header (e.g., 513).
         */
-      int
+      virtual int
       read (const std::string &file_name, pcl::PCLPointCloud2 &cloud,
             Eigen::Vector4f &origin, Eigen::Quaternionf &orientation, int &file_version,
-            const int offset = 0) override;
+            const int offset = 0);
 
       /** \brief Set the ascii file point fields.
         */
@@ -116,7 +117,7 @@ namespace pcl
         * \param[in] p  a point type
         */
       template<typename PointT>
-      [[deprecated("use parameterless setInputFields<PointT>() instead")]]
+      PCL_DEPRECATED ("Use setInputFields<PointT> () instead")
       inline void setInputFields (const PointT p)
       {
         (void) p;
@@ -152,15 +153,20 @@ namespace pcl
         *  returns the size of the parsed point field in bytes
         */
       int 
-      parse (const std::string& token, const pcl::PCLPointField& field, std::uint8_t* data_target);
+      parse (const std::string& token, const pcl::PCLPointField& field, uint8_t* data_target);
 
       /** \brief Returns the size in bytes of a point field type.
         * \param[in] type   point field type
         *  returns the size of the type in bytes
         */
-      std::uint32_t 
+      uint32_t 
       typeSize (int type);
 	};
 }
 
+
+
+
 #include <pcl/io/impl/ascii_io.hpp>
+
+#endif    // PCL_IO_ASCII_IO_H_

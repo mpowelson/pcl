@@ -9,10 +9,10 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 #Searching CUDA
-find_package(CUDA)
+FIND_PACKAGE(CUDA)
 
 #Include the FindCUDA script
-include(FindCUDA)
+INCLUDE(FindCUDA)
 
 cuda_add_executable (people_detect src/people_detect.cpp)
 target_link_libraries (people_detect ${PCL_LIBRARIES})

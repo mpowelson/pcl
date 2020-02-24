@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_NORMAL_3D_OMP_H_
+#define PCL_NORMAL_3D_OMP_H_
 
 #include <pcl/features/normal_3d.h>
 
@@ -53,8 +54,8 @@ namespace pcl
   class NormalEstimationOMP: public NormalEstimation<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<NormalEstimationOMP<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr<const NormalEstimationOMP<PointInT, PointOutT> >;
+      typedef boost::shared_ptr<NormalEstimationOMP<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const NormalEstimationOMP<PointInT, PointOutT> > ConstPtr;
       using NormalEstimation<PointInT, PointOutT>::feature_name_;
       using NormalEstimation<PointInT, PointOutT>::getClassName;
       using NormalEstimation<PointInT, PointOutT>::indices_;
@@ -67,7 +68,7 @@ namespace pcl
       using NormalEstimation<PointInT, PointOutT>::surface_;
       using NormalEstimation<PointInT, PointOutT>::getViewPoint;
 
-      using PointCloudOut = typename NormalEstimation<PointInT, PointOutT>::PointCloudOut;
+      typedef typename NormalEstimation<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
     public:
       /** \brief Initialize the scheduler and set the number of threads to use.
@@ -96,10 +97,12 @@ namespace pcl
         * \param output the resultant point cloud model dataset that contains surface normals and curvatures
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/normal_3d_omp.hpp>
 #endif
+
+#endif  //#ifndef PCL_NORMAL_3D_OMP_H_

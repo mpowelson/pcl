@@ -37,7 +37,9 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_FILTERS_MEDIAN_FILTER_H_
+#define PCL_FILTERS_MEDIAN_FILTER_H_
 
 #include <pcl/filters/filter.h>
 
@@ -60,7 +62,7 @@ namespace pcl
   class MedianFilter : public pcl::Filter<PointT>
   {
       using pcl::Filter<PointT>::input_;
-      using PointCloud = typename pcl::Filter<PointT>::PointCloud;
+      typedef typename pcl::Filter<PointT>::PointCloud PointCloud;
 
     public:
       /** \brief Empty constructor. */
@@ -101,7 +103,7 @@ namespace pcl
         * \param[out] output the result point cloud
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
     protected:
       int window_size_;
@@ -114,3 +116,4 @@ namespace pcl
 #else
 #define PCL_INSTANTIATE_MedianFilter(T) template class PCL_EXPORTS pcl::MedianFilter<T>;
 #endif
+#endif /* PCL_FILTERS_MEDIAN_FILTER_H_ */

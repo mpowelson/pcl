@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_PFH_TOOLS_H_
+#define PCL_FEATURES_PFH_TOOLS_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -73,3 +74,6 @@ namespace pcl
                           float &f1, float &f2, float &f3, float &f4, float &f5, float &f6, float &f7);
 
 }
+
+#endif  //#ifndef PCL_FEATURES_PFH_TOOLS_H_
+

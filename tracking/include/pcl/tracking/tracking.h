@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_TRACKING_TRACKING_H_
+#define PCL_TRACKING_TRACKING_H_
 
 #include <pcl/point_types.h>
 
@@ -129,4 +130,6 @@ POINT_CLOUD_REGISTER_POINT_WRAPPER(pcl::tracking::ParticleXYZR, pcl::tracking::_
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/tracking.hpp>
+#endif
+
 #endif

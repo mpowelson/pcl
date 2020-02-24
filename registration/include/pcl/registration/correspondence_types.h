@@ -37,8 +37,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_TYPES_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_TYPES_H_
 
 #include <pcl/correspondence.h>
 
@@ -75,3 +75,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_types.hpp>
+
+#endif /* PCL_REGISTRATION_CORRESPONDENCE_TYPES_H_ */

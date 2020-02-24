@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_OBJ_REC_RANSAC_H_
+#define PCL_RECOGNITION_OBJ_REC_RANSAC_H_
 
 #include <pcl/recognition/ransac_based/hypothesis.h>
 #include <pcl/recognition/ransac_based/model_library.h>
@@ -85,10 +86,10 @@ namespace pcl
     class PCL_EXPORTS ObjRecRANSAC
     {
       public:
-        using PointCloudIn = ModelLibrary::PointCloudIn;
-        using PointCloudN = ModelLibrary::PointCloudN;
+        typedef ModelLibrary::PointCloudIn PointCloudIn;
+        typedef ModelLibrary::PointCloudN PointCloudN;
 
-        using BVHH = BVH<Hypothesis *>;
+        typedef BVH<Hypothesis*> BVHH;
 
         /** \brief This is an output item of the ObjRecRANSAC::recognize() method. It contains the recognized model, its name (the ones passed to
           * ObjRecRANSAC::addModel()), the rigid transform which aligns the model with the input scene and the match confidence which is a number
@@ -138,7 +139,7 @@ namespace pcl
             Hypothesis* create (const SimpleOctree<Hypothesis, HypothesisCreator, float>::Node* ) const { return new Hypothesis ();}
         };
 
-        using HypothesisOctree = SimpleOctree<Hypothesis, HypothesisCreator, float>;
+        typedef SimpleOctree<Hypothesis, HypothesisCreator, float> HypothesisOctree;
 
       public:
         /** \brief Constructor with some important parameters which can not be changed once an instance of that class is created.
@@ -226,7 +227,7 @@ namespace pcl
           * The method returns true if the model was successfully added to the model library and false otherwise (e.g., if 'object_name' is already in use).
           */
         inline bool
-        addModel (const PointCloudIn& points, const PointCloudN& normals, const std::string& object_name, void* user_data = nullptr)
+        addModel (const PointCloudIn& points, const PointCloudN& normals, const std::string& object_name, void* user_data = NULL)
         {
           return (model_library_.addModel (points, normals, object_name, frac_of_points_for_icp_refinement_, user_data));
         }
@@ -338,7 +339,7 @@ namespace pcl
           if ( 1.0 - p <= 0.0 )
             return 1;
 
-          return static_cast<int> (std::log (1.0-success_probability)/std::log (1.0-p) + 1.0);
+          return static_cast<int> (log (1.0-success_probability)/log (1.0-p) + 1.0);
         }
 
         inline void
@@ -479,3 +480,5 @@ namespace pcl
     };
   } // namespace recognition
 } // namespace pcl
+
+#endif // PCL_RECOGNITION_OBJ_REC_RANSAC_H_

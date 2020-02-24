@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_BOOST_H_
+#define PCL_FILTERS_BOOST_H_
 
 #ifdef __GNUC__
 #pragma GCC system_header 
@@ -51,5 +52,10 @@
 #include <boost/make_shared.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/unordered_map.hpp>
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/optional.hpp>
+
+#endif    // PCL_FILTERS_BOOST_H_

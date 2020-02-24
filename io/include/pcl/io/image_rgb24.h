@@ -33,11 +33,13 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
- 
-#pragma once
-
 #include <pcl/pcl_config.h>
+
+#ifndef PCL_IO_IMAGE_RGB_H_
+#define PCL_IO_IMAGE_RGB_H_
+
 #include <pcl/pcl_macros.h>
+#include <boost/chrono.hpp>
 
 #include <pcl/io/image.h>
 
@@ -55,33 +57,35 @@ namespace pcl
 
         ImageRGB24 (FrameWrapper::Ptr image_metadata);
         ImageRGB24 (FrameWrapper::Ptr image_metadata, Timestamp timestamp);
-        ~ImageRGB24 () noexcept;
+        virtual ~ImageRGB24 () throw ();
 
-        inline Encoding
-        getEncoding () const override
+        inline virtual Encoding
+        getEncoding () const
         {
           return (RGB);
         }
 
-        void
-        fillRGB (unsigned width, unsigned height, unsigned char* rgb_buffer, unsigned rgb_line_step = 0) const override;
+        virtual void
+        fillRGB (unsigned width, unsigned height, unsigned char* rgb_buffer, unsigned rgb_line_step = 0) const;
       
-        void
-        fillGrayscale (unsigned width, unsigned height, unsigned char* gray_buffer, unsigned gray_line_step = 0) const override;
+        virtual void
+        fillGrayscale (unsigned width, unsigned height, unsigned char* gray_buffer, unsigned gray_line_step = 0) const;
       
-        bool
-        isResizingSupported (unsigned input_width, unsigned input_height, unsigned output_width, unsigned output_height) const override;
+        virtual bool
+        isResizingSupported (unsigned input_width, unsigned input_height, unsigned output_width, unsigned output_height) const;
 
       private:
 
         // Struct used for type conversion
-        struct RGB888Pixel
+        typedef struct
         {
-          std::uint8_t r;
-          std::uint8_t g;
-          std::uint8_t b;
-        };
+          uint8_t r;
+          uint8_t g;
+          uint8_t b;
+        } RGB888Pixel;
     };
 
   } // namespace
 }
+
+#endif // PCL_IO_IMAGE_RGB_H_

@@ -36,7 +36,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_APPROXIMATE_PROGRESSIVE_MORPHOLOGICAL_FILTER_H_
+#define PCL_APPROXIMATE_PROGRESSIVE_MORPHOLOGICAL_FILTER_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/search/search.h>
@@ -57,7 +58,7 @@ namespace pcl
   {
     public:
 
-      using PointCloud = pcl::PointCloud<PointT>;
+      typedef pcl::PointCloud <PointT> PointCloud;
 
       using PCLBase <PointT>::input_;
       using PCLBase <PointT>::indices_;
@@ -69,7 +70,7 @@ namespace pcl
       /** \brief Constructor that sets default values for member variables. */
       ApproximateProgressiveMorphologicalFilter ();
 
-      
+      virtual
       ~ApproximateProgressiveMorphologicalFilter ();
 
       /** \brief Get the maximum window size to be used in filtering ground returns. */
@@ -172,3 +173,6 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/segmentation/impl/approximate_progressive_morphological_filter.hpp>
 #endif
+
+#endif
+

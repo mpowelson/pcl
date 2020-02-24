@@ -34,6 +34,7 @@
  *
  */
 
+#include <pcl/apps/modeler/qt.h>
 #include <pcl/apps/modeler/main_window.h>
 
 extern int qInitResources_resources();
@@ -46,5 +47,5 @@ int main( int argc, char** argv )
 
   pcl::modeler::MainWindow::getInstance().show();
 
-  return QApplication::exec();
+  return app.exec();
 }

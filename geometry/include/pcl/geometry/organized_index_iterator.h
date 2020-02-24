@@ -33,7 +33,8 @@
  *
  */
 
-#pragma once
+#ifndef __PCL_ORGANIZED_INDEX_ITERATOR__
+#define __PCL_ORGANIZED_INDEX_ITERATOR__
 
 namespace pcl
 {
@@ -148,3 +149,5 @@ pcl::OrganizedIndexIterator::getColumnIndex () const
   return index_ % width_;
 }
 } // namespace pcl
+
+#endif // __PCL_ORGANIZED_INDEX_ITERATOR__

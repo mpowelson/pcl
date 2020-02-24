@@ -35,11 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_SAMPLING_SURFACE_NORMAL_H_
+#define PCL_FILTERS_SAMPLING_SURFACE_NORMAL_H_
 
 #include <pcl/filters/filter.h>
-#include <ctime>
-#include <climits>
+#include <time.h>
+#include <limits.h>
 
 namespace pcl
 {
@@ -58,20 +59,20 @@ namespace pcl
     using Filter<PointT>::indices_;
     using Filter<PointT>::input_;
 
-    using PointCloud = typename Filter<PointT>::PointCloud;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename Filter<PointT>::PointCloud PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
-    using Vector = Eigen::Matrix<float, Eigen::Dynamic, 1>;
+    typedef typename Eigen::Matrix<float, Eigen::Dynamic, 1> Vector;
 
     public:
 
-      using Ptr = shared_ptr<SamplingSurfaceNormal<PointT> >;
-      using ConstPtr = shared_ptr<const SamplingSurfaceNormal<PointT> >;
+      typedef boost::shared_ptr< SamplingSurfaceNormal<PointT> > Ptr;
+      typedef boost::shared_ptr< const SamplingSurfaceNormal<PointT> > ConstPtr;
 
       /** \brief Empty constructor. */
       SamplingSurfaceNormal () : 
-        sample_ (10), seed_ (static_cast<unsigned int> (time (nullptr))), ratio_ ()
+        sample_ (10), seed_ (static_cast<unsigned int> (time (NULL))), ratio_ ()
       {
         filter_name_ = "SamplingSurfaceNormal";
         srand (seed_);
@@ -139,7 +140,7 @@ namespace pcl
         * \param[out] output the resultant point cloud
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
     private:
 
@@ -163,9 +164,9 @@ namespace pcl
         {
           if (dim == 0)
             return (cloud.points[p0].x < cloud.points[p1].x);
-          if (dim == 1)
+          else if (dim == 1)
             return (cloud.points[p0].y < cloud.points[p1].y);
-          if (dim == 2)
+          else if (dim == 2)
             return (cloud.points[p0].z < cloud.points[p1].z);
           return (false);
         }
@@ -248,3 +249,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/sampling_surface_normal.hpp>
 #endif
+
+#endif  //#ifndef PCL_FILTERS_SAMPLING_SURFACE_NORMAL_H_

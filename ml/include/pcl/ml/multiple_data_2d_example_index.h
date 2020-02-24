@@ -34,24 +34,30 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#pragma once
+  
+#ifndef PCL_ML_MULTIPLE_DATA_2D_EXAMPLE_INDEX_H_
+#define PCL_ML_MULTIPLE_DATA_2D_EXAMPLE_INDEX_H_
 
 #include <pcl/common/common.h>
 
 #include <istream>
 #include <ostream>
 
-namespace pcl {
+namespace pcl
+{
 
-/** Example index for a set of 2D data blocks. */
-struct MultipleData2DExampleIndex {
-  /** The data set index. */
-  int data_set_id;
-  /** The x-coordinate. */
-  int x;
-  /** The y-coordinate. */
-  int y;
-};
+  /** \brief Example index for a set of 2D data blocks. */
+  struct MultipleData2DExampleIndex
+  {
+    /** \brief The data set index. */
+    int data_set_id;
 
-} // namespace pcl
+    /** \brief The x-coordinate. */
+    int x;
+    /** \brief The y-coordinate. */
+    int y;
+  };
+
+}
+
+#endif

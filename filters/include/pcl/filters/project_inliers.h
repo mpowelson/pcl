@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_PROJECT_INLIERS_H_
+#define PCL_FILTERS_PROJECT_INLIERS_H_
 
 #include <pcl/point_types.h>
 #include <pcl/filters/filter.h>
@@ -72,25 +73,25 @@ namespace pcl
     using Filter<PointT>::filter_name_;
     using Filter<PointT>::getClassName;
 
-    using PointCloud = typename Filter<PointT>::PointCloud;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename Filter<PointT>::PointCloud PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
-    using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+    typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
     public:
 
-      using Ptr = shared_ptr<ProjectInliers<PointT> >;
-      using ConstPtr = shared_ptr<const ProjectInliers<PointT> >;
+      typedef boost::shared_ptr< ProjectInliers<PointT> > Ptr;
+      typedef boost::shared_ptr< const ProjectInliers<PointT> > ConstPtr;
 
 
       /** \brief Empty constructor. */
-      ProjectInliers () : sacmodel_ (), model_type_ (), copy_all_data_ (false)
+      ProjectInliers () : model_ (), sacmodel_ (), model_type_ (), copy_all_data_ (false)
       {
         filter_name_ = "ProjectInliers";
       }
       
       /** \brief Empty destructor */
-      ~ProjectInliers () {}
+      virtual ~ProjectInliers () {}
 
       /** \brief The type of model to use (user given parameter).
         * \param model the model type (check \a model_types.h)
@@ -145,7 +146,7 @@ namespace pcl
         * \param output the resultant point cloud message
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
     private:
       /** \brief A pointer to the vector of model coefficients. */
@@ -180,21 +181,21 @@ namespace pcl
     using Filter<pcl::PCLPointCloud2>::filter_name_;
     using Filter<pcl::PCLPointCloud2>::getClassName;
 
-    using PCLPointCloud2 = pcl::PCLPointCloud2;
-    using PCLPointCloud2Ptr = PCLPointCloud2::Ptr;
-    using PCLPointCloud2ConstPtr = PCLPointCloud2::ConstPtr;
+    typedef pcl::PCLPointCloud2 PCLPointCloud2;
+    typedef PCLPointCloud2::Ptr PCLPointCloud2Ptr;
+    typedef PCLPointCloud2::ConstPtr PCLPointCloud2ConstPtr;
 
-    using SampleConsensusModelPtr = SampleConsensusModel<PointXYZ>::Ptr;
+    typedef SampleConsensusModel<PointXYZ>::Ptr SampleConsensusModelPtr;
 
     public:
       /** \brief Empty constructor. */
-      ProjectInliers () : model_type_ (), copy_all_data_ (false), copy_all_fields_ (true)
+      ProjectInliers () : model_type_ (), copy_all_data_ (false), copy_all_fields_ (true), model_ (), sacmodel_ ()
       {
         filter_name_ = "ProjectInliers";
       }
       
       /** \brief Empty destructor */
-      ~ProjectInliers () {}
+      virtual ~ProjectInliers () {}
 
       /** \brief The type of model to use (user given parameter).
         * \param[in] model the model type (check \a model_types.h)
@@ -273,7 +274,7 @@ namespace pcl
       ModelCoefficientsConstPtr model_;
 
       void
-      applyFilter (PCLPointCloud2 &output) override;
+      applyFilter (PCLPointCloud2 &output);
 
     private:
       /** \brief The model that needs to be segmented. */
@@ -287,3 +288,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/project_inliers.hpp>
 #endif
+
+#endif  //#ifndef PCL_FILTERS_PROJECT_INLIERS_H_

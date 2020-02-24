@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_DENSE_QUANTIZED_MULTI_MOD_TEMPLATE
+#define PCL_FEATURES_DENSE_QUANTIZED_MULTI_MOD_TEMPLATE
 
 #include <vector>
 
@@ -51,9 +52,9 @@ namespace pcl
     void 
     serialize (std::ostream & stream) const
     {
-      const std::size_t num_of_features = static_cast<std::size_t> (features.size ());
+      const size_t num_of_features = static_cast<size_t> (features.size ());
       write (stream, num_of_features);
-      for (std::size_t feature_index = 0; feature_index < num_of_features; ++feature_index)
+      for (size_t feature_index = 0; feature_index < num_of_features; ++feature_index)
       {
         write (stream, features[feature_index]);
       }
@@ -64,10 +65,10 @@ namespace pcl
     {
       features.clear ();
 
-      std::size_t num_of_features;
+      size_t num_of_features;
       read (stream, num_of_features);
       features.resize (num_of_features);
-      for (std::size_t feature_index = 0; feature_index < num_of_features; ++feature_index)
+      for (size_t feature_index = 0; feature_index < num_of_features; ++feature_index)
       {
         read (stream, features[feature_index]);
       }
@@ -84,9 +85,9 @@ namespace pcl
     void 
     serialize (std::ostream & stream) const
     {
-      const std::size_t num_of_modalities = static_cast<std::size_t> (modalities.size ());
+      const size_t num_of_modalities = static_cast<size_t> (modalities.size ());
       write (stream, num_of_modalities);
-      for (std::size_t modality_index = 0; modality_index < num_of_modalities; ++modality_index)
+      for (size_t modality_index = 0; modality_index < num_of_modalities; ++modality_index)
       {
         modalities[modality_index].serialize (stream);
       }
@@ -99,10 +100,10 @@ namespace pcl
     {
       modalities.clear ();
 
-      std::size_t num_of_modalities;
+      size_t num_of_modalities;
       read (stream, num_of_modalities);
       modalities.resize (num_of_modalities);
-      for (std::size_t modality_index = 0; modality_index < num_of_modalities; ++modality_index)
+      for (size_t modality_index = 0; modality_index < num_of_modalities; ++modality_index)
       {
         modalities[modality_index].deserialize (stream);
       }
@@ -112,3 +113,5 @@ namespace pcl
   };
 
 }
+
+#endif 

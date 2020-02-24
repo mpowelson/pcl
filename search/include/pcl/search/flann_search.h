@@ -36,7 +36,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_SEARCH_FLANN_SEARCH_H_
+#define PCL_SEARCH_FLANN_SEARCH_H_
 
 #include <pcl/search/search.h>
 #include <pcl/common/time.h>
@@ -66,14 +67,14 @@ namespace pcl
       * 
       * \code
       * // Feature and distance type
-      * using FeatureT = SHOT352;
-      * using DistanceT = flann::L2<float>;
+      * typedef SHOT352 FeatureT;
+      * typedef flann::L2<float> DistanceT;
       * 
       * // Search and index types
-      * using SearchT = search::FlannSearch<FeatureT, DistanceT>;
-      * using CreatorPtrT = typename SearchT::FlannIndexCreatorPtr;
-      * using IndexT = typename SearchT::KdTreeMultiIndexCreator;
-      * using RepresentationPtrT = typename SearchT::PointRepresentationPtr;
+      * typedef search::FlannSearch<FeatureT, DistanceT> SearchT;
+      * typedef typename SearchT::FlannIndexCreatorPtr CreatorPtrT;
+      * typedef typename SearchT::KdTreeMultiIndexCreator IndexT;
+      * typedef typename SearchT::PointRepresentationPtr RepresentationPtrT;
       * 
       * // Features
       * PointCloud<FeatureT>::Ptr query, target;
@@ -104,24 +105,24 @@ namespace pcl
       using Search<PointT>::sorted_results_;
 
       public:
-        using Ptr = shared_ptr<FlannSearch<PointT, FlannDistance> >;
-        using ConstPtr = shared_ptr<const FlannSearch<PointT, FlannDistance> >;
+        typedef boost::shared_ptr<FlannSearch<PointT, FlannDistance> > Ptr;
+        typedef boost::shared_ptr<const FlannSearch<PointT, FlannDistance> > ConstPtr;
         
-        using PointCloud = typename Search<PointT>::PointCloud;
-        using PointCloudConstPtr = typename Search<PointT>::PointCloudConstPtr;
+        typedef typename Search<PointT>::PointCloud PointCloud;
+        typedef typename Search<PointT>::PointCloudConstPtr PointCloudConstPtr;
 
-        using typename Search<PointT>::IndicesPtr;
-        using typename Search<PointT>::IndicesConstPtr;
+        typedef boost::shared_ptr<std::vector<int> > IndicesPtr;
+        typedef boost::shared_ptr<const std::vector<int> > IndicesConstPtr;
 
-        using MatrixPtr = shared_ptr<flann::Matrix<float> >;
-        using MatrixConstPtr = shared_ptr<const flann::Matrix<float> >;
+        typedef boost::shared_ptr<flann::Matrix <float> > MatrixPtr;
+        typedef boost::shared_ptr<const flann::Matrix <float> > MatrixConstPtr;
 
-        using Index = flann::NNIndex<FlannDistance>;
-        using IndexPtr = shared_ptr<flann::NNIndex<FlannDistance> >;
+        typedef flann::NNIndex< FlannDistance > Index;
+        typedef boost::shared_ptr<flann::NNIndex <FlannDistance > > IndexPtr;
 
-        using PointRepresentation = pcl::PointRepresentation<PointT>;
-        using PointRepresentationPtr = typename PointRepresentation::Ptr;
-        using PointRepresentationConstPtr = typename PointRepresentation::ConstPtr;
+        typedef pcl::PointRepresentation<PointT> PointRepresentation;
+        typedef boost::shared_ptr<PointRepresentation> PointRepresentationPtr;
+        typedef boost::shared_ptr<const PointRepresentation> PointRepresentationConstPtr;
 
         /** \brief Helper class that creates a FLANN index from a given FLANN matrix. To
           * use a FLANN index type with FlannSearch, implement this interface and
@@ -141,7 +142,7 @@ namespace pcl
             */
             virtual ~FlannIndexCreator () {}
         };
-        using FlannIndexCreatorPtr = shared_ptr<FlannIndexCreator>;
+        typedef boost::shared_ptr<FlannIndexCreator> FlannIndexCreatorPtr;
 
         /** \brief Creates a FLANN KdTreeSingleIndex from the given input data.
           */
@@ -155,13 +156,13 @@ namespace pcl
             KdTreeIndexCreator (unsigned int max_leaf_size=15) : max_leaf_size_ (max_leaf_size){}
       
             /** \brief Empty destructor */
-            ~KdTreeIndexCreator () {}
+            virtual ~KdTreeIndexCreator () {}
 
           /** \brief Create a FLANN Index from the input data.
             * \param[in] data The FLANN matrix containing the input.
             * \return The FLANN index.
             */
-            IndexPtr createIndex (MatrixConstPtr data) override;
+            virtual IndexPtr createIndex (MatrixConstPtr data);
           private:
             unsigned int max_leaf_size_;
         };
@@ -214,7 +215,7 @@ namespace pcl
         FlannSearch (bool sorted = true, FlannIndexCreatorPtr creator = FlannIndexCreatorPtr (new KdTreeIndexCreator ()));
 
         /** \brief Destructor for FlannSearch. */
-        
+        virtual
         ~FlannSearch ();
 
 
@@ -257,8 +258,8 @@ namespace pcl
           * \param[in] cloud the const boost shared pointer to a PointCloud message
           * \param[in] indices the point indices subset that is to be used from \a cloud
           */
-        void
-        setInputCloud (const PointCloudConstPtr& cloud, const IndicesConstPtr& indices = IndicesConstPtr ()) override;
+        virtual void
+        setInputCloud (const PointCloudConstPtr& cloud, const IndicesConstPtr& indices = IndicesConstPtr ());
 
         /** \brief Search for the k-nearest neighbors for the given query point.
           * \param[in] point the given query point
@@ -269,7 +270,7 @@ namespace pcl
           * \return number of neighbors found
           */
         int
-        nearestKSearch (const PointT &point, int k, std::vector<int> &k_indices, std::vector<float> &k_sqr_distances) const override;
+        nearestKSearch (const PointT &point, int k, std::vector<int> &k_indices, std::vector<float> &k_sqr_distances) const;
 
 
         /** \brief Search for the k-nearest neighbors for the given query point.
@@ -279,9 +280,9 @@ namespace pcl
           * \param[out] k_indices the resultant indices of the neighboring points, k_indices[i] corresponds to the neighbors of the query point i
           * \param[out] k_sqr_distances the resultant squared distances to the neighboring points, k_sqr_distances[i] corresponds to the neighbors of the query point i
           */
-        void
+        virtual void
         nearestKSearch (const PointCloud& cloud, const std::vector<int>& indices, int k, 
-                        std::vector< std::vector<int> >& k_indices, std::vector< std::vector<float> >& k_sqr_distances) const override;
+                        std::vector< std::vector<int> >& k_indices, std::vector< std::vector<float> >& k_sqr_distances) const;
 
         /** \brief Search for all the nearest neighbors of the query point in a given radius.
           * \param[in] point the given query point
@@ -296,7 +297,7 @@ namespace pcl
         int
         radiusSearch (const PointT& point, double radius, 
                       std::vector<int> &k_indices, std::vector<float> &k_sqr_distances,
-                      unsigned int max_nn = 0) const override;
+                      unsigned int max_nn = 0) const;
 
         /** \brief Search for the k-nearest neighbors for the given query point.
           * \param[in] cloud the point cloud data
@@ -306,9 +307,9 @@ namespace pcl
           * \param[out] k_sqr_distances the resultant squared distances to the neighboring points, k_sqr_distances[i] corresponds to the neighbors of the query point i
           * \param[in] max_nn if given, bounds the maximum returned neighbors to this value
           */
-        void
+        virtual void
         radiusSearch (const PointCloud& cloud, const std::vector<int>& indices, double radius, std::vector< std::vector<int> >& k_indices,
-                std::vector< std::vector<float> >& k_sqr_distances, unsigned int max_nn=0) const override;
+                std::vector< std::vector<float> >& k_sqr_distances, unsigned int max_nn=0) const;
 
         /** \brief Provide a pointer to the point representation to use to convert points into k-D vectors.
           * \param[in] point_representation the const boost shared pointer to a PointRepresentation
@@ -369,3 +370,6 @@ namespace pcl
 }
 
 #define PCL_INSTANTIATE_FlannSearch(T) template class PCL_EXPORTS pcl::search::FlannSearch<T>;
+
+#endif    // PCL_SEARCH_KDTREE_H_
+

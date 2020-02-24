@@ -19,6 +19,8 @@
 #include <pcl/search/pcl_search.h>
 #include <pcl/common/transforms.h>
 
+#include <boost/format.hpp>
+
 #include <pcl/tracking/tracking.h>
 #include <pcl/tracking/particle_filter.h>
 #include <pcl/tracking/kld_adaptive_particle_filter_omp.h>
@@ -29,13 +31,7 @@
 #include <pcl/tracking/approx_nearest_pair_point_cloud_coherence.h>
 #include <pcl/tracking/nearest_pair_point_cloud_coherence.h>
 
-#include <boost/format.hpp>
-
-#include <mutex>
-#include <thread>
-
 using namespace pcl::tracking;
-using namespace std::chrono_literals;
 
 typedef pcl::PointXYZRGBA RefPointType;
 typedef ParticleXYZRPY ParticleT;
@@ -48,8 +44,8 @@ CloudPtr cloud_pass_;
 CloudPtr cloud_pass_downsampled_;
 CloudPtr target_cloud;
 
-std::mutex mtx_;
-ParticleFilter::Ptr tracker_;
+boost::mutex mtx_;
+boost::shared_ptr<ParticleFilter> tracker_;
 bool new_cloud_;
 double downsampling_grid_size_;
 int counter;
@@ -85,7 +81,7 @@ drawParticles (pcl::visualization::PCLVisualizer& viz)
     {
       //Set pointCloud with particle's points
       pcl::PointCloud<pcl::PointXYZ>::Ptr particle_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-      for (std::size_t i = 0; i < particles->points.size (); i++)
+      for (size_t i = 0; i < particles->points.size (); i++)
 	{
 	  pcl::PointXYZ point;
           
@@ -135,11 +131,11 @@ drawResult (pcl::visualization::PCLVisualizer& viz)
 void
 viz_cb (pcl::visualization::PCLVisualizer& viz)
 {
-  std::lock_guard<std::mutex> lock (mtx_);
+  boost::mutex::scoped_lock lock (mtx_);
     
   if (!cloud_pass_)
     {
-      std::this_thread::sleep_for(1s);
+      boost::this_thread::sleep (boost::posix_time::seconds (1));
       return;
    }
 
@@ -165,7 +161,7 @@ viz_cb (pcl::visualization::PCLVisualizer& viz)
 void
 cloud_cb (const CloudConstPtr &cloud)
 {
-  std::lock_guard<std::mutex> lock (mtx_);
+  boost::mutex::scoped_lock lock (mtx_);
   cloud_pass_.reset (new Cloud);
   cloud_pass_downsampled_.reset (new Cloud);
   filterPassThrough (cloud, *cloud_pass_);
@@ -213,7 +209,7 @@ main (int argc, char** argv)
   std::vector<double> initial_noise_covariance = std::vector<double> (6, 0.00001);
   std::vector<double> default_initial_mean = std::vector<double> (6, 0.0);
 
-  KLDAdaptiveParticleFilterOMPTracker<RefPointType, ParticleT>::Ptr tracker
+  boost::shared_ptr<KLDAdaptiveParticleFilterOMPTracker<RefPointType, ParticleT> > tracker
     (new KLDAdaptiveParticleFilterOMPTracker<RefPointType, ParticleT> (8));
 
   ParticleT bin_size;
@@ -244,14 +240,14 @@ main (int argc, char** argv)
 
 
   //Setup coherence object for tracking
-  ApproxNearestPairPointCloudCoherence<RefPointType>::Ptr coherence
-    (new ApproxNearestPairPointCloudCoherence<RefPointType>);
-
-  DistanceCoherence<RefPointType>::Ptr distance_coherence
-    (new DistanceCoherence<RefPointType>);
+  ApproxNearestPairPointCloudCoherence<RefPointType>::Ptr coherence = ApproxNearestPairPointCloudCoherence<RefPointType>::Ptr
+    (new ApproxNearestPairPointCloudCoherence<RefPointType> ());
+    
+  boost::shared_ptr<DistanceCoherence<RefPointType> > distance_coherence
+    = boost::shared_ptr<DistanceCoherence<RefPointType> > (new DistanceCoherence<RefPointType> ());
   coherence->addPointCoherence (distance_coherence);
 
-  pcl::search::Octree<RefPointType>::Ptr search (new pcl::search::Octree<RefPointType> (0.01));
+  boost::shared_ptr<pcl::search::Octree<RefPointType> > search (new pcl::search::Octree<RefPointType> (0.01));
   coherence->setSearchMethod (search);
   coherence->setMaximumDistance (0.01);
 
@@ -275,14 +271,15 @@ main (int argc, char** argv)
   //Setup OpenNIGrabber and viewer
   pcl::visualization::CloudViewer* viewer_ = new pcl::visualization::CloudViewer("PCL OpenNI Tracking Viewer");
   pcl::Grabber* interface = new pcl::OpenNIGrabber (device_id);
-  std::function<void (const CloudConstPtr&)> f = cloud_cb;
+  boost::function<void (const CloudConstPtr&)> f =
+    boost::bind (&cloud_cb, _1);
   interface->registerCallback (f);
-
-  viewer_->runOnVisualizationThread (viz_cb, "viz_cb");
+    
+  viewer_->runOnVisualizationThread (boost::bind(&viz_cb, _1), "viz_cb");
 
   //Start viewer and object tracking
   interface->start();
   while (!viewer_->wasStopped ())
-    std::this_thread::sleep_for(1s);
+    boost::this_thread::sleep(boost::posix_time::seconds(1));
   interface->stop();
 }

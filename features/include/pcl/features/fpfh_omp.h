@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FPFH_OMP_H_
+#define PCL_FPFH_OMP_H_
 
 #include <pcl/features/feature.h>
 #include <pcl/features/fpfh.h>
@@ -74,8 +75,8 @@ namespace pcl
   class FPFHEstimationOMP : public FPFHEstimation<PointInT, PointNT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<FPFHEstimationOMP<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const FPFHEstimationOMP<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr<FPFHEstimationOMP<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const FPFHEstimationOMP<PointInT, PointNT, PointOutT> > ConstPtr;
       using Feature<PointInT, PointOutT>::feature_name_;
       using Feature<PointInT, PointOutT>::getClassName;
       using Feature<PointInT, PointOutT>::indices_;
@@ -89,7 +90,7 @@ namespace pcl
       using FPFHEstimation<PointInT, PointNT, PointOutT>::hist_f3_;
       using FPFHEstimation<PointInT, PointNT, PointOutT>::weightPointSPFHSignature;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
       /** \brief Initialize the scheduler and set the number of threads to use.
         * \param[in] nr_threads the number of hardware threads to use (0 sets the value back to automatic)
@@ -114,7 +115,7 @@ namespace pcl
         * \param[out] output the resultant point cloud model dataset that contains the FPFH feature estimates
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
     public:
       /** \brief The number of subdivisions for each angular feature interval. */
@@ -128,3 +129,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/fpfh_omp.hpp>
 #endif
+
+#endif  //#ifndef PCL_FPFH_OMP_H_

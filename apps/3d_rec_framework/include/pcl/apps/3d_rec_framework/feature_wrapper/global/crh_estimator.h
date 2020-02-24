@@ -5,13 +5,12 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_CRH_ESTIMATOR_H_
+#define REC_FRAMEWORK_CRH_ESTIMATOR_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/global/global_estimator.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/normal_estimator.h>
 #include <pcl/features/crh.h>
-
-#include <memory>
 
 namespace pcl
 {
@@ -21,12 +20,12 @@ namespace pcl
     class CRHEstimation : public GlobalEstimator<PointInT, FeatureT>
     {
 
-      using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
+      typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
       using GlobalEstimator<PointInT, FeatureT>::normal_estimator_;
       using GlobalEstimator<PointInT, FeatureT>::normals_;
 
-      std::shared_ptr<GlobalEstimator<PointInT, FeatureT>> feature_estimator_;
-      using CRHPointCloud = pcl::PointCloud<pcl::Histogram<90> >;
+      typename boost::shared_ptr<GlobalEstimator<PointInT, FeatureT> > feature_estimator_;
+      typedef pcl::PointCloud<pcl::Histogram<90> > CRHPointCloud;
       std::vector< CRHPointCloud::Ptr > crh_histograms_;
 
     public:
@@ -37,14 +36,14 @@ namespace pcl
       }
 
       void
-      setFeatureEstimator(std::shared_ptr<GlobalEstimator<PointInT, FeatureT>>& feature_estimator) {
+      setFeatureEstimator(typename boost::shared_ptr<GlobalEstimator<PointInT, FeatureT> > & feature_estimator) {
         feature_estimator_ = feature_estimator;
       }
 
       void
       estimate (PointInTPtr & in, PointInTPtr & processed,
                 std::vector<pcl::PointCloud<FeatureT>, Eigen::aligned_allocator<pcl::PointCloud<FeatureT> > > & signatures,
-                std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids) override
+                std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
       {
 
         if (!feature_estimator_)
@@ -64,12 +63,12 @@ namespace pcl
 
         crh_histograms_.resize(signatures.size());
 
-        using CRHEstimation = pcl::CRHEstimation<PointInT, pcl::Normal, pcl::Histogram<90> >;
+        typedef typename pcl::CRHEstimation<PointInT, pcl::Normal, pcl::Histogram<90> > CRHEstimation;
         CRHEstimation crh;
         crh.setInputCloud(processed);
         crh.setInputNormals(normals_);
 
-        for (std::size_t idx = 0; idx < signatures.size (); idx++)
+        for (size_t idx = 0; idx < signatures.size (); idx++)
         {
           Eigen::Vector4f centroid4f(centroids[idx][0],centroids[idx][1],centroids[idx][2],0);
           crh.setCentroid(centroid4f);
@@ -84,10 +83,12 @@ namespace pcl
       }
 
       bool
-      computedNormals () override
+      computedNormals ()
       {
         return true;
       }
     };
   }
 }
+
+#endif /* REC_FRAMEWORK_CVFH_ESTIMATOR_H_ */

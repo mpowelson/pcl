@@ -35,8 +35,10 @@
  *
  */
 
-#pragma once
+#ifndef TOOL_FACTORY_H_
+#define TOOL_FACTORY_H_
 
+#include <pcl/apps/cloud_composer/qt.h>
 #include <pcl/apps/cloud_composer/items/cloud_composer_item.h>
 
 class QAction;
@@ -55,7 +57,7 @@ namespace pcl
     {
       public:
         virtual AbstractTool*
-        createTool (PropertiesModel* parameter_model = nullptr, QObject* parent = nullptr) = 0;
+        createTool (PropertiesModel* parameter_model = 0, QObject* parent = 0) = 0;
             
         virtual PropertiesModel*
         createToolParameterModel (QObject* parent) = 0;
@@ -93,3 +95,5 @@ Q_DECLARE_METATYPE (pcl::cloud_composer::ToolFactory*);
 
 Q_DECLARE_INTERFACE(pcl::cloud_composer::ToolFactory,
                     "cloud_composer.ToolFactory/1.0")
+
+#endif //TOOL_FACTORY_H_

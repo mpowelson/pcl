@@ -37,8 +37,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_TRANSFORMATION_ESTIMATION_H_
+#define PCL_REGISTRATION_TRANSFORMATION_ESTIMATION_H_
 
 #include <pcl/correspondence.h>
 #include <pcl/common/transforms.h>
@@ -62,7 +62,7 @@ namespace pcl
     class TransformationEstimation
     {
       public:
-        using Matrix4 = Eigen::Matrix<Scalar, 4, 4>;
+        typedef Eigen::Matrix<Scalar, 4, 4> Matrix4;
 
         TransformationEstimation () {};
         virtual ~TransformationEstimation () {};
@@ -120,8 +120,10 @@ namespace pcl
             Matrix4 &transformation_matrix) const = 0;
 
 
-        using Ptr = shared_ptr<TransformationEstimation<PointSource, PointTarget, Scalar> >;
-        using ConstPtr = shared_ptr<const TransformationEstimation<PointSource, PointTarget, Scalar> >;
+        typedef boost::shared_ptr<TransformationEstimation<PointSource, PointTarget, Scalar> > Ptr;
+        typedef boost::shared_ptr<const TransformationEstimation<PointSource, PointTarget, Scalar> > ConstPtr;
     };
   }
 }
+
+#endif /* PCL_REGISTRATION_TRANSFORMATION_ESTIMATION_H_ */

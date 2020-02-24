@@ -41,8 +41,6 @@
 #ifndef PCL_FEATURES_IMPL_FPFH_OMP_H_
 #define PCL_FEATURES_IMPL_FPFH_OMP_H_
 
-#include <numeric>
-
 #include <pcl/features/fpfh_omp.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,28 +73,28 @@ pcl::FPFHEstimationOMP<PointInT, PointNT, PointOutT>::computeFeature (PointCloud
     std::vector<float> nn_dists (k_); 
 
     std::set<int> spfh_indices_set;
-    for (std::size_t idx = 0; idx < indices_->size (); ++idx)
+    for (size_t idx = 0; idx < indices_->size (); ++idx)
     {
       int p_idx = (*indices_)[idx];
       if (!isFinite ((*input_)[p_idx]) ||
           this->searchForNeighbors (p_idx, search_parameter_, nn_indices, nn_dists) == 0)
         continue;
-
+      
       spfh_indices_set.insert (nn_indices.begin (), nn_indices.end ());
     }
     spfh_indices_vec.resize (spfh_indices_set.size ());
-    std::copy (spfh_indices_set.cbegin (), spfh_indices_set.cend (), spfh_indices_vec.begin ());
+    std::copy (spfh_indices_set.begin (), spfh_indices_set.end (), spfh_indices_vec.begin ());
   }
   else
   {
     // Special case: When a feature must be computed at every point, there is no need for a neighborhood search
     spfh_indices_vec.resize (indices_->size ());
-    std::iota(spfh_indices_vec.begin (), spfh_indices_vec.end (),
-              static_cast<decltype(spfh_indices_vec)::value_type>(0));
+    for (int idx = 0; idx < static_cast<int> (indices_->size ()); ++idx)
+      spfh_indices_vec[idx] = idx;
   }
 
   // Initialize the arrays that will store the SPFH signatures
-  const auto data_size = spfh_indices_vec.size ();
+  size_t data_size = spfh_indices_vec.size ();
   hist_f1_.setZero (data_size, nr_bins_f1_);
   hist_f2_.setZero (data_size, nr_bins_f2_);
   hist_f3_.setZero (data_size, nr_bins_f3_);
@@ -109,7 +107,7 @@ pcl::FPFHEstimationOMP<PointInT, PointNT, PointOutT>::computeFeature (PointCloud
 #ifdef _OPENMP
 #pragma omp parallel for shared (spfh_hist_lookup) private (nn_indices, nn_dists) num_threads(threads_)
 #endif
-  for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t> (spfh_indices_vec.size ()); ++i)
+  for (int i = 0; i < static_cast<int> (spfh_indices_vec.size ()); ++i)
   {
     // Get the next point index
     int p_idx = spfh_indices_vec[i];
@@ -136,7 +134,7 @@ pcl::FPFHEstimationOMP<PointInT, PointNT, PointOutT>::computeFeature (PointCloud
 #ifdef _OPENMP
 #pragma omp parallel for shared (output) private (nn_indices, nn_dists) num_threads(threads_)
 #endif
-  for (std::ptrdiff_t idx = 0; idx < static_cast<std::ptrdiff_t> (indices_->size ()); ++idx)
+  for (int idx = 0; idx < static_cast<int> (indices_->size ()); ++idx)
   {
     // Find the indices of point idx's neighbors...
     if (!isFinite ((*input_)[(*indices_)[idx]]) ||
@@ -144,7 +142,7 @@ pcl::FPFHEstimationOMP<PointInT, PointNT, PointOutT>::computeFeature (PointCloud
     {
       for (int d = 0; d < nr_bins; ++d)
         output.points[idx].histogram[d] = std::numeric_limits<float>::quiet_NaN ();
-
+  
       output.is_dense = false;
       continue;
     }
@@ -152,8 +150,8 @@ pcl::FPFHEstimationOMP<PointInT, PointNT, PointOutT>::computeFeature (PointCloud
 
     // ... and remap the nn_indices values so that they represent row indices in the spfh_hist_* matrices 
     // instead of indices into surface_->points
-    for (int &nn_index : nn_indices)
-      nn_index = spfh_hist_lookup[nn_index];
+    for (size_t i = 0; i < nn_indices.size (); ++i)
+      nn_indices[i] = spfh_hist_lookup[nn_indices[i]];
 
     // Compute the FPFH signature (i.e. compute a weighted combination of local SPFH signatures) ...
     Eigen::VectorXf fpfh_histogram = Eigen::VectorXf::Zero (nr_bins);

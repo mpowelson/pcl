@@ -39,6 +39,8 @@
 
 #include <pcl/recognition/ransac_based/model_library.h>
 #include <pcl/recognition/ransac_based/obj_rec_ransac.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/impl/kdtree_flann.hpp>
 #include <pcl/console/print.h>
 #include <cmath>
 
@@ -85,8 +87,8 @@ void
 ModelLibrary::removeAllModels ()
 {
   // Delete the model entries
-  for (auto &model : models_)
-    delete model.second;
+  for ( map<string,Model*>::iterator it = models_.begin() ; it != models_.end() ; ++it )
+    delete it->second;
   models_.clear();
 
   // Clear the hash table
@@ -109,7 +111,7 @@ ModelLibrary::addModel (const PointCloudIn& points, const PointCloudN& normals, 
 #endif
 
   // Try to insert a new model entry
-  pair<map<string,Model*>::iterator, bool> result = models_.insert (pair<string,Model*> (object_name, static_cast<Model*> (nullptr)));
+  pair<map<string,Model*>::iterator, bool> result = models_.insert (pair<string,Model*> (object_name, static_cast<Model*> (NULL)));
 
   // Check if 'object_name' is unique
   if (!result.second)
@@ -123,23 +125,23 @@ ModelLibrary::addModel (const PointCloudIn& points, const PointCloudN& normals, 
   result.first->second = new_model;
 
   const ORROctree& octree = new_model->getOctree ();
-  const std::vector<ORROctree::Node*> &full_leaves = octree.getFullLeaves ();
+  const vector<ORROctree::Node*> &full_leaves = octree.getFullLeaves ();
   list<ORROctree::Node*> inter_leaves;
   int num_of_pairs = 0;
 
   // Run through all full leaves
-  for (const auto &full_leaf : full_leaves)
+  for ( vector<ORROctree::Node*>::const_iterator leaf1 = full_leaves.begin () ; leaf1 != full_leaves.end () ; ++leaf1 )
   {
-    const ORROctree::Node::Data* node_data1 = full_leaf->getData ();
+    const ORROctree::Node::Data* node_data1 = (*leaf1)->getData ();
 
     // Get all full leaves at the right distance to the current leaf
     inter_leaves.clear ();
     octree.getFullLeavesIntersectedBySphere (node_data1->getPoint (), pair_width_, inter_leaves);
 
-    for (const auto &inter_leaf : inter_leaves)
+    for ( list<ORROctree::Node*>::iterator leaf2 = inter_leaves.begin () ; leaf2 != inter_leaves.end () ; ++leaf2 )
     {
       // Compute the hash table key
-      if ( this->addToHashTable(new_model, node_data1, inter_leaf->getData ()) )
+      if ( this->addToHashTable(new_model, node_data1, (*leaf2)->getData ()) )
         ++num_of_pairs;
     }
   }

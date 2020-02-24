@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_ROSLIB_MESSAGE_HEADER_H
+#define PCL_ROSLIB_MESSAGE_HEADER_H
 
 #ifdef USE_ROS
    #error USE_ROS setup requires PCL to compile against ROS message headers, which is now deprecated
@@ -14,22 +15,25 @@ namespace pcl
 {
   struct PCLHeader
   {
+    PCLHeader (): seq (0), stamp (), frame_id ()
+    {}
+
     /** \brief Sequence number */
-    std::uint32_t seq = 0;
+    pcl::uint32_t seq;
     /** \brief A timestamp associated with the time when the data was acquired
       *
       * The value represents microseconds since 1970-01-01 00:00:00 (the UNIX epoch).
       */
-    std::uint64_t stamp = 0;
+    pcl::uint64_t stamp;
     /** \brief Coordinate frame ID */
     std::string frame_id;
 
-    using Ptr = shared_ptr<PCLHeader>;
-    using ConstPtr = shared_ptr<const PCLHeader>;
+    typedef boost::shared_ptr<PCLHeader> Ptr;
+    typedef boost::shared_ptr<PCLHeader const> ConstPtr;
   }; // struct PCLHeader
 
-  using HeaderPtr = PCLHeader::Ptr;
-  using HeaderConstPtr = PCLHeader::ConstPtr;
+  typedef boost::shared_ptr<PCLHeader> HeaderPtr;
+  typedef boost::shared_ptr<PCLHeader const> HeaderConstPtr;
 
   inline std::ostream& operator << (std::ostream& out, const PCLHeader &h)
   {
@@ -46,3 +50,6 @@ namespace pcl
   }
 
 } // namespace pcl
+
+#endif // PCL_ROSLIB_MESSAGE_HEADER_H
+

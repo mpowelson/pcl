@@ -36,13 +36,11 @@
 
 #pragma once
 
+#include <string>
+#include <boost/shared_ptr.hpp>
 #include <pcl/gpu/containers/kernel_containers.h>
 #include <pcl/gpu/kinfu/kinfu.h>
 
-#include <pcl/make_shared.h>
-
-#include <memory>
-#include <string>
 
 /** \brief  class for  RGB-D SLAM Dataset and Benchmark
   * \author Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
@@ -50,9 +48,8 @@
 class Evaluation
 {
 public:
-  using Ptr = pcl::shared_ptr<Evaluation>;
-  using ConstPtr = pcl::shared_ptr<const Evaluation>;
-  using RGB = pcl::gpu::KinfuTracker::PixelRGB;
+  typedef boost::shared_ptr<Evaluation> Ptr; 
+  typedef pcl::gpu::KinfuTracker::PixelRGB RGB;
 
   Evaluation(const std::string& folder);
 
@@ -101,6 +98,6 @@ private:
   void readFile(const std::string& file, std::vector< std::pair<double, std::string> >& output);
 
   struct Impl;
-  std::shared_ptr<Impl> impl_;
+  boost::shared_ptr<Impl> impl_;
 };
 

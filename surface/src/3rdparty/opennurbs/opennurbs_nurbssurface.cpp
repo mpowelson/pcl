@@ -15,8 +15,6 @@
 */
 
 #include "pcl/surface/3rdparty/opennurbs/opennurbs.h"
-#include <pcl/pcl_macros.h>
-
 
 ON_OBJECT_IMPLEMENT(ON_NurbsSurface,ON_Surface,"4ED7D4DE-E947-11d3-BFE5-0010830122F0");
 
@@ -62,7 +60,7 @@ ON_NurbsSurface::ON_NurbsSurface()
   Initialize();
 }
 
-ON_NurbsSurface::ON_NurbsSurface( const ON_NurbsSurface& src ) : ON_Surface(src)
+ON_NurbsSurface::ON_NurbsSurface( const ON_NurbsSurface& src )
 {
   ON__SET__THIS__PTR(m_s_ON_NurbsSurface_ptr);
   Initialize();
@@ -116,7 +114,7 @@ ON__UINT32 ON_NurbsSurface::DataCRC(ON__UINT32 current_remainder) const
       && m_cv_stride[0] > 0 && m_cv_stride[1] > 0 
       && m_cv )
   {
-    std::size_t sizeof_cv = CVSize()*sizeof(m_cv[0]);
+    size_t sizeof_cv = CVSize()*sizeof(m_cv[0]);
     const double* cv = m_cv;
     int i, j;
     for ( i = 0; i < m_cv_count[0]; i++ )
@@ -950,7 +948,7 @@ static ON_NurbsCurve* ToCurve( const ON_NurbsSurface& srf, int dir,
   double* pdst;
   const double* psrc;
   int i, j;
-  std::size_t sz = srf_cv_size*sizeof(pdst[0]);
+  size_t sz = srf_cv_size*sizeof(pdst[0]);
   for ( i = 0; i < srf.m_cv_count[dir]; i++ )
   {
     pdst = crv->CV(i);
@@ -1200,9 +1198,9 @@ ON_NurbsSurface::GetNurbForm( // returns 0: unable to create NURBS representatio
 }
 
 ON_Surface* ON_NurbsSurface::Offset(
-      double,
-      double,
-      double*
+      double offset_distance, 
+      double tolerance, 
+      double* max_deviation
       ) const
 {
   // 3rd party developers who want to enhance openNURBS
@@ -1855,7 +1853,7 @@ ON_NurbsSurface::GetCV( int i, int j, ON::point_style style, double* Point ) con
   switch(style) {
   case ON::euclidean_rational:
     Point[dim] = w;
-    PCL_FALLTHROUGH
+    // no break here
   case ON::not_rational:
     if ( w == 0.0 )
       return false;
@@ -2599,11 +2597,12 @@ bool ON_MakeDegreesCompatible(
        ON_NurbsCurve& nurbs_curveB
        )
 {
+  bool rc = false;
   if ( nurbs_curveA.m_order > nurbs_curveB.m_order )
-    nurbs_curveB.IncreaseDegree( nurbs_curveA.Degree() );
+    rc = nurbs_curveB.IncreaseDegree( nurbs_curveA.Degree() )?true:false;
   else
-    nurbs_curveA.IncreaseDegree( nurbs_curveB.Degree() );
-  return true;
+    rc = nurbs_curveA.IncreaseDegree( nurbs_curveB.Degree() )?true:false;
+  return (nurbs_curveA.m_order == nurbs_curveA.m_order);
 }
 
 static

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_OUTOFCORE_VIEWPORT_H_
+#define PCL_OUTOFCORE_VIEWPORT_H_
 
 // C++
 #include <iostream>
@@ -77,3 +78,5 @@ private:
   vtkSmartPointer<vtkTextActor> fps_hud_actor_;
   vtkSmartPointer<vtkTextActor> points_hud_actor_;
 };
+
+#endif

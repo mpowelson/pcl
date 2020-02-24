@@ -42,6 +42,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/console/print.h>
 #include <pcl/console/parse.h>
+#include <pcl/console/time.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
 
@@ -64,10 +65,29 @@ printHelp (int, char **argv)
   print_value ("%s", default_correspondence_type.c_str ()); print_info (")\n");
 }
 
+bool
+loadCloud (const std::string &filename, pcl::PCLPointCloud2 &cloud)
+{
+  TicToc tt;
+//  print_highlight ("Loading "); print_value ("%s ", filename.c_str ());
+
+  tt.tic ();
+  if (loadPCDFile (filename, cloud) < 0)
+    return (false);
+//  print_info ("[done, "); print_value ("%g", tt.toc ()); print_info (" seconds : "); print_value ("%d", cloud.width * cloud.height); print_info (" points]\n");
+//  print_info ("Available dimensions: "); print_value ("%s\n", pcl::getFieldsList (cloud).c_str ());
+
+  return (true);
+}
+
 void
 compute (const pcl::PCLPointCloud2::ConstPtr &cloud_source, const pcl::PCLPointCloud2::ConstPtr &cloud_target,
-         pcl::PCLPointCloud2 &output, const std::string &correspondence_type)
+         pcl::PCLPointCloud2 &output, std::string correspondence_type)
 {
+  // Estimate
+  TicToc tt;
+  tt.tic ();
+
   PointCloud<PointXYZ>::Ptr xyz_source (new PointCloud<PointXYZ> ());
   fromPCLPointCloud2 (*cloud_source, *xyz_source);
   PointCloud<PointXYZ>::Ptr xyz_target (new PointCloud<PointXYZ> ());
@@ -90,11 +110,11 @@ compute (const pcl::PCLPointCloud2::ConstPtr &cloud_source, const pcl::PCLPointC
       return;
     }
 
-    for (std::size_t point_i = 0; point_i < xyz_source->points.size (); ++point_i)
+    for (size_t point_i = 0; point_i < xyz_source->points.size (); ++point_i)
     {
-      if (!std::isfinite (xyz_source->points[point_i].x) || !std::isfinite (xyz_source->points[point_i].y) || !std::isfinite (xyz_source->points[point_i].z))
+      if (!pcl_isfinite (xyz_source->points[point_i].x) || !pcl_isfinite (xyz_source->points[point_i].y) || !pcl_isfinite (xyz_source->points[point_i].z))
         continue;
-      if (!std::isfinite (xyz_target->points[point_i].x) || !std::isfinite (xyz_target->points[point_i].y) || !std::isfinite (xyz_target->points[point_i].z))
+      if (!pcl_isfinite (xyz_target->points[point_i].x) || !pcl_isfinite (xyz_target->points[point_i].y) || !pcl_isfinite (xyz_target->points[point_i].z))
         continue;
 
 
@@ -115,16 +135,16 @@ compute (const pcl::PCLPointCloud2::ConstPtr &cloud_source, const pcl::PCLPointC
     KdTreeFLANN<PointXYZ>::Ptr tree (new KdTreeFLANN<PointXYZ> ());
     tree->setInputCloud (xyz_target);
 
-    for (std::size_t point_i = 0; point_i < xyz_source->points.size (); ++ point_i)
+    for (size_t point_i = 0; point_i < xyz_source->points.size (); ++ point_i)
     {
-      if (!std::isfinite (xyz_source->points[point_i].x) || !std::isfinite (xyz_source->points[point_i].y) || !std::isfinite (xyz_source->points[point_i].z))
+      if (!pcl_isfinite (xyz_source->points[point_i].x) || !pcl_isfinite (xyz_source->points[point_i].y) || !pcl_isfinite (xyz_source->points[point_i].z))
         continue;
 
       std::vector<int> nn_indices (1);
       std::vector<float> nn_distances (1);
       if (!tree->nearestKSearch (xyz_source->points[point_i], 1, nn_indices, nn_distances))
         continue;
-      std::size_t point_nn_i = nn_indices.front();
+      size_t point_nn_i = nn_indices.front();
 
       float dist = squaredEuclideanDistance (xyz_source->points[point_i], xyz_target->points[point_nn_i]);
       rmse += dist;
@@ -147,16 +167,16 @@ compute (const pcl::PCLPointCloud2::ConstPtr &cloud_source, const pcl::PCLPointC
     KdTreeFLANN<PointXYZ>::Ptr tree (new KdTreeFLANN<PointXYZ> ());
     tree->setInputCloud (xyz_target);
 
-    for (std::size_t point_i = 0; point_i < xyz_source->points.size (); ++ point_i)
+    for (size_t point_i = 0; point_i < xyz_source->points.size (); ++ point_i)
     {
-      if (!std::isfinite (xyz_source->points[point_i].x) || !std::isfinite (xyz_source->points[point_i].y) || !std::isfinite (xyz_source->points[point_i].z))
+      if (!pcl_isfinite (xyz_source->points[point_i].x) || !pcl_isfinite (xyz_source->points[point_i].y) || !pcl_isfinite (xyz_source->points[point_i].z))
         continue;
 
       std::vector<int> nn_indices (1);
       std::vector<float> nn_distances (1);
       if (!tree->nearestKSearch (xyz_source->points[point_i], 1, nn_indices, nn_distances))
         continue;
-      std::size_t point_nn_i = nn_indices.front();
+      size_t point_nn_i = nn_indices.front();
 
       Eigen::Vector3f normal_target = normals_target->points[point_nn_i].getNormalVector3fMap (),
           point_source = xyz_source->points[point_i].getVector3fMap (),
@@ -180,9 +200,22 @@ compute (const pcl::PCLPointCloud2::ConstPtr &cloud_source, const pcl::PCLPointC
 
   toPCLPointCloud2 (*output_xyzi, output);
 
+//  print_info ("[done, "); print_value ("%g", tt.toc ()); print_info (" seconds]\n");
   print_highlight ("RMSE Error: %f\n", rmse);
 }
 
+void
+saveCloud (const std::string &filename, const pcl::PCLPointCloud2 &output)
+{
+  TicToc tt;
+  tt.tic ();
+
+//  print_highlight ("Saving "); print_value ("%s ", filename.c_str ());
+
+  pcl::io::savePCDFile (filename, output);
+
+//  print_info ("[done, "); print_value ("%g", tt.toc ()); print_info (" seconds : "); print_value ("%d", output.width * output.height); print_info (" points]\n");
+}
 
 /* ---[ */
 int
@@ -211,11 +244,11 @@ main (int argc, char** argv)
 
   // Load the first file
   pcl::PCLPointCloud2::Ptr cloud_source (new pcl::PCLPointCloud2 ());
-  if (loadPCDFile (argv[p_file_indices[0]], *cloud_source) != 0)
+  if (!loadCloud (argv[p_file_indices[0]], *cloud_source))
     return (-1);
   // Load the second file
   pcl::PCLPointCloud2::Ptr cloud_target (new pcl::PCLPointCloud2 ());
-  if (loadPCDFile (argv[p_file_indices[1]], *cloud_target) != 0)
+  if (!loadCloud (argv[p_file_indices[1]], *cloud_target))
     return (-1);
 
   pcl::PCLPointCloud2 output;
@@ -223,5 +256,5 @@ main (int argc, char** argv)
   compute (cloud_source, cloud_target, output, correspondence_type);
 
   // Output the third file
-  savePCDFile (argv[p_file_indices[2]], output);
+  saveCloud (argv[p_file_indices[2]], output);
 }

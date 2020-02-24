@@ -36,7 +36,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_OUTOFCORE_ITERATOR_BASE_H_
+#define PCL_OUTOFCORE_ITERATOR_BASE_H_
 
 #include <iterator>
 
@@ -63,17 +64,17 @@ namespace pcl
                                                        const OutofcoreOctreeBaseNode<ContainerT, PointT>&>/*Reference type*/
     {
       public:
-        using OctreeDisk = pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT>;
-        using OctreeDiskNode = pcl::outofcore::OutofcoreOctreeBaseNode<ContainerT, PointT>;
+        typedef typename pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT> OctreeDisk;
+        typedef typename pcl::outofcore::OutofcoreOctreeBaseNode<ContainerT, PointT> OctreeDiskNode;
         
-        using BranchNode = typename pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT>::BranchNode;
-        using LeafNode = typename pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT>::LeafNode;
+        typedef typename pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT>::BranchNode BranchNode;
+        typedef typename pcl::outofcore::OutofcoreOctreeBase<ContainerT, PointT>::LeafNode LeafNode;
 
-        using OutofcoreNodeType = typename OctreeDisk::OutofcoreNodeType;
+        typedef typename OctreeDisk::OutofcoreNodeType OutofcoreNodeType;
 
         explicit
         OutofcoreIteratorBase (OctreeDisk& octree_arg) 
-          : octree_ (octree_arg), currentNode_ (nullptr)
+          : octree_ (octree_arg), currentNode_ (NULL)
         {
           reset ();
         }
@@ -154,3 +155,5 @@ namespace pcl
 #endif
   }
 }
+
+#endif //PCL_OUTOFCORE_ITERATOR_BASE_H_

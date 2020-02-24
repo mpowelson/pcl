@@ -38,7 +38,9 @@
 /// point cloud that have been identifed by the selection tools.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
+
+#ifndef SELECTION_H_
+#define SELECTION_H_
 
 #include <set>
 #include <pcl/apps/point_cloud_editor/localTypes.h>
@@ -54,10 +56,22 @@ class Selection : public Statistics
     /// @param cloud_ptr A pointer to the const cloud object for which this
     /// object is to maintain selections.
     Selection (ConstCloudPtr cloud_ptr, bool register_stats=false)
-      : cloud_ptr_(std::move(cloud_ptr))
+      : cloud_ptr_(cloud_ptr)
     {
       if (register_stats)
         registerStats();
+    }
+
+    /// @brief Copy constructor
+    /// @param copy The selection object to be copied
+    Selection (const Selection& copy)
+      : cloud_ptr_(copy.cloud_ptr_), selected_indices_(copy.selected_indices_)
+    {
+    }
+
+    /// @brief Destructor.
+    ~Selection ()
+    {
     }
 
     /// @brief Equal operator
@@ -112,8 +126,8 @@ class Selection : public Statistics
       selected_indices_.clear();
     }
 
-    using iterator = std::set<unsigned int>::iterator;
-    using const_iterator = std::set<unsigned int>::const_iterator;
+    typedef std::set<unsigned int>::iterator iterator;
+    typedef std::set<unsigned int>::const_iterator const_iterator;
 
     /// @brief Get the begin iterator of the selection.
     const_iterator
@@ -129,7 +143,8 @@ class Selection : public Statistics
       return (selected_indices_.end());
     }
 
-    using const_reverse_iterator = std::set<unsigned int>::const_reverse_iterator;
+    typedef std::set<unsigned int>::const_reverse_iterator
+      const_reverse_iterator;
 
     /// @brief Get the begin iterator of the selection.
     const_reverse_iterator
@@ -173,12 +188,19 @@ class Selection : public Statistics
 
     /// @brief Get the statistics of the selected points in string.
     std::string
-    getStat () const override;
+    getStat () const;
 
   private:
+    /// @brief Default constructor - object is not default constructable
+    Selection ()
+    {
+    }
+
     /// a pointer to the cloud
     ConstCloudPtr cloud_ptr_;
 
     /// A set of unique indices that have been selected in the cloud.
     std::set<unsigned int> selected_indices_;
 };
+
+#endif // SELECTION_H_

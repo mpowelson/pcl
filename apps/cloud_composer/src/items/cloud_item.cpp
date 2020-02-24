@@ -1,18 +1,18 @@
+#include <pcl/apps/cloud_composer/qt.h>
 #include <pcl/apps/cloud_composer/items/cloud_item.h>
 #include <pcl/filters/passthrough.h>
+
 
 #include <pcl/point_types.h>
 #include <pcl/impl/instantiate.hpp>
 #include <pcl/apps/cloud_composer/impl/cloud_item.hpp>
 
-#include <QMessageBox>
-
 pcl::cloud_composer::CloudItem::CloudItem (QString name,
-                                           const pcl::PCLPointCloud2::Ptr& cloud_ptr,
+                                           pcl::PCLPointCloud2::Ptr cloud_ptr,
                                            const Eigen::Vector4f& origin, 
                                            const Eigen::Quaternionf& orientation,
                                            bool make_templated_cloud)
-  : CloudComposerItem (std::move(name))
+  : CloudComposerItem (name)
   , origin_ (origin)
   , orientation_ (orientation)
   , template_cloud_set_ (false)
@@ -73,7 +73,7 @@ pcl::cloud_composer::CloudItem::~CloudItem ()
 
 
 void
-pcl::cloud_composer::CloudItem::paintView (pcl::visualization::PCLVisualizer::Ptr vis) const
+pcl::cloud_composer::CloudItem::paintView (boost::shared_ptr<pcl::visualization::PCLVisualizer> vis) const
 {
   vis->addPointCloud (cloud_blob_ptr_, geometry_handler_, color_handler_, origin_, orientation_, getId ().toStdString ());
   vis->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, properties_->getProperty ("Point Size").toDouble (), getId ().toStdString ());
@@ -82,7 +82,7 @@ pcl::cloud_composer::CloudItem::paintView (pcl::visualization::PCLVisualizer::Pt
 }
 
 void
-pcl::cloud_composer::CloudItem::removeFromView (pcl::visualization::PCLVisualizer::Ptr vis) const
+pcl::cloud_composer::CloudItem::removeFromView (boost::shared_ptr<pcl::visualization::PCLVisualizer> vis) const
 {  
   vis->removePointCloud (getId ().toStdString ());
 }
@@ -113,27 +113,29 @@ pcl::cloud_composer::CloudItem::setTemplateCloudFromBlob ()
 {
   if (! template_cloud_set_ )
   {
+    std::vector<pcl::PCLPointField>::iterator end = cloud_blob_ptr_->fields.end ();
+    std::vector<pcl::PCLPointField>::iterator itr = cloud_blob_ptr_->fields.begin ();
     QStringList field_names;
-    for (const auto &field : cloud_blob_ptr_->fields)
+    for ( itr = cloud_blob_ptr_->fields.begin ()  ; itr != end; ++itr)
     {
-      field_names.append (QString::fromStdString ( field.name ));
+      field_names.append (QString::fromStdString ( itr->name ));
     }
     point_type_ = PointTypeFlags::NONE;
     if (field_names.contains ("x") && field_names.contains ("y") && field_names.contains ("z"))
       point_type_ = (point_type_ | PointTypeFlags::XYZ);  
     if (field_names.contains ("rgb"))
-      point_type_ |= PointTypeFlags::RGB;
+      point_type_ = point_type_ | PointTypeFlags::RGB;
     if (field_names.contains ("rgba"))
-      point_type_ |= PointTypeFlags::RGBA;
+      point_type_ = point_type_ | PointTypeFlags::RGBA;
     if (field_names.contains ("normal_x") && field_names.contains ("normal_y") && field_names.contains ("normal_z"))
     {
       if (field_names.contains ("curvature"))
-        point_type_ |= PointTypeFlags::NORMAL;
+        point_type_ = point_type_ | PointTypeFlags::NORMAL;
       else
-        point_type_ |= PointTypeFlags::AXIS;
+        point_type_ = point_type_ | PointTypeFlags::AXIS;
     }
     if (field_names.contains ("h") && field_names.contains ("s") && field_names.contains ("v"))
-      point_type_ |= PointTypeFlags::HSV; 
+      point_type_ = point_type_ | PointTypeFlags::HSV; 
     
     QVariant cloud_pointer_variant;
     QVariant kd_tree_variant;
@@ -141,7 +143,7 @@ pcl::cloud_composer::CloudItem::setTemplateCloudFromBlob ()
     {
       case (PointTypeFlags::XYZ):
       {
-        pcl::PointCloud <PointXYZ>::Ptr cloud_ptr (new pcl::PointCloud <PointXYZ>);
+        pcl::PointCloud <PointXYZ>::Ptr cloud_ptr = boost::shared_ptr<pcl::PointCloud <PointXYZ> > (new pcl::PointCloud <PointXYZ> );
         pcl::fromPCLPointCloud2 (*cloud_blob_ptr_, *cloud_ptr);
         cloud_pointer_variant = QVariant::fromValue (cloud_ptr);
         //Initialize the search kd-tree for this cloud
@@ -152,7 +154,7 @@ pcl::cloud_composer::CloudItem::setTemplateCloudFromBlob ()
       }
       case (PointTypeFlags::XYZ | PointTypeFlags::RGB):
       {
-        pcl::PointCloud <PointXYZRGB>::Ptr cloud_ptr (new pcl::PointCloud <PointXYZRGB>);
+        pcl::PointCloud <PointXYZRGB>::Ptr cloud_ptr = boost::shared_ptr<pcl::PointCloud <PointXYZRGB> > (new pcl::PointCloud <PointXYZRGB>);
         pcl::fromPCLPointCloud2 (*cloud_blob_ptr_, *cloud_ptr);
         cloud_pointer_variant = QVariant::fromValue (cloud_ptr);
         pcl::search::KdTree<PointXYZRGB>::Ptr kd_search = boost::make_shared<search::KdTree<PointXYZRGB> >();
@@ -162,7 +164,7 @@ pcl::cloud_composer::CloudItem::setTemplateCloudFromBlob ()
       }
       case (PointTypeFlags::XYZ | PointTypeFlags::RGBA):
       {
-        pcl::PointCloud <PointXYZRGBA>::Ptr cloud_ptr (new pcl::PointCloud <PointXYZRGBA>);
+        pcl::PointCloud <PointXYZRGBA>::Ptr cloud_ptr = boost::shared_ptr<pcl::PointCloud <PointXYZRGBA> > (new pcl::PointCloud <PointXYZRGBA>);
         pcl::fromPCLPointCloud2 (*cloud_blob_ptr_, *cloud_ptr);
         cloud_pointer_variant = QVariant::fromValue (cloud_ptr);
         pcl::search::KdTree<PointXYZRGBA>::Ptr kd_search = boost::make_shared<search::KdTree<PointXYZRGBA> >();
@@ -172,7 +174,7 @@ pcl::cloud_composer::CloudItem::setTemplateCloudFromBlob ()
       }
         
       case (PointTypeFlags::NONE):
-        QMessageBox::warning (nullptr,"Unknown blob type!", "Could not find appropriate template type for this cloud blob! Only blob functionality enabled!");
+        QMessageBox::warning (0,"Unknown blob type!", "Could not find appropriate template type for this cloud blob! Only blob functionality enabled!");
     }
     
     this->setData (cloud_pointer_variant, ItemDataRole::CLOUD_TEMPLATED);
@@ -197,6 +199,9 @@ pcl::cloud_composer::CloudItem::checkIfFinite ()
   pass_filter.setKeepOrganized (false);
   pass_filter.filter (*cloud_filtered);
   
-  return cloud_filtered->data.size() == cloud_blob_ptr_->data.size ();
+  if (cloud_filtered->data.size() == cloud_blob_ptr_->data.size ())
+    return true;
+  
+  return false;
 
 }

@@ -48,11 +48,11 @@ namespace pcl
   normAngle (float alpha)
   {
     return (alpha >= 0  ? 
-        std::fmod (alpha + static_cast<float>(M_PI), 
+        fmodf (alpha + static_cast<float>(M_PI), 
                2.0f * static_cast<float>(M_PI)) 
         - static_cast<float>(M_PI) 
         : 
-        -(std::fmod (static_cast<float>(M_PI) - alpha, 
+        -(fmodf (static_cast<float>(M_PI) - alpha, 
                  2.0f * static_cast<float>(M_PI)) 
         - static_cast<float>(M_PI)));
   }

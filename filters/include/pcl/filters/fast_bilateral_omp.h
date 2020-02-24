@@ -38,7 +38,9 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_FILTERS_FAST_BILATERAL_OMP_H_
+#define PCL_FILTERS_FAST_BILATERAL_OMP_H_
 
 #include <pcl/filters/filter.h>
 #include <pcl/filters/fast_bilateral.h>
@@ -47,7 +49,7 @@ namespace pcl
 {
   /** \brief Implementation of a fast bilateral filter for smoothing depth information in organized point clouds
    *  Based on the following paper:
-   *    * Sylvain Paris and Fredo Durand
+   *    * Sylvain Paris and Frdo Durand
    *      "A Fast Approximation of the Bilateral Filter using a Signal Processing Approach"
    *       European Conference on Computer Vision (ECCV'06)
    *
@@ -61,14 +63,14 @@ namespace pcl
     using FastBilateralFilter<PointT>::sigma_s_;
     using FastBilateralFilter<PointT>::sigma_r_;
     using FastBilateralFilter<PointT>::early_division_;
-    using Array3D = typename FastBilateralFilter<PointT>::Array3D;
+    typedef typename FastBilateralFilter<PointT>::Array3D Array3D;
 
-    using PointCloud = typename Filter<PointT>::PointCloud;
+    typedef typename Filter<PointT>::PointCloud PointCloud;
 
     public:
 
-      using Ptr = shared_ptr<FastBilateralFilterOMP<PointT> >;
-      using ConstPtr = shared_ptr<const FastBilateralFilterOMP<PointT> >;
+      typedef boost::shared_ptr< FastBilateralFilterOMP<PointT> > Ptr;
+      typedef boost::shared_ptr< const FastBilateralFilterOMP<PointT> > ConstPtr;
 
       /** \brief Empty constructor. */
       FastBilateralFilterOMP (unsigned int nr_threads = 0)
@@ -86,7 +88,7 @@ namespace pcl
         * \param[out] output the resultant point cloud
         */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
     protected:
       /** \brief The number of threads the scheduler should use. */
@@ -100,3 +102,7 @@ namespace pcl
 #else
 #define PCL_INSTANTIATE_FastBilateralFilterOMP(T) template class PCL_EXPORTS pcl::FastBilateralFilterOMP<T>;
 #endif
+
+
+#endif /* PCL_FILTERS_FAST_BILATERAL_OMP_H_ */
+

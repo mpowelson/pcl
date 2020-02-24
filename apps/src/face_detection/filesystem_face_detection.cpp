@@ -34,7 +34,7 @@ void run(pcl::RFFaceDetectorTrainer & fdrf, typename pcl::PointCloud<PointInT>::
 
   fdrf.detectFaces ();
 
-  using FieldListM = typename pcl::traits::fieldList<PointInT>::type;
+  typedef typename pcl::traits::fieldList<PointInT>::type FieldListM;
 
   float rgb_m;
   bool exists_m;
@@ -205,7 +205,7 @@ int main(int argc, char ** argv)
   fb.open (forest_fn.c_str (), std::ios::in);
   std::istream os (&fb);
 
-  using NodeType = pcl::face_detection::RFTreeNode<pcl::face_detection::FeatureType>;
+  typedef pcl::face_detection::RFTreeNode<pcl::face_detection::FeatureType> NodeType;
   pcl::DecisionForest<NodeType> forest;
   forest.deserialize (os);
   fb.close ();
@@ -214,10 +214,10 @@ int main(int argc, char ** argv)
 
   pcl::visualization::PCLVisualizer vis ("PCL Face detection");
 
-  if (!test_directory.empty())
+  if (test_directory.compare ("") != 0)
   {
     //recognize all files in directory...
-    std::string start;
+    std::string start = "";
     std::string ext = std::string ("pcd");
     bf::path dir = test_directory;
 
@@ -226,9 +226,11 @@ int main(int argc, char ** argv)
 
     std::sort (files.begin (), files.end (), face_detection_apps_utils::sortFiles);
 
-    for (const auto &filename : files)
+    for (size_t i = 0; i < files.size (); i++)
     {
-      std::string file = test_directory + '/' + filename;
+      std::stringstream file_to_process;
+      file_to_process << test_directory << "/" << files[i];
+      std::string file = file_to_process.str ();
       std::cout << file << std::endl;
 
       if (rgb_exists)

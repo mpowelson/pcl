@@ -37,7 +37,8 @@
  * @author: Koen Buys
  */
 
-#pragma once
+#ifndef PCL_GPU_PEOPLE_LABEL_COMMON_H_
+#define PCL_GPU_PEOPLE_LABEL_COMMON_H_
 
 #include <pcl/gpu/containers/device_array.h>
 #include <cuda_runtime.h> // for float4, uchar4, delete this in future
@@ -108,13 +109,13 @@ namespace pcl
         NOLABEL     = 31
       };
 
-      using Cloud = DeviceArray2D<float4>;
-      using Image = DeviceArray2D<uchar4>;
+      typedef DeviceArray2D<float4> Cloud;
+      typedef DeviceArray2D<uchar4> Image;
 
-      using Depth = DeviceArray2D<unsigned short>;
-      using Labels = DeviceArray2D<unsigned char>;      
-      using HueImage = DeviceArray2D<float>;
-      using Mask = DeviceArray2D<unsigned char>;      
+      typedef DeviceArray2D<unsigned short> Depth;
+      typedef DeviceArray2D<unsigned char>  Labels;      
+      typedef DeviceArray2D<float>          HueImage;
+      typedef DeviceArray2D<unsigned char>  Mask;      
       
       /**
        * @brief This LUT contains the max primary eigenvalue for each part
@@ -261,7 +262,7 @@ namespace pcl
         float probs[pcl::gpu::people::NUM_LABELS];       /** \brief A single float probability for each body part **/
     };
 
-    using LabelProbability = DeviceArray2D<prob_histogram>;
+    typedef DeviceArray2D<prob_histogram>                 LabelProbability;
 
   }
 }
@@ -281,3 +282,5 @@ inline std::ostream& operator << (std::ostream& os, const part_t& p)
   return (os);
 }
  **/
+
+#endif

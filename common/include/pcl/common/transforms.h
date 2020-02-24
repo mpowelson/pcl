@@ -36,8 +36,8 @@
  *
  *
  */
-
-#pragma once
+#ifndef PCL_TRANSFORMS_H_
+#define PCL_TRANSFORMS_H_
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -496,3 +496,5 @@ namespace pcl
 }
 
 #include <pcl/common/impl/transforms.hpp>
+
+#endif // PCL_TRANSFORMS_H_

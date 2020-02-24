@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_LZF_H
+#define PCL_IO_LZF_H
 
 #include <pcl/pcl_macros.h>
 
@@ -86,3 +87,6 @@ namespace pcl
   lzfDecompress (const void *const in_data,  unsigned int in_len,
                  void             *out_data, unsigned int out_len);
 }
+
+#endif  /* PCL_IO_LZF */
+

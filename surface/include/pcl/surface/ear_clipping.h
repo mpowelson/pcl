@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SURFACE_EAR_CLIPPING_H_
+#define PCL_SURFACE_EAR_CLIPPING_H_
 
 #include <pcl/point_types.h>
 #include <pcl/surface/processing.h>
@@ -52,13 +53,13 @@ namespace pcl
   class PCL_EXPORTS EarClipping : public MeshProcessing
   {
     public:
-      using Ptr = shared_ptr<EarClipping>;
-      using ConstPtr = shared_ptr<const EarClipping>;
+      typedef boost::shared_ptr<EarClipping> Ptr;
+      typedef boost::shared_ptr<const EarClipping> ConstPtr;
 
       using MeshProcessing::input_mesh_;
       using MeshProcessing::initCompute;
       /** \brief Empty constructor */
-      EarClipping ()
+      EarClipping () : MeshProcessing (), points_ ()
       { 
       };
 
@@ -68,13 +69,13 @@ namespace pcl
 
       /** \brief This method should get called before starting the actual computation. */
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief The actual surface reconstruction method. 
         * \param[out] output the output polygonal mesh 
         */
       void
-      performProcessing (pcl::PolygonMesh &output) override;
+      performProcessing (pcl::PolygonMesh &output);
 
       /** \brief Triangulate one polygon. 
         * \param[in] vertices the set of vertices
@@ -87,7 +88,7 @@ namespace pcl
         * \param[in] vertices the vertices representing the polygon 
         */
       float
-      area (const std::vector<std::uint32_t>& vertices);
+      area (const std::vector<uint32_t>& vertices);
 
       /** \brief Check if the triangle (u,v,w) is an ear. 
         * \param[in] u the first triangle vertex 
@@ -96,7 +97,7 @@ namespace pcl
         * \param[in] vertices a set of input vertices
         */
       bool
-      isEar (int u, int v, int w, const std::vector<std::uint32_t>& vertices);
+      isEar (int u, int v, int w, const std::vector<uint32_t>& vertices);
 
       /** \brief Check if p is inside the triangle (u,v,w). 
         * \param[in] u the first triangle vertex 
@@ -123,3 +124,5 @@ namespace pcl
   };
 
 }
+
+#endif  // #ifndef PCL_SURFACE_EAR_CLIPPING_H_

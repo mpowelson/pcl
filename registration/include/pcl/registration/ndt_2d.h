@@ -38,9 +38,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_NDT_2D_H_
+#define PCL_NDT_2D_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/registration/registration.h>
 
 namespace pcl
@@ -59,19 +59,19 @@ namespace pcl
   template <typename PointSource, typename PointTarget>
   class NormalDistributionsTransform2D : public Registration<PointSource, PointTarget>
   {
-    using PointCloudSource = typename Registration<PointSource, PointTarget>::PointCloudSource;
-    using PointCloudSourcePtr = typename PointCloudSource::Ptr;
-    using PointCloudSourceConstPtr = typename PointCloudSource::ConstPtr;
+    typedef typename Registration<PointSource, PointTarget>::PointCloudSource PointCloudSource;
+    typedef typename PointCloudSource::Ptr PointCloudSourcePtr;
+    typedef typename PointCloudSource::ConstPtr PointCloudSourceConstPtr;
 
-    using PointCloudTarget = typename Registration<PointSource, PointTarget>::PointCloudTarget;
+    typedef typename Registration<PointSource, PointTarget>::PointCloudTarget PointCloudTarget;
 
-    using PointIndicesPtr = PointIndices::Ptr;
-    using PointIndicesConstPtr = PointIndices::ConstPtr;
+    typedef PointIndices::Ptr PointIndicesPtr;
+    typedef PointIndices::ConstPtr PointIndicesConstPtr;
 
     public:
 
-        using Ptr = shared_ptr< NormalDistributionsTransform2D<PointSource, PointTarget> >;
-        using ConstPtr = shared_ptr< const NormalDistributionsTransform2D<PointSource, PointTarget> >;
+        typedef boost::shared_ptr< NormalDistributionsTransform2D<PointSource, PointTarget> > Ptr;
+        typedef boost::shared_ptr< const NormalDistributionsTransform2D<PointSource, PointTarget> > ConstPtr;
 
       /** \brief Empty constructor. */
       NormalDistributionsTransform2D ()
@@ -82,7 +82,7 @@ namespace pcl
       }
       
       /** \brief Empty destructor */
-      ~NormalDistributionsTransform2D () {}
+      virtual ~NormalDistributionsTransform2D () {}
  
       /** \brief centre of the ndt grid (target coordinate system)
         * \param centre value to set
@@ -126,8 +126,8 @@ namespace pcl
         * \param[out] output the transformed input point cloud dataset using the rigid transformation found
         * \param[in] guess the initial guess of the transformation to compute
         */
-      void 
-      computeTransformation (PointCloudSource &output, const Eigen::Matrix4f &guess) override;
+      virtual void 
+      computeTransformation (PointCloudSource &output, const Eigen::Matrix4f &guess);
 
       using Registration<PointSource, PointTarget>::reg_name_;
       using Registration<PointSource, PointTarget>::target_;
@@ -147,9 +147,12 @@ namespace pcl
       Eigen::Vector2f grid_extent_;
       Eigen::Vector3d newton_lambda_;
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
 } // namespace pcl
 
 #include <pcl/registration/impl/ndt_2d.hpp>
+
+#endif // ndef PCL_NDT_2D_H_
+

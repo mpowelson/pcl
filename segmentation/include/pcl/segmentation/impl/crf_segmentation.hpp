@@ -44,9 +44,9 @@
 
 #include <pcl/common/io.h>
 
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT>
@@ -71,6 +71,9 @@ pcl::CrfSegmentation<PointT>::~CrfSegmentation ()
 template <typename PointT> void
 pcl::CrfSegmentation<PointT>::setInputCloud (typename pcl::PointCloud<PointT>::Ptr input_cloud)
 {
+  if (input_cloud_ != NULL)
+    input_cloud_.reset ();
+
   input_cloud_ = input_cloud;
 }
 
@@ -78,6 +81,9 @@ pcl::CrfSegmentation<PointT>::setInputCloud (typename pcl::PointCloud<PointT>::P
 template <typename PointT> void
 pcl::CrfSegmentation<PointT>::setAnnotatedCloud (typename pcl::PointCloud<pcl::PointXYZRGBL>::Ptr anno_cloud)
 {
+  if (anno_cloud_ != NULL)
+    anno_cloud_.reset ();
+
   anno_cloud_ = anno_cloud;
 }
 
@@ -85,6 +91,9 @@ pcl::CrfSegmentation<PointT>::setAnnotatedCloud (typename pcl::PointCloud<pcl::P
 template <typename PointT> void
 pcl::CrfSegmentation<PointT>::setNormalCloud (typename pcl::PointCloud<pcl::PointNormal>::Ptr normal_cloud)
 {
+  if (normal_cloud_ != NULL)
+    normal_cloud_.reset ();
+
   normal_cloud_ = normal_cloud;
 }
 
@@ -156,7 +165,7 @@ pcl::CrfSegmentation<PointT>::createVoxelGrid ()
   voxel_grid_.filter (*filtered_cloud_);
 
   // Filter the annotated cloud
-  if (!anno_cloud_->points.empty ())
+  if (anno_cloud_->points.size () > 0)
   {
     pcl::VoxelGridLabel vg;
 
@@ -172,7 +181,7 @@ pcl::CrfSegmentation<PointT>::createVoxelGrid ()
   }
 
   // Filter the annotated cloud
-  if (!normal_cloud_->points.empty ())
+  if (normal_cloud_->points.size () > 0)
   {
     pcl::VoxelGrid<pcl::PointNormal> vg;
     vg.setInputCloud (normal_cloud_);
@@ -201,9 +210,9 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
   //std::cout << "max_b: " << max_b.x () << " " << max_b.y () << " " << max_b.z () << std::endl;
 
   // compute the voxel grid dimensions
-  //dim_.x () = std::abs (max_b.x () - min_b.x ());
-  //dim_.y () = std::abs (max_b.y () - min_b.y ());
-  //dim_.z () = std::abs (max_b.z () - min_b.z ());
+  //dim_.x () = abs (max_b.x () - min_b.x ());
+  //dim_.y () = abs (max_b.y () - min_b.y ());
+  //dim_.z () = abs (max_b.z () - min_b.z ());
   
   //std::cout << dim_.x () * dim_.y () * dim_.z () << std::endl;
 
@@ -250,9 +259,9 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
   // check if we have color data
   bool color_data = false;
   int rgba_index = -1;  
-  rgba_index = pcl::getFieldIndex<PointT> ("rgb", fields);
+  rgba_index = pcl::getFieldIndex (*input_cloud_, "rgb", fields);
   if (rgba_index == -1)
-    rgba_index = pcl::getFieldIndex<PointT> ("rgba", fields);
+    rgba_index = pcl::getFieldIndex (*input_cloud_, "rgba", fields);
   if (rgba_index >= 0)
   {
     color_data = true;
@@ -264,7 +273,7 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
   // check if we have normal data
   bool normal_data = false;
   int normal_index = -1;  
-  rgba_index = pcl::getFieldIndex<PointT> ("normal_x", fields);
+  rgba_index = pcl::getFieldIndex (*input_cloud_, "normal_x", fields);
   if (rgba_index >= 0)
   {
     normal_data = true;
@@ -273,7 +282,7 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
 */
 
   // fill the data vector
-  for (std::size_t i = 0; i < filtered_cloud_->points.size (); i++)
+  for (size_t i = 0; i < filtered_cloud_->points.size (); i++)
   {
     Eigen::Vector3f p (filtered_anno_->points[i].x,
                        filtered_anno_->points[i].y,
@@ -283,10 +292,10 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
 
     if (color_data)
     {    
-      std::uint32_t rgb = *reinterpret_cast<int*>(&filtered_cloud_->points[i].rgba);
-      std::uint8_t r = (rgb >> 16) & 0x0000ff;
-      std::uint8_t g = (rgb >> 8)  & 0x0000ff;
-      std::uint8_t b = (rgb)       & 0x0000ff;
+      uint32_t rgb = *reinterpret_cast<int*>(&filtered_cloud_->points[i].rgba);
+      uint8_t r = (rgb >> 16) & 0x0000ff;
+      uint8_t g = (rgb >> 8)  & 0x0000ff;
+      uint8_t b = (rgb)       & 0x0000ff;
       color_[i] = Eigen::Vector3i (r, g, b);
     }
 
@@ -302,7 +311,7 @@ pcl::CrfSegmentation<PointT>::createDataVectorFromVoxelGrid ()
   }
 
   normal_.resize (filtered_normal_->points.size ());
-  for (std::size_t i = 0; i < filtered_normal_->points.size (); i++)
+  for (size_t i = 0; i < filtered_normal_->points.size (); i++)
   {
     float n_x = filtered_normal_->points[i].normal_x;
     float n_y = filtered_normal_->points[i].normal_y;
@@ -320,24 +329,25 @@ pcl::CrfSegmentation<PointT>::createUnaryPotentials (std::vector<float> &unary,
                                                      unsigned int n_labels)
 {
   /* initialize random seed: */
-  srand ( static_cast<unsigned int> (time (nullptr)) );
+  srand ( static_cast<unsigned int> (time (NULL)) );
   //srand ( time (NULL) );
 
   // Certainty that the groundtruth is correct
   const float GT_PROB = 0.9f;
-  const float u_energy = -std::log ( 1.0f / static_cast<float> (n_labels) );
-  const float n_energy = -std::log ( (1.0f - GT_PROB) / static_cast<float>(n_labels - 1) );
-  const float p_energy = -std::log ( GT_PROB );
+  const float u_energy = -logf ( 1.0f / static_cast<float> (n_labels) );
+  const float n_energy = -logf ( (1.0f - GT_PROB) / static_cast<float>(n_labels - 1) );
+  const float p_energy = -logf ( GT_PROB );
 
-  for (std::size_t k = 0; k < filtered_anno_->points.size (); k++)
+  for (size_t k = 0; k < filtered_anno_->points.size (); k++)
   {
     int label = filtered_anno_->points[k].label;
 
-    if (labels.empty () && label > 0)
+    if (labels.size () == 0 && label > 0)
       labels.push_back (label);
 
     // add color to the color vector if not added yet
-    for (int c_idx = 0; c_idx < static_cast<int> (labels.size ()) ; c_idx++)
+    int c_idx;
+    for (c_idx = 0; c_idx < static_cast<int> (labels.size ()) ; c_idx++)
     {
       if (labels[c_idx] == label)
         break;
@@ -350,30 +360,51 @@ pcl::CrfSegmentation<PointT>::createUnaryPotentials (std::vector<float> &unary,
           label = 0;
       }
     }
+
+   /* generate secret number: */
+    //double iSecret = static_cast<double> (rand ())  / static_cast<double> (RAND_MAX);
+   
+    /* 
+    if (k < 100)
+      std::cout << iSecret << std::endl;
+    */
+
+/*
+    int gg = 5; //static_cast<int> (labels.size ());
+    if (iSecret < 0.5)
+    {
+      int r = 0;
+      if (gg != 0)
+        r = rand () % (gg - 1 + 1) + 1;
+      else
+        r = 0;
+      c_idx = r;      
+    }
+*/
   
     // set the engeries for the labels
-    std::size_t u_idx = k * n_labels;
+    size_t u_idx = k * n_labels;
     if (label > 0)
     {
-      for (std::size_t i = 0; i < n_labels; i++)
+      for (size_t i = 0; i < n_labels; i++)
         unary[u_idx + i] = n_energy;
-      unary[u_idx + labels.size ()] = p_energy;
+      unary[u_idx + c_idx] = p_energy;
 
       if (label == 1)
       {
         const float PROB = 0.2f;
-        const float n_energy2 = -std::log ( (1.0f - PROB) / static_cast<float>(n_labels - 1) );
-        const float p_energy2 = -std::log ( PROB );
+        const float n_energy2 = -logf ( (1.0f - PROB) / static_cast<float>(n_labels - 1) );
+        const float p_energy2 = -logf ( PROB );
 
-        for (std::size_t i = 0; i < n_labels; i++)
+        for (size_t i = 0; i < n_labels; i++)
           unary[u_idx + i] = n_energy2;
-        unary[u_idx + labels.size ()] = p_energy2;
+        unary[u_idx + c_idx] = p_energy2;
       }
     
     }
     else
     {
-      for (std::size_t i = 0; i < n_labels; i++)
+      for (size_t i = 0; i < n_labels; i++)
         unary[u_idx + i] = u_energy;
     } 
   }
@@ -399,16 +430,16 @@ pcl::CrfSegmentation<PointT>::segmentPoints (pcl::PointCloud<pcl::PointXYZRGBL> 
   // create unary potentials
   std::vector<int> labels;
   std::vector<float> unary;
-  if (!anno_cloud_->points.empty ())
+  if (anno_cloud_->points.size () > 0)
   {
     unary.resize (N * n_labels);
     createUnaryPotentials (unary, labels, n_labels);
 
 
     std::cout << "labels size: " << labels.size () << std::endl;
-    for (const int &label : labels)
+    for (size_t i = 0; i < labels.size (); i++)
     {
-      std::cout << label << std::endl;
+      std::cout << labels[i] << std::endl;
     }
 
   }
@@ -448,7 +479,7 @@ pcl::CrfSegmentation<PointT>::segmentPoints (pcl::PointCloud<pcl::PointXYZRGBL> 
 	short * map = new short[N];
 	crfOLD.map(10, map);
 
-  for (std::size_t i = 0; i < N; i++)
+  for (size_t i = 0; i < N; i++)
   {
     tmp_cloud_OLD.points[i].label = map[i];
   }
@@ -550,7 +581,7 @@ pcl::CrfSegmentation<PointT>::segmentPoints (pcl::PointCloud<pcl::PointXYZRGBL> 
 
 /*
   bool c = true;
-  for (std::size_t i = 0; i < tmp_cloud.points.size (); i++)
+  for (size_t i = 0; i < tmp_cloud.points.size (); i++)
   {
     if (tmp_cloud.points[i].label != tmp_cloud_OLD.points[i].label)
     {
@@ -570,14 +601,14 @@ pcl::CrfSegmentation<PointT>::segmentPoints (pcl::PointCloud<pcl::PointXYZRGBL> 
 
 
 /*
-  for (std::size_t i = 0; i < 25; i++)
+  for (size_t i = 0; i < 25; i++)
   {
     std::cout << result[i] << " |  " << resultOLD[i] << std::endl;
   }
   
 
   c = true;
-  for (std::size_t i = 0; i < result.size (); i++)
+  for (size_t i = 0; i < result.size (); i++)
   {
     if (result[i] != resultOLD[i])
     {

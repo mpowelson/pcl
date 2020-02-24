@@ -50,13 +50,14 @@ pcl::GRSDEstimation<PointInT, PointNT, PointOutT>::getSimpleType (float min_radi
 {
   if (min_radius > min_radius_plane)
     return (1); // plane
-  if (max_radius > min_radius_cylinder)
+  else if (max_radius > min_radius_cylinder)
     return (2); // cylinder (rim)
-  if (min_radius < max_radius_noise)
+  else if (min_radius < max_radius_noise)
     return (0); // noise/corner
-  if (max_radius - min_radius < max_min_radius_diff)
+  else if (max_radius - min_radius < max_min_radius_diff)
     return (3); // sphere/corner
-  return (4);   // edge
+  else
+    return (4); // edge
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,26 +89,26 @@ pcl::GRSDEstimation<PointInT, PointNT, PointOutT>::computeFeature (PointCloudOut
   rsd.setInputNormals (normals_);
   rsd.setRadiusSearch (std::max (search_radius_, std::sqrt (3.0) * width_ / 2));
   rsd.compute (*radii);
-
+  
   // Save the type of each point
   int NR_CLASS = 5; // TODO make this nicer
   std::vector<int> types (radii->points.size ());
-  std::transform(radii->points.cbegin (), radii->points.cend (), types.begin (),
-    [](const auto& point) {
-      // GCC 5.4 can't find unqualified getSimpleType
-      return GRSDEstimation<PointInT, PointNT, PointOutT>::getSimpleType(point.r_min, point.r_max); });
+  for (size_t idx = 0; idx < radii->points.size (); ++idx)
+    types[idx] = getSimpleType (radii->points[idx].r_min, radii->points[idx].r_max);
 
   // Get the transitions between surface types between neighbors of occupied cells
   Eigen::MatrixXi transition_matrix = Eigen::MatrixXi::Zero (NR_CLASS + 1, NR_CLASS + 1);
-  for (std::size_t idx = 0; idx < cloud_downsampled->points.size (); ++idx)
+  for (size_t idx = 0; idx < cloud_downsampled->points.size (); ++idx)
   {
-    const int source_type = types[idx];
+    int source_type = types[idx];
     std::vector<int> neighbors = grid.getNeighborCentroidIndices (cloud_downsampled->points[idx], relative_coordinates_all_);
-    for (const int &neighbor : neighbors)
+    for (unsigned id_n = 0; id_n < neighbors.size (); id_n++)
     {
-      int neighbor_type = NR_CLASS;
-      if (neighbor != -1) // not empty
-        neighbor_type = types[neighbor];
+      int neighbor_type;
+      if (neighbors[id_n] == -1) // empty
+        neighbor_type = NR_CLASS;
+      else
+        neighbor_type = types[neighbors[id_n]];
       transition_matrix (source_type, neighbor_type)++;
     }
   }

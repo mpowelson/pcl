@@ -36,7 +36,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_ORGANIZED_POINT_COMPRESSION_H_
+#define PCL_ORGANIZED_POINT_COMPRESSION_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/point_cloud.h>
@@ -60,9 +61,9 @@ namespace pcl
     class OrganizedPointCloudCompression
     {
       public:
-        using PointCloud = pcl::PointCloud<PointT>;
-        using PointCloudPtr = typename PointCloud::Ptr;
-        using PointCloudConstPtr = typename PointCloud::ConstPtr;
+        typedef pcl::PointCloud<PointT> PointCloud;
+        typedef boost::shared_ptr<PointCloud> PointCloudPtr;
+        typedef boost::shared_ptr<const PointCloud> PointCloudConstPtr;
 
         /** \brief Empty Constructor. */
         OrganizedPointCloudCompression ()
@@ -104,10 +105,10 @@ namespace pcl
          * \param[in] disparityShift_arg disparity shift
          * \param[in] disparityScale_arg disparity scaling
          */
-        void encodeRawDisparityMapWithColorImage ( std::vector<std::uint16_t>& disparityMap_arg,
-                                                   std::vector<std::uint8_t>& colorImage_arg,
-                                                   std::uint32_t width_arg,
-                                                   std::uint32_t height_arg,
+        void encodeRawDisparityMapWithColorImage ( std::vector<uint16_t>& disparityMap_arg,
+                                                   std::vector<uint8_t>& colorImage_arg,
+                                                   uint32_t width_arg,
+                                                   uint32_t height_arg,
                                                    std::ostream& compressedDataOut_arg,
                                                    bool doColorEncoding = false,
                                                    bool convertToMono = false,
@@ -150,3 +151,5 @@ namespace pcl
     const char* OrganizedPointCloudCompression<PointT>::frameHeaderIdentifier_ = "<PCL-ORG-COMPRESSED>";
   }
 }
+
+#endif

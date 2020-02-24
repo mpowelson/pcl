@@ -53,7 +53,7 @@
  
  
  template <typename PointT> QList <pcl::cloud_composer::CloudComposerItem*>
- pcl::cloud_composer::OrganizedSegmentationTool::performTemplatedAction (const QList <const CloudComposerItem*>& input_data)
+ pcl::cloud_composer::OrganizedSegmentationTool::performTemplatedAction (QList <const CloudComposerItem*> input_data)
  {
    QList <CloudComposerItem*> output;  
    
@@ -103,13 +103,14 @@
      std::vector<pcl::PointIndices> boundary_indices;
      mps.segmentAndRefine (regions, model_coefficients, inlier_indices, labels, label_indices, boundary_indices);
      
-     auto plane_labels = boost::make_shared<std::set<std::uint32_t> > ();
-     for (std::size_t i = 0; i < label_indices.size (); ++i)
-      if (label_indices[i].indices.size () > (std::size_t) min_plane_size)
+     boost::shared_ptr<std::set<uint32_t> > plane_labels = boost::make_shared<std::set<uint32_t> > ();
+     for (size_t i = 0; i < label_indices.size (); ++i)
+      if (label_indices[i].indices.size () > (size_t) min_plane_size)
         plane_labels->insert (i);
      typename PointCloud<PointT>::CloudVectorType clusters;
      
-     typename EuclideanClusterComparator<PointT, pcl::Label>::Ptr euclidean_cluster_comparator(new EuclideanClusterComparator<PointT, pcl::Label>);
+     typename EuclideanClusterComparator<PointT, pcl::Label>::Ptr euclidean_cluster_comparator =
+        boost::make_shared <EuclideanClusterComparator<PointT, pcl::Label> > ();
      euclidean_cluster_comparator->setInputCloud (input_cloud);
      euclidean_cluster_comparator->setLabels (labels);
      euclidean_cluster_comparator->setExcludeLabels (plane_labels);
@@ -122,11 +123,11 @@
      euclidean_segmentation.segment (euclidean_labels, euclidean_label_indices);
      
      pcl::IndicesPtr extracted_indices (new std::vector<int> ());
-     for (std::size_t i = 0; i < euclidean_label_indices.size (); i++)
+     for (size_t i = 0; i < euclidean_label_indices.size (); i++)
      {
-       if (euclidean_label_indices[i].indices.size () >= (std::size_t) min_cluster_size)
+       if (euclidean_label_indices[i].indices.size () >= (size_t) min_cluster_size)
        {
-         typename PointCloud<PointT>::Ptr cluster (new PointCloud<PointT>);
+         typename PointCloud<PointT>::Ptr cluster = boost::shared_ptr<PointCloud<PointT> > (new PointCloud<PointT>);
          pcl::copyPointCloud (*input_cloud,euclidean_label_indices[i].indices,*cluster);
          qDebug () << "Found cluster with size " << cluster->width;
          QString name = input_item->text () + tr ("- Clstr %1").arg (i);
@@ -137,11 +138,11 @@
        }    
      }
      
-     for (std::size_t i = 0; i < label_indices.size (); i++)
+     for (size_t i = 0; i < label_indices.size (); i++)
      {
-       if (label_indices[i].indices.size () >= (std::size_t) min_plane_size)
+       if (label_indices[i].indices.size () >= (size_t) min_plane_size)
        {
-         typename PointCloud<PointT>::Ptr plane (new PointCloud<PointT>);
+         typename PointCloud<PointT>::Ptr plane = boost::shared_ptr<PointCloud<PointT> > (new PointCloud<PointT>);
          pcl::copyPointCloud (*input_cloud,label_indices[i].indices,*plane);
          qDebug () << "Found plane with size " << plane->width;
          QString name = input_item->text () + tr ("- Plane %1").arg (i);
@@ -151,8 +152,8 @@
          
        }    
      }
-     typename PointCloud<PointT>::Ptr leftovers (new PointCloud<PointT>);
-     if (extracted_indices->empty ())
+     typename PointCloud<PointT>::Ptr leftovers = boost::shared_ptr<PointCloud<PointT> > (new PointCloud<PointT>);
+     if (extracted_indices->size () == 0)
        pcl::copyPointCloud (*input_cloud,*leftovers);
      else
      {
@@ -174,7 +175,7 @@
  }
  
  
- #define PCL_INSTANTIATE_performTemplatedAction(T) template void pcl::cloud_composer::OrganizedSegmentationTool::performTemplatedAction<T> (QList <const CloudComposerItem*>);
+ #define PCL_INSTANTIATE_performTemplatedAction(T) template PCL_EXPORTS void pcl::cloud_composer::OrganizedSegmentationTool::performTemplatedAction<T> (QList <const CloudComposerItem*>);
  
  
  

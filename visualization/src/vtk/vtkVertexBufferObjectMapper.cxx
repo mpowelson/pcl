@@ -47,7 +47,7 @@ vtkVertexBufferObjectMapper::vtkVertexBufferObjectMapper()
   initialized = false;
 //  shadersInitialized = false;
 
-  program = nullptr;
+  program = NULL;
   vertexVbo = vtkVertexBufferObject::New();
   indiceVbo = vtkVertexBufferObject::New();
   colorVbo = vtkVertexBufferObject::New();
@@ -103,7 +103,7 @@ void vtkVertexBufferObjectMapper::Render(vtkRenderer *ren, vtkActor *act)
     normalVbo->Bind();
 
   // Draw
-  ren->GetRenderWindow()->GetPainterDeviceAdapter()->DrawElements(VTK_VERTEX, indiceVbo->GetCount(), VTK_UNSIGNED_INT, nullptr);
+  ren->GetRenderWindow()->GetPainterDeviceAdapter()->DrawElements(VTK_VERTEX, indiceVbo->GetCount(), VTK_UNSIGNED_INT, 0);
   //glDrawElements(GL_POINTS, indiceVbo->GetCount(), GL_UNSIGNED_INT, 0);
 
   // Unbind vertices and indices
@@ -147,12 +147,16 @@ void vtkVertexBufferObjectMapper::SetInput(vtkPolyData *input)
 //  std::cout << "SetInput" << endl;
   if(input)
   {
+#if VTK_MAJOR_VERSION < 6
+    this->SetInputConnection(0, input->GetProducerPort());
+#else
     this->SetInputDataObject (0, input);
+#endif
   }
   else
   {
     // Setting a NULL input removes the connection.
-    this->SetInputConnection(0, nullptr);
+    this->SetInputConnection(0, 0);
   }
   initialized = false;
 
@@ -163,12 +167,16 @@ void vtkVertexBufferObjectMapper::SetInput(vtkDataSet *input)
 //  std::cout << "SetInput" << endl;
   if(input)
   {
+#if VTK_MAJOR_VERSION < 6
+    this->SetInputConnection(0, input->GetProducerPort());
+#else
     this->SetInputDataObject (0, input);
+#endif
   }
   else
   {
     // Setting a NULL input removes the connection.
-    this->SetInputConnection(0, nullptr);
+    this->SetInputConnection(0, 0);
   }
 }
 
@@ -213,9 +221,9 @@ void vtkVertexBufferObjectMapper::createVBOs(vtkRenderWindow* win)
 //    colorVbo->SetContext(win);
 //
 //    int rgb = scalars->GetTuple1(0);
-//      std::uint8_t r = (rgb >> 16) & 0x0000ff;
-//      std::uint8_t g = (rgb >> 8)  & 0x0000ff;
-//      std::uint8_t b = (rgb)     & 0x0000ff;
+//      uint8_t r = (rgb >> 16) & 0x0000ff;
+//      uint8_t g = (rgb >> 8)  & 0x0000ff;
+//      uint8_t b = (rgb)     & 0x0000ff;
 //    cout << "r: " << r << "\tg: " << g<< "\tb: " << b << endl;
 //
 //    colorVbo->SetAttributeNormalized(true);
@@ -244,12 +252,12 @@ void vtkVertexBufferObjectMapper::createVBOs(vtkRenderWindow* win)
 //    colorVbo->UploadColors(this->Colors);
 //
 //    cout << "Number of tuples:" << this->Colors->GetNumberOfTuples() << endl;
-//              //for (std::size_t i = 0; i < scalars->GetNumberOfTuples(); i++){
+//              //for (size_t i = 0; i < scalars->GetNumberOfTuples(); i++){
 //                double rgb[3];
 //                this->Colors->GetTuple(0, rgb);
 //                cout << "r: " << rgb[0] << "\tg: " << rgb[1] << "\tb: " << rgb[2] << endl;
 //
-//    for (std::size_t i = 0; i < this->Colors->GetNumberOfTuples(); i++){
+//    for (size_t i = 0; i < this->Colors->GetNumberOfTuples(); i++){
 //      double rgb[3];
 //      this->Colors->GetTuple(i, rgb);
 //      cout << "r: " << rgb[0] << "\tg: " << rgb[1] << "\tb: " << rgb[2] << endl;
@@ -269,7 +277,7 @@ void vtkVertexBufferObjectMapper::createVBOs(vtkRenderWindow* win)
 //    normalIndiceVbo->SetUsage(vtkVertexBufferObject::DynamicDraw);
 //
 //    std::vector<unsigned int> indices;
-//    for (std::size_t i=0; i < input->GetPoints()->GetNumberOfPoints(); i+=100){
+//    for (size_t i=0; i < input->GetPoints()->GetNumberOfPoints(); i+=100){
 //      indices.push_back(i);
 //    }
 //

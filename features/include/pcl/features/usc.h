@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_USC_H_
+#define PCL_FEATURES_USC_H_
 
 #include <pcl/point_types.h>
 #include <pcl/features/feature.h>
@@ -75,10 +76,10 @@ namespace pcl
       using Feature<PointInT, PointOutT>::searchForNeighbors;
       using FeatureWithLocalReferenceFrames<PointInT, PointRFT>::frames_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
-      using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
-      using Ptr = shared_ptr<UniqueShapeContext<PointInT, PointOutT, PointRFT> >;
-      using ConstPtr = shared_ptr<const UniqueShapeContext<PointInT, PointOutT, PointRFT> >;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename boost::shared_ptr<UniqueShapeContext<PointInT, PointOutT, PointRFT> > Ptr;
+      typedef typename boost::shared_ptr<const UniqueShapeContext<PointInT, PointOutT, PointRFT> > ConstPtr;
 
 
       /** \brief Constructor. */
@@ -91,18 +92,18 @@ namespace pcl
         search_radius_ = 2.0;
       }
 
-      ~UniqueShapeContext() { }
+      virtual ~UniqueShapeContext() { }
 
       /** \return The number of bins along the azimuth. */
-      inline std::size_t
+      inline size_t
       getAzimuthBins () const { return (azimuth_bins_); }
 
       /** \return The number of bins along the elevation */
-      inline std::size_t
+      inline size_t
       getElevationBins () const { return (elevation_bins_); }
 
       /** \return The number of bins along the radii direction. */
-      inline std::size_t
+      inline size_t
       getRadiusBins () const { return (radius_bins_); }
 
       /** The minimal radius value for the search sphere (rmin) in the original paper
@@ -142,17 +143,17 @@ namespace pcl
         * \param[out] desc descriptor to compute
         */
       void
-      computePointDescriptor (std::size_t index, std::vector<float> &desc);
+      computePointDescriptor (size_t index, std::vector<float> &desc);
 
       /** \brief Initialize computation by allocating all the intervals and the volume lookup table. */
-      bool
-      initCompute () override;
+      virtual bool
+      initCompute ();
 
       /** \brief The actual feature computation.
         * \param[out] output the resultant features
         */
-      void
-      computeFeature (PointCloudOut &output) override;
+      virtual void
+      computeFeature (PointCloudOut &output);
 
       /** \brief values of the radii interval. */
       std::vector<float> radii_interval_;
@@ -167,13 +168,13 @@ namespace pcl
       std::vector<float> volume_lut_;
 
       /** \brief Bins along the azimuth dimension. */
-      std::size_t azimuth_bins_;
+      size_t azimuth_bins_;
 
       /** \brief Bins along the elevation dimension. */
-      std::size_t elevation_bins_;
+      size_t elevation_bins_;
 
       /** \brief Bins along the radius dimension. */
-      std::size_t radius_bins_;
+      size_t radius_bins_;
 
       /** \brief Minimal radius value. */
       double min_radius_;
@@ -182,7 +183,7 @@ namespace pcl
       double point_density_radius_;
 
       /** \brief Descriptor length. */
-      std::size_t descriptor_length_;
+      size_t descriptor_length_;
 
       /** \brief Radius to compute local RF. */
       double local_radius_;
@@ -192,3 +193,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/usc.hpp>
 #endif
+
+#endif  //#ifndef PCL_USC_H_

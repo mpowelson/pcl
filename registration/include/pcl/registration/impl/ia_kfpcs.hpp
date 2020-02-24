@@ -43,6 +43,7 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
   lower_trl_boundary_ (-1.f),
   upper_trl_boundary_ (-1.f),  
   lambda_ (0.5f),
+  candidates_ (),
   use_trl_score_ (false),
   indices_validation_ (new std::vector <int>)
 {
@@ -82,7 +83,7 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
 
   // generate a subset of indices of size ransac_iterations_ on which to evaluate candidates on
   std::size_t nr_indices = indices_->size ();
-  if (nr_indices < std::size_t (ransac_iterations_))
+  if (nr_indices < size_t (ransac_iterations_))
     indices_validation_ = indices_;
   else
     for (int i = 0; i < ransac_iterations_; i++)
@@ -103,17 +104,17 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
   float fitness_score = FLT_MAX;
 
   // loop over all Candidate matches
-  for (auto &match : matches)
+  for (std::vector <std::vector <int> >::iterator match_indices = matches.begin (), it_e = matches.end (); match_indices != it_e; match_indices++)
   {
     Eigen::Matrix4f transformation_temp;
     pcl::Correspondences correspondences_temp;
     fitness_score = FLT_MAX; // reset to FLT_MAX to accept all candidates and not only best
 
     // determine corresondences between base and match according to their distance to centroid
-    linkMatchWithBase (base_indices, match, correspondences_temp);
+    linkMatchWithBase (base_indices, *match_indices, correspondences_temp);
 
     // check match based on residuals of the corresponding points after transformation
-    if (validateMatch (base_indices, match, correspondences_temp, transformation_temp) < 0)
+    if (validateMatch (base_indices, *match_indices, correspondences_temp, transformation_temp) < 0)
       continue;
 
     // check resulting transformation using a sub sample of the source point cloud
@@ -179,16 +180,18 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
   const std::vector <MatchingCandidates > &candidates)
 {
   // reorganize candidates into single vector
-  std::size_t total_size = 0;
-  for (const auto &candidate : candidates)
-    total_size += candidate.size ();
+  size_t total_size = 0;
+  std::vector <MatchingCandidates>::const_iterator it, it_e = candidates.end ();
+  for (it = candidates.begin (); it != it_e; it++)
+    total_size += it->size ();
 
   candidates_.clear ();
   candidates_.reserve (total_size);
 
-  for (const auto &candidate : candidates)
-    for (const auto &match : candidate)
-      candidates_.push_back (match);
+  MatchingCandidates::const_iterator it_curr, it_curr_e;
+  for (it = candidates.begin (); it != it_e; it++)
+  for (it_curr = it->begin (), it_curr_e = it->end (); it_curr != it_curr_e; it_curr++)
+    candidates_.push_back (*it_curr);
 
   // sort according to score value
   std::sort (candidates_.begin (), candidates_.end (), by_score ());
@@ -260,7 +263,7 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
   candidates.clear ();
 
   // loop over all candidates starting from the best one
-  for (MatchingCandidates::iterator it_candidate = candidates_.begin (), it_e = candidates_.end (); it_candidate != it_e; ++it_candidate)
+  for (MatchingCandidates::iterator it_candidate = candidates_.begin (), it_e = candidates_.end (); it_candidate != it_e; it_candidate++)
   {
     // stop if current candidate has score below threshold
     if (it_candidate->fitness_score > t)
@@ -275,7 +278,7 @@ pcl::registration::KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Sca
       const float angle3d = Eigen::AngleAxisf (diff.block <3, 3> (0, 0)).angle ();
       const float translation3d = diff.block <3, 1> (0, 3).norm ();
       unique = angle3d > min_angle3d && translation3d > min_translation3d;
-      ++it;
+      it++;
     }
 
     // add candidate to best candidates

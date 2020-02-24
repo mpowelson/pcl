@@ -35,7 +35,8 @@
   *
   */
  
-#pragma once
+ #ifndef ORGANIZED_SEGMENTATION_H_
+ #define ORGANIZED_SEGMENTATION_H_
  
  #include <pcl/apps/cloud_composer/tool_interface/abstract_tool.h>
  #include <pcl/apps/cloud_composer/tool_interface/tool_factory.h>
@@ -50,16 +51,16 @@
        Q_OBJECT
      public:
        OrganizedSegmentationTool (PropertiesModel* parameter_model, QObject* parent);
-       ~OrganizedSegmentationTool ();
+       virtual ~OrganizedSegmentationTool ();
        
-       QList <CloudComposerItem*>
-       performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE) override;
+       virtual QList <CloudComposerItem*>
+       performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE);
        
        template <typename PointT> QList <CloudComposerItem*>
-       performTemplatedAction (const QList <const CloudComposerItem*>& input_data);
+       performTemplatedAction (QList <const CloudComposerItem*> input_data);
        
-       inline QString
-       getToolName () const override { return "Organized Segmenation Tool";}
+       inline virtual QString
+       getToolName () const { return "Organized Segmenation Tool";}
      };
      
      
@@ -67,34 +68,36 @@
      {
        Q_OBJECT
        Q_INTERFACES (pcl::cloud_composer::ToolFactory)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
        Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#endif
      public:
        SplitItemTool*
-       createTool (PropertiesModel* parameter_model, QObject* parent = nullptr) override 
+       createTool (PropertiesModel* parameter_model, QObject* parent = 0) 
        {
          return new OrganizedSegmentationTool(parameter_model, parent);
        }
        
        PropertiesModel*
-       createToolParameterModel (QObject* parent) override;
+       createToolParameterModel (QObject* parent);
        
-       inline QString 
-       getPluginName () const override { return "Organized Segmentation";}
+       inline virtual QString 
+       getPluginName () const { return "Organized Segmentation";}
        
-       inline QString 
-       getToolGroupName () const override { return "Segmentation";}
+       inline virtual QString 
+       getToolGroupName () const { return "Segmentation";}
        
-       inline QString
-       getIconName () const override { return ":/organized_segmentation.png"; }
+       inline virtual QString
+       getIconName () const { return ":/organized_segmentation.png"; }
        
-       inline CloudComposerItem::ItemType
-       getInputItemType () const override
+       inline virtual CloudComposerItem::ItemType
+       getInputItemType () const
        {
          return CloudComposerItem::CLOUD_ITEM;
        }
        
-       inline QList <CloudComposerItem::ItemType>
-       getRequiredInputChildrenTypes () const override 
+       inline virtual QList <CloudComposerItem::ItemType>
+       getRequiredInputChildrenTypes () const 
        {
          QList <CloudComposerItem::ItemType> input_types;
          return (input_types << CloudComposerItem::NORMALS_ITEM);
@@ -105,3 +108,10 @@
      
    }
  }
+ 
+ 
+ 
+ 
+ 
+ 
+ #endif //ORGANIZED_SEGMENTATION_H_

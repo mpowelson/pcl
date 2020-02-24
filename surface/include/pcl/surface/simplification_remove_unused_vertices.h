@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SURFACE_SIMPLIFICATION_REMOVE_UNUSED_VERTICES_H_
+#define PCL_SURFACE_SIMPLIFICATION_REMOVE_UNUSED_VERTICES_H_
 
 #include <pcl/surface/boost.h>
 #include <pcl/PolygonMesh.h>
@@ -48,8 +49,8 @@ namespace pcl
     class PCL_EXPORTS SimplificationRemoveUnusedVertices
     {
       public:
-        using Ptr = shared_ptr<SimplificationRemoveUnusedVertices>;
-        using ConstPtr = shared_ptr<const SimplificationRemoveUnusedVertices>;
+        typedef boost::shared_ptr<SimplificationRemoveUnusedVertices> Ptr;
+        typedef boost::shared_ptr<const SimplificationRemoveUnusedVertices> ConstPtr;
 
         /** \brief Constructor. */
         SimplificationRemoveUnusedVertices () {};
@@ -78,3 +79,5 @@ namespace pcl
     };
   }
 }
+
+#endif /* PCL_SURFACE_SIMPLIFICATION_REMOVE_UNUSED_VERTICES_H_ */

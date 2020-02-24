@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_LMEDS_H_
+#define PCL_SAMPLE_CONSENSUS_LMEDS_H_
 
 #include <pcl/sample_consensus/sac.h>
 #include <pcl/sample_consensus/sac_model.h>
@@ -55,11 +56,11 @@ namespace pcl
   template <typename PointT>
   class LeastMedianSquares : public SampleConsensus<PointT>
   {
-    using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+    typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
 
     public:
-      using Ptr = shared_ptr<LeastMedianSquares<PointT> >;
-      using ConstPtr = shared_ptr<const LeastMedianSquares<PointT> >;
+      typedef boost::shared_ptr<LeastMedianSquares> Ptr;
+      typedef boost::shared_ptr<const LeastMedianSquares> ConstPtr;
 
       using SampleConsensus<PointT>::max_iterations_;
       using SampleConsensus<PointT>::threshold_;
@@ -94,10 +95,13 @@ namespace pcl
         * \param[in] debug_verbosity_level enable/disable on-screen debug information and set the verbosity level
         */
       bool 
-      computeModel (int debug_verbosity_level = 0) override;
+      computeModel (int debug_verbosity_level = 0);
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/sample_consensus/impl/lmeds.hpp>
 #endif
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_LMEDS_H_
+

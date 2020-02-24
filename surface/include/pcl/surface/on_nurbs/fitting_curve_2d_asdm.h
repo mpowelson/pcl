@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_CURVE_2D_ASDM_H
+#define NURBS_FITTING_CURVE_2D_ASDM_H
 
 #include <pcl/pcl_exports.h>
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
@@ -72,20 +73,20 @@ namespace pcl
           * - for large point-clouds this is time consuming.
           * - should be done once before refinement to initialize the starting points for point inversion. 
           */
-        void
-        assemble (const Parameter &parameter) override;
+        virtual void
+        assemble (const Parameter &parameter);
 
         /** \brief Solve system of equations using Eigen or UmfPack (can be defined in on_nurbs.cmake),
           * and updates B-Spline curve if a solution can be obtained.
           */
-        double
-        solve (double damp = 1.0) override;
+        virtual double
+        solve (double damp = 1.0);
 
         /** \brief Update curve according to the current system of equations.
           * \param[in] damp damping factor from one iteration to the other.
           */
-        double
-        updateCurve (double damp) override;
+        virtual double
+        updateCurve (double damp);
 
       protected:
 
@@ -95,12 +96,12 @@ namespace pcl
                             const Eigen::Vector2d &tangent, double rho, double d, double weight, unsigned &row);
 
         /** \brief Add minimization constraint: smoothness by control point regularisation. */
-        void
-        addCageRegularisation (double weight, unsigned &row, const std::vector<double> &elements, double wConcav = 0.0) override;
+        virtual void
+        addCageRegularisation (double weight, unsigned &row, const std::vector<double> &elements, double wConcav = 0.0);
 
         /** \brief Assemble point-to-surface constraints. */
-        void
-        assembleInterior (double wInt, double sigma2, double rScale, unsigned &row) override;
+        virtual void
+        assembleInterior (double wInt, double sigma2, double rScale, unsigned &row);
 
         /** \brief Assemble closest points constraints. At each midpoint of the curve elements the closest data points
           * are computed and point-to-surface constraints are added. 
@@ -111,3 +112,5 @@ namespace pcl
     };
   }
 }
+
+#endif

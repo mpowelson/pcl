@@ -37,68 +37,67 @@
  * $Id: feature.h 2784 2011-10-15 22:05:38Z aichim $
  */
 
-#pragma once
+#ifndef PCL_INTEGRAL_IMAGE2D_H_
+#define PCL_INTEGRAL_IMAGE2D_H_
 
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 namespace pcl
 {
   template <typename DataType>
   struct IntegralImageTypeTraits
   {
-    using Type = DataType;
-    using IntegralType = DataType;
+    typedef DataType Type;
+    typedef DataType IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<float>
   {
-    using Type = float;
-    using IntegralType = double;
+    typedef float Type;
+    typedef double IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<char>
   {
-    using Type = char;
-    using IntegralType = int;
+    typedef char Type;
+    typedef int IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<short>
   {
-    using Type = short;
-    using IntegralType = long;
+    typedef short Type;
+    typedef long IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<unsigned short>
   {
-    using Type = unsigned short;
-    using IntegralType = unsigned long;
+    typedef unsigned short Type;
+    typedef unsigned long IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<unsigned char>
   {
-    using Type = unsigned char;
-    using IntegralType = unsigned int;
+    typedef unsigned char Type;
+    typedef unsigned int IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<int>
   {
-    using Type = int;
-    using IntegralType = long;
+    typedef int Type;
+    typedef long IntegralType;
   };
 
   template <>
   struct IntegralImageTypeTraits<unsigned int>
   {
-    using Type = unsigned int;
-    using IntegralType = unsigned long;
+    typedef unsigned int Type;
+    typedef unsigned long IntegralType;
   };
 
   /** \brief Determines an integral image representation for a given organized data array
@@ -108,11 +107,9 @@ namespace pcl
   class IntegralImage2D
   {
     public:
-      using Ptr = shared_ptr<IntegralImage2D<DataType, Dimension>>;
-      using ConstPtr = shared_ptr<const IntegralImage2D<DataType, Dimension>>;
       static const unsigned second_order_size = (Dimension * (Dimension + 1)) >> 1;
-      using ElementType = Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::IntegralType, Dimension, 1>;
-      using SecondOrderType = Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::IntegralType, second_order_size, 1>;
+      typedef Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::IntegralType, Dimension, 1> ElementType;
+      typedef Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::IntegralType, second_order_size, 1> SecondOrderType;
 
       /** \brief Constructor for an Integral Image
         * \param[in] compute_second_order_integral_images set to true if we want to compute a second order image
@@ -120,6 +117,7 @@ namespace pcl
       IntegralImage2D (bool compute_second_order_integral_images) :
         first_order_integral_image_ (),
         second_order_integral_image_ (),
+        finite_values_integral_image_ (),
         width_ (1), 
         height_ (1), 
         compute_second_order_integral_images_ (compute_second_order_integral_images)
@@ -202,7 +200,7 @@ namespace pcl
       getFiniteElementsCountSE (unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y) const;
 
     private:
-      using InputType = Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::Type, Dimension, 1>;
+      typedef Eigen::Matrix<typename IntegralImageTypeTraits<DataType>::Type, Dimension, 1> InputType;
 
       /** \brief Compute the actual integral image data
         * \param[in] data the input data
@@ -232,12 +230,9 @@ namespace pcl
   class IntegralImage2D <DataType, 1>
   {
     public:
-      using Ptr = shared_ptr<IntegralImage2D<DataType, 1>>;
-      using ConstPtr = shared_ptr<const IntegralImage2D<DataType, 1>>;
-
       static const unsigned second_order_size = 1;
-      using ElementType = typename IntegralImageTypeTraits<DataType>::IntegralType;
-      using SecondOrderType = typename IntegralImageTypeTraits<DataType>::IntegralType;
+      typedef typename IntegralImageTypeTraits<DataType>::IntegralType ElementType;
+      typedef typename IntegralImageTypeTraits<DataType>::IntegralType SecondOrderType;
 
       /** \brief Constructor for an Integral Image
         * \param[in] compute_second_order_integral_images set to true if we want to compute a second order image
@@ -245,7 +240,7 @@ namespace pcl
       IntegralImage2D (bool compute_second_order_integral_images) : 
         first_order_integral_image_ (),
         second_order_integral_image_ (),
-        
+        finite_values_integral_image_ (),
         width_ (1), height_ (1), 
         compute_second_order_integral_images_ (compute_second_order_integral_images)
       {
@@ -321,7 +316,7 @@ namespace pcl
       getFiniteElementsCountSE (unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y) const;
 
   private:
-    //  using InputType = typename IntegralImageTypeTraits<DataType>::Type;
+    //  typedef typename IntegralImageTypeTraits<DataType>::Type InputType;
 
       /** \brief Compute the actual integral image data
         * \param[in] data the input data
@@ -346,3 +341,6 @@ namespace pcl
  }
 
 #include <pcl/features/impl/integral_image2D.hpp>
+
+#endif    // PCL_INTEGRAL_IMAGE2D_H_
+

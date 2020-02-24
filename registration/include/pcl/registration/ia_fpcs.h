@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_IA_FPCS_H_
+#define PCL_REGISTRATION_IA_FPCS_H_
 
 #include <pcl/common/common.h>
 #include <pcl/registration/registration.h>
@@ -77,22 +78,22 @@ namespace pcl
     {
     public:
       /** \cond */
-      using Ptr = shared_ptr <FPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> >;
-      using ConstPtr = shared_ptr <const FPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> >;
+      typedef boost::shared_ptr <FPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> > Ptr;
+      typedef boost::shared_ptr <const FPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> > ConstPtr;
 
-      using KdTreeReciprocal = pcl::search::KdTree<PointSource>;
-      using KdTreeReciprocalPtr = typename KdTreeReciprocal::Ptr;
+      typedef pcl::search::KdTree<PointSource> KdTreeReciprocal;
+      typedef typename KdTreeReciprocal::Ptr KdTreeReciprocalPtr;
 
-      using PointCloudTarget = pcl::PointCloud<PointTarget>;
-      using PointCloudSource = pcl::PointCloud<PointSource>;
-      using PointCloudSourcePtr = typename PointCloudSource::Ptr;
-      using PointCloudSourceIterator = typename PointCloudSource::iterator;      
+      typedef pcl::PointCloud <PointTarget> PointCloudTarget;
+      typedef pcl::PointCloud <PointSource> PointCloudSource;
+      typedef typename PointCloudSource::Ptr PointCloudSourcePtr;
+      typedef typename PointCloudSource::iterator PointCloudSourceIterator;      
 
-      using Normals = pcl::PointCloud<NormalT>;
-      using NormalsConstPtr = typename Normals::ConstPtr;
+      typedef pcl::PointCloud <NormalT> Normals;
+      typedef typename Normals::ConstPtr NormalsConstPtr;
 
-      using MatchingCandidate = pcl::registration::MatchingCandidate;
-      using MatchingCandidates = pcl::registration::MatchingCandidates;
+      typedef pcl::registration::MatchingCandidate MatchingCandidate;
+      typedef pcl::registration::MatchingCandidates MatchingCandidates;
       /** \endcond */
 
 
@@ -103,7 +104,7 @@ namespace pcl
       FPCSInitialAlignment ();
 
       /** \brief Destructor. */
-      ~FPCSInitialAlignment ()
+      virtual ~FPCSInitialAlignment ()
       {};
 
 
@@ -308,8 +309,8 @@ namespace pcl
         * \param output the transformed input point cloud dataset using the rigid transformation found
         * \param guess The computed transforamtion
         */
-      void
-      computeTransformation (PointCloudSource &output, const Eigen::Matrix4f& guess) override;
+      virtual void
+      computeTransformation (PointCloudSource &output, const Eigen::Matrix4f& guess);
 
 
       /** \brief Internal computation initialization. */
@@ -565,3 +566,5 @@ namespace pcl
 }; // namespace pcl 
 
 #include <pcl/registration/impl/ia_fpcs.hpp>
+
+#endif // PCL_REGISTRATION_IA_FPCS_H_

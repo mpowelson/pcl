@@ -3,6 +3,7 @@
 
 #include <pcl/common/eigen.h>
 #include <ctime>
+#include <pcl/tracking/boost.h>
 #include <pcl/tracking/tracker.h>
 
 template <typename PointInT, typename StateT> bool

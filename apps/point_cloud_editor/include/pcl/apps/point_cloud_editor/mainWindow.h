@@ -40,7 +40,8 @@
 /// @author  Yue Li and Matthew Hielsberg
 ///
 
-#pragma once
+#ifndef MAIN_WINDOW_H_
+#define MAIN_WINDOW_H_
 
 #include <QtGui>
 #include <QMainWindow>
@@ -240,3 +241,4 @@ class MainWindow : public QMainWindow
     /// the slider used for adjusting moving speed.
      QSlider *move_speed_slider_;
 };
+#endif //MAIN_WINDOW_H_

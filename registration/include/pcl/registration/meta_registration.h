@@ -35,7 +35,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_META_REGISTRATION_H_
+#define PCL_REGISTRATION_META_REGISTRATION_H_
 
 #include <pcl/point_cloud.h>
 #include <pcl/registration/registration.h>
@@ -75,11 +76,11 @@ namespace pcl {
     template <typename PointT, typename Scalar = float>
     class MetaRegistration {
       public:
-        using PointCloudPtr = typename pcl::PointCloud<PointT>::Ptr;
-        using PointCloudConstPtr = typename pcl::PointCloud<PointT>::ConstPtr;
+        typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
+        typedef typename pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
 
-        using RegistrationPtr = typename pcl::Registration<PointT,PointT,Scalar>::Ptr;
-        using Matrix4 = typename pcl::Registration<PointT,PointT,Scalar>::Matrix4;
+        typedef typename pcl::Registration<PointT,PointT,Scalar>::Ptr RegistrationPtr;
+        typedef typename pcl::Registration<PointT,PointT,Scalar>::Matrix4 Matrix4;
 
         MetaRegistration ();
 
@@ -126,3 +127,5 @@ namespace pcl {
 }
 
 #include <pcl/registration/impl/meta_registration.hpp>
+
+#endif /*PCL_REGISTRATION_META_REGISTRATION_H_*/

@@ -37,11 +37,14 @@
  *
  */
 
-#pragma once
+#ifndef PCL_OCTREE_BOOST_H_
+#define PCL_OCTREE_BOOST_H_
 
 #ifdef __GNUC__
-#pragma GCC system_header
+#pragma GCC system_header 
 #endif
 
 // Marking all Boost headers as system headers to remove warnings
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/function.hpp>
+#endif    // PCL_OCTREE_BOOST_H_

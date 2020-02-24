@@ -71,7 +71,9 @@ pcl::visualization::PCLHistogramVisualizer::addFeatureHistogram (
 
   // Save the pointer/ID pair to the global window map
   wins_[id] = renwinint;
-
+#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
+  resetStoppedFlag ();
+#endif
   return (true);
 }
 
@@ -112,7 +114,7 @@ pcl::visualization::PCLHistogramVisualizer::addFeatureHistogram (
 
   // Parse the cloud data and store it in the array
   double xy[2];
-  for (std::uint32_t d = 0; d < fields[field_idx].count; ++d)
+  for (uint32_t d = 0; d < fields[field_idx].count; ++d)
   {
     xy[0] = d;
     //xy[1] = cloud.points[index].histogram[d];
@@ -126,6 +128,9 @@ pcl::visualization::PCLHistogramVisualizer::addFeatureHistogram (
 
   // Save the pointer/ID pair to the global window map
   wins_[id] = renwinint;
+#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
+  resetStoppedFlag ();
+#endif
   return (true);
 }
 
@@ -195,7 +200,7 @@ pcl::visualization::PCLHistogramVisualizer::updateFeatureHistogram (
 
   // Parse the cloud data and store it in the array
   double xy[2];
-  for (std::uint32_t d = 0; d < fields[field_idx].count; ++d)
+  for (uint32_t d = 0; d < fields[field_idx].count; ++d)
   {
     xy[0] = d;
     //xy[1] = cloud.points[index].histogram[d];

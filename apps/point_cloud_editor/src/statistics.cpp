@@ -44,17 +44,18 @@ std::vector<Statistics*> Statistics::stat_vec_;
 std::string
 Statistics::getStats()
 {
-  std::string result;
-  for(const auto &stat_vec : stat_vec_)
+  std::string result = "";
+  std::vector<Statistics*>::const_iterator stat_vec_it;
+  for(stat_vec_it = stat_vec_.begin(); stat_vec_it != stat_vec_.end(); ++stat_vec_it)
   {
-    std::string stat_string = stat_vec -> getStat();
-    if (!stat_string.empty())
+    std::string stat_string = (*stat_vec_it) -> getStat();
+    if (stat_string != "")
     {
-      result += (stat_string + '\n');
+      result += (stat_string + "\n");
     }
   }
     
-  if (result.empty())
+  if (result == "")
     return ("Please load your cloud.");
   return (result);
 }

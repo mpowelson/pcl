@@ -12,24 +12,37 @@ namespace bf = boost::filesystem;
 inline void
 getModelsInDirectory (bf::path & dir, std::string & rel_path_so_far, std::vector<std::string> & relative_paths)
 {
-  for (const auto& dir_entry : bf::directory_iterator(dir))
+  bf::directory_iterator end_itr;
+  for (bf::directory_iterator itr (dir); itr != end_itr; ++itr)
   {
     //check if its a directory, then get models in it
-    if (bf::is_directory (dir_entry))
+    if (bf::is_directory (*itr))
     {
-      std::string so_far = rel_path_so_far + dir_entry.path ().filename ().string () + "/";
-      bf::path curr_path = dir_entry.path ();
+#if BOOST_FILESYSTEM_VERSION == 3
+      std::string so_far = rel_path_so_far + itr->path ().filename ().string () + "/";
+#else
+      std::string so_far = rel_path_so_far + itr->path ().filename () + "/";
+#endif
+      bf::path curr_path = itr->path ();
       getModelsInDirectory (curr_path, so_far, relative_paths);
     }
     else
     {
       std::vector<std::string> strs;
-      std::string file = dir_entry.path ().filename ().string ();
+#if BOOST_FILESYSTEM_VERSION == 3
+      std::string file = itr->path ().filename ().string ();
+#else
+      std::string file = itr->path ().filename ();
+#endif
       boost::split (strs, file, boost::is_any_of ("."));
       std::string extension = strs[strs.size () - 1];
 
       if((file.compare (0, 3, "raw") == 0) && extension == "pcd") {
-        std::string path = rel_path_so_far + dir_entry.path ().filename ().string ();
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string path = rel_path_so_far + itr->path ().filename ().string ();
+#else
+        std::string path = rel_path_so_far + itr->path ().filename ();
+#endif
         relative_paths.push_back (path);
       }
     }
@@ -177,7 +190,7 @@ main (int argc, char ** argv)
   std::string start = "";
   getModelsInDirectory (dir_path, start, files);
 
-  for(std::size_t i=0; i < files.size(); i++) {
+  for(size_t i=0; i < files.size(); i++) {
     // Load input file
 
     std::string filename = directory;

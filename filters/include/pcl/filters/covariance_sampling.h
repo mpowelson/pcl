@@ -38,9 +38,10 @@
  *
  */
 
-#pragma once
 
-#include <pcl/pcl_macros.h>
+#ifndef PCL_FILTERS_COVARIANCE_SAMPLING_H_
+#define PCL_FILTERS_COVARIANCE_SAMPLING_H_
+
 #include <pcl/filters/filter_indices.h>
 
 namespace pcl
@@ -66,14 +67,14 @@ namespace pcl
       using FilterIndices<PointT>::input_;
       using FilterIndices<PointT>::initCompute;
 
-      using Cloud = typename FilterIndices<PointT>::PointCloud;
-      using CloudPtr = typename Cloud::Ptr;
-      using CloudConstPtr = typename Cloud::ConstPtr;
-      using NormalsConstPtr = typename pcl::PointCloud<PointNT>::ConstPtr;
+      typedef typename FilterIndices<PointT>::PointCloud Cloud;
+      typedef typename Cloud::Ptr CloudPtr;
+      typedef typename Cloud::ConstPtr CloudConstPtr;
+      typedef typename pcl::PointCloud<PointNT>::ConstPtr NormalsConstPtr;
 
     public:
-      using Ptr = shared_ptr< CovarianceSampling<PointT, PointNT> >;
-      using ConstPtr = shared_ptr< const CovarianceSampling<PointT, PointNT> >;
+      typedef boost::shared_ptr< CovarianceSampling<PointT, PointNT> > Ptr;
+      typedef boost::shared_ptr< const CovarianceSampling<PointT, PointNT> > ConstPtr;
  
       /** \brief Empty constructor. */
       CovarianceSampling ()
@@ -145,13 +146,13 @@ namespace pcl
         * \param[out] output the resultant point cloud
         */
       void
-      applyFilter (Cloud &output) override;
+      applyFilter (Cloud &output);
 
       /** \brief Sample of point indices
         * \param[out] indices the resultant point cloud indices
         */
       void
-      applyFilter (std::vector<int> &indices) override;
+      applyFilter (std::vector<int> &indices);
 
       static bool
       sort_dot_list_function (std::pair<int, double> a,
@@ -159,10 +160,13 @@ namespace pcl
       { return (a.second > b.second); }
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/covariance_sampling.hpp>
 #endif
+
+
+#endif /* PCL_FILTERS_COVARIANCE_SAMPLING_H_ */

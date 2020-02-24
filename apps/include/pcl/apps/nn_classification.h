@@ -37,12 +37,15 @@
  *
  */
 
-#pragma once
+#ifndef NNCLASSIFICATION_H_
+#define NNCLASSIFICATION_H_
 
 #include <cstdlib>
 #include <cfloat>
 #include <algorithm>
 #include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+#include <pcl/kdtree/kdtree_flann.h>
 
 namespace pcl
 {
@@ -66,11 +69,11 @@ namespace pcl
 
     public:
 
-      NNClassification () : tree_ () {}
+      NNClassification () : tree_ (), classes_ (), labels_idx_ () {}
 
       /** \brief Result is a list of class labels and scores */
-      using Result = std::pair<std::vector<std::string>, std::vector<float> >;
-      using ResultPtr = std::shared_ptr<Result>;
+      typedef std::pair<std::vector<std::string>, std::vector<float> > Result;
+      typedef boost::shared_ptr<Result> ResultPtr;
 
       // TODO setIndices method, distance metrics and reset tree
 
@@ -115,17 +118,15 @@ namespace pcl
 
         // Save the mapping from labels to indices in the class list
         std::map<std::string, int> label2idx;
-        for (std::size_t i = 0; i < classes_.size(); ++i)
-        {
-            label2idx[classes_[i]] = i;
-        }
+        for (std::vector<std::string>::const_iterator it = classes_.begin (); it != classes_.end (); it++)
+          label2idx[*it] = int (it - classes_.begin ());
 
         // Create a list holding the class index of each label
         labels_idx_.reserve (labels.size ());
-        for (const auto &s : labels)
-        {
+        BOOST_FOREACH (std::string s, labels)
           labels_idx_.push_back (label2idx[s]);
-        }
+//        for (std::vector<std::string>::const_iterator it = labels.begin (); it != labels.end (); it++)
+//          labels_idx_.push_back (label2idx[*it]);
       }
 
       /** \brief Load the list of training examples and corresponding labels.
@@ -134,16 +135,16 @@ namespace pcl
         * \return true on success, false on failure (read error or number of entries don't match)
         */
       bool 
-      loadTrainingFeatures(const std::string& file_name, const std::string& labels_file_name)
+      loadTrainingFeatures(std::string file_name, std::string labels_file_name)
       {
         typename pcl::PointCloud<PointT>::Ptr cloud (new pcl::PointCloud<PointT>);
-        if (pcl::io::loadPCDFile (file_name, *cloud) != 0)
+        if (pcl::io::loadPCDFile (file_name.c_str (), *cloud) != 0)
           return (false);
         std::vector<std::string> labels;
         std::ifstream f (labels_file_name.c_str ());
         std::string label;
         while (getline (f, label))
-          if (!label.empty ())
+          if (label.size () > 0)
             labels.push_back(label);
         if (labels.size () != cloud->points.size ())
           return (false);
@@ -158,7 +159,7 @@ namespace pcl
         * \return true on success, false on failure (write error or number of entries don't match)
         */
       bool 
-      saveTrainingFeatures (const std::string& file_name, const std::string& labels_file_name)
+      saveTrainingFeatures (std::string file_name, std::string labels_file_name)
       {
         typename pcl::PointCloud<PointT>::ConstPtr training_features = tree_->getInputCloud ();
         if (labels_idx_.size () == training_features->points.size ())
@@ -166,10 +167,8 @@ namespace pcl
           if (pcl::io::savePCDFile (file_name.c_str (), *training_features) != 0)
             return (false);
           std::ofstream f (labels_file_name.c_str ());
-          for (const int& i : labels_idx_)
-          {
+          BOOST_FOREACH (int i, labels_idx_)
             f << classes_[i] << "\n";
-          }
           return (true);
         }
         return (false);
@@ -227,11 +226,11 @@ namespace pcl
         * \param k_sqr_distances the resultant squared distances to the neighboring points
         * \return a square distance to each training class
         */
-      std::shared_ptr<std::vector<float>>
+      boost::shared_ptr<std::vector<float> > 
       getSmallestSquaredDistances (std::vector<int> &k_indices, std::vector<float> &k_sqr_distances)
       {
         // Reserve space for distances
-        auto sqr_distances  = std::make_shared<std::vector<float>> (classes_.size (), FLT_MAX);
+        boost::shared_ptr<std::vector<float> > sqr_distances (new std::vector<float> (classes_.size (), FLT_MAX));
 
         // Select square distance to each class
         for (std::vector<int>::const_iterator i = k_indices.begin (); i != k_indices.end (); ++i)
@@ -250,11 +249,11 @@ namespace pcl
       getLinearBestScores (std::vector<int> &k_indices, std::vector<float> &k_sqr_distances)
       {
         // Get smallest squared distances and transform them to a score for each class
-        auto sqr_distances = getSmallestSquaredDistances (k_indices, k_sqr_distances);
+        boost::shared_ptr<std::vector<float> > sqr_distances = getSmallestSquaredDistances (k_indices, k_sqr_distances);
 
         // Transform distances to scores
         double sum_dist = 0;
-        auto result = std::make_shared<std::pair<std::vector<std::string>, std::vector<float>>> ();
+        boost::shared_ptr<std::pair<std::vector<std::string>, std::vector<float> > > result (new std::pair<std::vector<std::string>, std::vector<float> > ());
         result->first.reserve (classes_.size ());
         result->second.reserve (classes_.size ());
         for (std::vector<float>::const_iterator it = sqr_distances->begin (); it != sqr_distances->end (); ++it)
@@ -264,8 +263,8 @@ namespace pcl
             result->second.push_back (sqrt (*it));
             sum_dist += result->second.back ();
           }
-        for (float &it : result->second)
-          it = 1 - it/sum_dist;
+        for (std::vector<float>::iterator it = result->second.begin (); it != result->second.end (); ++it)
+          *it = 1 - *it/sum_dist;
 
         // Return label/score list pair
         return (result);
@@ -281,10 +280,10 @@ namespace pcl
       getGaussianBestScores (float gaussian_param, std::vector<int> &k_indices, std::vector<float> &k_sqr_distances)
       {
         // Get smallest squared distances and transform them to a score for each class
-        auto sqr_distances = getSmallestSquaredDistances (k_indices, k_sqr_distances);
+        boost::shared_ptr<std::vector<float> > sqr_distances = getSmallestSquaredDistances (k_indices, k_sqr_distances);
 
         // Transform distances to scores
-        auto result = std::make_shared<std::pair<std::vector<std::string>, std::vector<float>>> ();
+        boost::shared_ptr<std::pair<std::vector<std::string>, std::vector<float> > > result (new std::pair<std::vector<std::string>, std::vector<float> > ());
         result->first.reserve (classes_.size ());
         result->second.reserve (classes_.size ());
         for (std::vector<float>::const_iterator it = sqr_distances->begin (); it != sqr_distances->end (); ++it)
@@ -292,7 +291,7 @@ namespace pcl
           {
             result->first.push_back (classes_[it - sqr_distances->begin ()]);
             // TODO leave it squared, and relate param to sigma...
-            result->second.push_back (std::exp (-std::sqrt (*it) / gaussian_param));
+            result->second.push_back (expf (-std::sqrt (*it) / gaussian_param));
           }
 
         // Return label/score list pair
@@ -300,3 +299,5 @@ namespace pcl
       }
   };
 }
+
+#endif /* NNCLASSIFICATION_H_ */

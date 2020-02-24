@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef VTK_UTILS_H_
+#define VTK_UTILS_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/PolygonMesh.h>
@@ -78,3 +79,5 @@ namespace pcl
       mesh2vtk (const pcl::PolygonMesh& mesh, vtkSmartPointer<vtkPolyData> &poly_data);
   };
 }
+
+#endif /* VTK_UTILS_H_ */

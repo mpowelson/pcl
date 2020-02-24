@@ -79,7 +79,8 @@ namespace mets {
     /// moves.
     ///
     virtual void
-    search();
+    search()
+      throw(no_moves_error);
 
   protected:
     bool short_circuit_m;
@@ -99,15 +100,16 @@ mets::local_search<move_manager_t>::local_search(evaluable_solution& working,
   : abstract_search<move_manager_t>(working, recorder, moveman),
     short_circuit_m(short_circuit), epsilon_m(epsilon)
 { 
-  using base_t = abstract_search<move_manager_t>;
+  typedef abstract_search<move_manager_t> base_t;
   base_t::step_m = 0; 
 }
 
 template<typename move_manager_t>
 void
 mets::local_search<move_manager_t>::search()
+  throw(no_moves_error)
 {
-  using base_t = abstract_search<move_manager_t>;
+  typedef abstract_search<move_manager_t> base_t;
   typename move_manager_t::iterator best_movit;
 
   base_t::solution_recorder_m.accept(base_t::working_solution_m);

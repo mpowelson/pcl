@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SEGMENTATION_H
+#define SEGMENTATION_H
 
 #include "typedefs.h"
 
@@ -63,3 +64,5 @@ clusterObjects (const PointCloudPtr & input,
                 std::vector<pcl::PointIndices> & cluster_indices_out)
 {  
 }
+
+#endif

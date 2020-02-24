@@ -41,11 +41,9 @@
 #define PCL_UNARY_CLASSIFIER_HPP_
 
 #include <Eigen/Core>
-#include <flann/algorithms/center_chooser.h>
-#include <flann/util/matrix.h>
-
 #include <pcl/segmentation/unary_classifier.h>
 #include <pcl/common/io.h>
+#include <pcl/kdtree/flann.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT>
@@ -68,13 +66,16 @@ pcl::UnaryClassifier<PointT>::~UnaryClassifier ()
 template <typename PointT> void
 pcl::UnaryClassifier<PointT>::setInputCloud (typename pcl::PointCloud<PointT>::Ptr input_cloud)
 {
+  if (input_cloud_ != NULL)
+    input_cloud_.reset ();
+
   input_cloud_ = input_cloud;
 
   pcl::PointCloud <PointT> point;
   std::vector<pcl::PCLPointField> fields;
 
   int label_index = -1;
-  label_index = pcl::getFieldIndex<PointT> ("label", fields);
+  label_index = pcl::getFieldIndex (point, "label", fields);
   
   if (label_index != -1)
     label_field_ = true;
@@ -91,7 +92,7 @@ pcl::UnaryClassifier<PointT>::convertCloud (typename pcl::PointCloud<PointT>::Pt
   out->height = 1;
   out->is_dense = false;
 
-  for (std::size_t i = 0; i < in->points.size (); i++)
+  for (size_t i = 0; i < in->points.size (); i++)
   {
     pcl::PointXYZ point;
     // fill X Y Z
@@ -114,7 +115,7 @@ pcl::UnaryClassifier<PointT>::convertCloud (typename pcl::PointCloud<PointT>::Pt
   out->height = 1;
   out->is_dense = false;
 
-  for (std::size_t i = 0; i < in->points.size (); i++)
+  for (size_t i = 0; i < in->points.size (); i++)
   {
     pcl::PointXYZRGBL point;
     // X Y Z R G B L
@@ -137,21 +138,21 @@ pcl::UnaryClassifier<PointT>::findClusters (typename pcl::PointCloud<PointT>::Pt
   std::vector <pcl::PCLPointField> fields;
   int label_idx = -1;
   pcl::PointCloud <PointT> point;
-  label_idx = pcl::getFieldIndex<PointT> ("label", fields);
+  label_idx = pcl::getFieldIndex (point, "label", fields);
 
   if (label_idx != -1)
   {
-    for (std::size_t i = 0; i < in->points.size (); i++)
+    for (size_t i = 0; i < in->points.size (); i++)
     {
       // get the 'label' field                                                                       
-      std::uint32_t label;      
-      memcpy (&label, reinterpret_cast<char*> (&in->points[i]) + fields[label_idx].offset, sizeof(std::uint32_t));
+      uint32_t label;      
+      memcpy (&label, reinterpret_cast<char*> (&in->points[i]) + fields[label_idx].offset, sizeof(uint32_t));
 
       // check if label exist
       bool exist = false;
-      for (const int &cluster_number : cluster_numbers)
+      for (size_t j = 0; j < cluster_numbers.size (); j++)
       {
-        if (static_cast<std::uint32_t> (cluster_number) == label)
+        if (static_cast<uint32_t> (cluster_numbers[j]) == label)
         {
           exist = true;
           break;
@@ -173,15 +174,15 @@ pcl::UnaryClassifier<PointT>::getCloudWithLabel (typename pcl::PointCloud<PointT
   std::vector <pcl::PCLPointField> fields;
   int label_idx = -1;
   pcl::PointCloud <PointT> point;
-  label_idx = pcl::getFieldIndex<PointT> ("label", fields);
+  label_idx = pcl::getFieldIndex (point, "label", fields);
 
   if (label_idx != -1)
   {
-    for (std::size_t i = 0; i < in->points.size (); i++)
+    for (size_t i = 0; i < in->points.size (); i++)
     {
       // get the 'label' field                                                                       
-      std::uint32_t label;
-      memcpy (&label, reinterpret_cast<char*> (&in->points[i]) + fields[label_idx].offset, sizeof(std::uint32_t));
+      uint32_t label;
+      memcpy (&label, reinterpret_cast<char*> (&in->points[i]) + fields[label_idx].offset, sizeof(uint32_t));
 
       if (static_cast<int> (label) == label_num)
       {
@@ -238,11 +239,11 @@ pcl::UnaryClassifier<PointT>::kmeansClustering (pcl::PointCloud<pcl::FPFHSignatu
   kmeans.setClusterSize (k);
 
   // add points to the clustering
-  for (const auto &point : in->points)
+  for (size_t i = 0; i < in->points.size (); i++)
   {
     std::vector<float> data (33);
     for (int idx = 0; idx < 33; idx++)
-      data[idx] = point.histogram[idx];
+      data[idx] = in->points[i].histogram[idx];
     kmeans.addDataPoint (data);
   }
 
@@ -258,7 +259,7 @@ pcl::UnaryClassifier<PointT>::kmeansClustering (pcl::PointCloud<pcl::FPFHSignatu
   out->is_dense = false;
   out->points.resize (static_cast<int> (centroids.size ()));
   // copy cluster centroids into feature cloud 
-  for (std::size_t i = 0; i < centroids.size (); i++)
+  for (size_t i = 0; i < centroids.size (); i++)
   {
     pcl::FPFHSignature33 point;
     for (int idx = 0; idx < 33; idx++)
@@ -276,18 +277,18 @@ pcl::UnaryClassifier<PointT>::queryFeatureDistances (std::vector<pcl::PointCloud
 {
   // estimate the total number of row's needed
   int n_row = 0;
-  for (const auto &trained_feature : trained_features)
-    n_row += static_cast<int> (trained_feature->points.size ());
+  for (size_t i = 0; i < trained_features.size (); i++)
+    n_row += static_cast<int> (trained_features[i]->points.size ());
 
   // Convert data into FLANN format
   int n_col = 33;
   flann::Matrix<float> data (new float[n_row * n_col], n_row, n_col);
-  for (std::size_t k = 0; k < trained_features.size (); k++)
+  for (size_t k = 0; k < trained_features.size (); k++)
   {
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr hist = trained_features[k];
-    std::size_t c = hist->points.size ();
-    for (std::size_t i = 0; i < c; ++i)
-      for (std::size_t j = 0; j < data.cols; ++j)
+    size_t c = hist->points.size ();
+    for (size_t i = 0; i < c; ++i)
+      for (size_t j = 0; j < data.cols; ++j)
         data[(k * c) + i][j] = hist->points[i].histogram[j];
   }
 
@@ -303,7 +304,7 @@ pcl::UnaryClassifier<PointT>::queryFeatureDistances (std::vector<pcl::PointCloud
   indi.resize (query_features->points.size ());
   dist.resize (query_features->points.size ());
   // Query all points
-  for (std::size_t i = 0; i < query_features->points.size (); i++)
+  for (size_t i = 0; i < query_features->points.size (); i++)
   {
     // Query point  
     flann::Matrix<float> p = flann::Matrix<float>(new float[n_col], 1, n_col);
@@ -334,13 +335,13 @@ pcl::UnaryClassifier<PointT>::assignLabels (std::vector<int> &indi,
                               
 {
   float nfm = static_cast<float> (n_feature_means);
-  for (std::size_t i = 0; i < out->points.size (); i++)
+  for (size_t i = 0; i < out->points.size (); i++)
   {
     if (dist[i] < feature_threshold)
     {
       float l = static_cast<float> (indi[i]) / nfm;
       float intpart;
-      //float fractpart = std::modf (l , &intpart);
+      //float fractpart = modf (l , &intpart);
       std::modf (l , &intpart);
       int label = static_cast<int> (intpart);
       
@@ -377,15 +378,15 @@ pcl::UnaryClassifier<PointT>::trainWithLabel (
   std::vector<int> cluster_numbers;
   findClusters (input_cloud_, cluster_numbers);
   std::cout << "cluster numbers: ";
-  for (const int &cluster_number : cluster_numbers)
-    std::cout << cluster_number << " ";
+  for (size_t i = 0; i < cluster_numbers.size (); i++)
+    std::cout << cluster_numbers[i] << " ";
   std::cout << std::endl;
 
-  for (const int &cluster_number : cluster_numbers)
+  for (size_t i = 0; i < cluster_numbers.size (); i++)
   {    
     // extract all points with the same label number
     pcl::PointCloud<pcl::PointXYZ>::Ptr label_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-    getCloudWithLabel (input_cloud_, label_cloud, cluster_number);
+    getCloudWithLabel (input_cloud_, label_cloud, cluster_numbers[i]);
 
     // compute FPFH feature histograms for all point of the input point cloud
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature (new pcl::PointCloud<pcl::FPFHSignature33>);
@@ -403,7 +404,7 @@ pcl::UnaryClassifier<PointT>::trainWithLabel (
 template <typename PointT> void
 pcl::UnaryClassifier<PointT>::segment (pcl::PointCloud<pcl::PointXYZRGBL>::Ptr &out)
 {
-  if (!trained_features_.empty ())
+  if (trained_features_.size () > 0)
   {
     // convert cloud into cloud with XYZ
     pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_cloud (new pcl::PointCloud<pcl::PointXYZ>);

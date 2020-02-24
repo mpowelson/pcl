@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_RGB_SEGMENTATION_PLANE_COEFFICIENT_COMPARATOR_H_
+#define PCL_RGB_SEGMENTATION_PLANE_COEFFICIENT_COMPARATOR_H_
 
 #include <pcl/segmentation/boost.h>
 #include <pcl/segmentation/plane_coefficient_comparator.h>
@@ -54,15 +55,15 @@ namespace pcl
   class RGBPlaneCoefficientComparator: public PlaneCoefficientComparator<PointT, PointNT>
   {
     public:
-      using PointCloud = typename Comparator<PointT>::PointCloud;
-      using PointCloudConstPtr = typename Comparator<PointT>::PointCloudConstPtr;
+      typedef typename Comparator<PointT>::PointCloud PointCloud;
+      typedef typename Comparator<PointT>::PointCloudConstPtr PointCloudConstPtr;
       
-      using PointCloudN = pcl::PointCloud<PointNT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<PointNT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
       
-      using Ptr = shared_ptr<RGBPlaneCoefficientComparator<PointT, PointNT> >;
-      using ConstPtr = shared_ptr<const RGBPlaneCoefficientComparator<PointT, PointNT> >;
+      typedef boost::shared_ptr<RGBPlaneCoefficientComparator<PointT, PointNT> > Ptr;
+      typedef boost::shared_ptr<const RGBPlaneCoefficientComparator<PointT, PointNT> > ConstPtr;
 
       using pcl::Comparator<PointT>::input_;
       using pcl::PlaneCoefficientComparator<PointT, PointNT>::normals_;
@@ -78,13 +79,13 @@ namespace pcl
       /** \brief Constructor for RGBPlaneCoefficientComparator.
         * \param[in] plane_coeff_d a reference to a vector of d coefficients of plane equations.  Must be the same size as the input cloud and input normals.  a, b, and c coefficients are in the input normals.
         */
-      RGBPlaneCoefficientComparator (shared_ptr<std::vector<float> >& plane_coeff_d) 
+      RGBPlaneCoefficientComparator (boost::shared_ptr<std::vector<float> >& plane_coeff_d) 
         : PlaneCoefficientComparator<PointT, PointNT> (plane_coeff_d), color_threshold_ (50.0f)
       {
       }
       
       /** \brief Destructor for RGBPlaneCoefficientComparator. */
-      
+      virtual
       ~RGBPlaneCoefficientComparator ()
       {
       }
@@ -110,7 +111,7 @@ namespace pcl
         * \param[in] idx2 The index of the second point.
         */
       bool
-      compare (int idx1, int idx2) const override
+      compare (int idx1, int idx2) const
       {
         float dx = input_->points[idx1].x - input_->points[idx2].x;
         float dy = input_->points[idx1].y - input_->points[idx2].y;
@@ -130,3 +131,5 @@ namespace pcl
       float color_threshold_;
   };
 }
+
+#endif // PCL_SEGMENTATION_PLANE_COEFFICIENT_COMPARATOR_H_

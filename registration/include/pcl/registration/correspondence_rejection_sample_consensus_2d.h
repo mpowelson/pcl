@@ -36,9 +36,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_SAMPLE_CONSENSUS_2D_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_SAMPLE_CONSENSUS_2D_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
 
 namespace pcl
@@ -54,9 +54,9 @@ namespace pcl
     template <typename PointT>
     class CorrespondenceRejectorSampleConsensus2D: public CorrespondenceRejectorSampleConsensus<PointT>
     {
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
       public:
         using CorrespondenceRejectorSampleConsensus<PointT>::refine_;
@@ -69,8 +69,8 @@ namespace pcl
         using CorrespondenceRejectorSampleConsensus<PointT>::max_iterations_;
         using CorrespondenceRejectorSampleConsensus<PointT>::best_transformation_;
 
-        using Ptr = shared_ptr<CorrespondenceRejectorSampleConsensus2D<PointT> >;
-        using ConstPtr = shared_ptr<const CorrespondenceRejectorSampleConsensus2D<PointT> >;
+        typedef boost::shared_ptr<CorrespondenceRejectorSampleConsensus2D> Ptr;
+        typedef boost::shared_ptr<const CorrespondenceRejectorSampleConsensus2D> ConstPtr;
 
         /** \brief Empty constructor. Sets the inlier threshold to 5cm (0.05m), 
           * and the maximum number of iterations to 1000. 
@@ -154,9 +154,12 @@ namespace pcl
         Eigen::Matrix3f projection_matrix_;
 
       public:
-        PCL_MAKE_ALIGNED_OPERATOR_NEW
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
   }
 }
 
 #include <pcl/registration/impl/correspondence_rejection_sample_consensus_2d.hpp>
+
+#endif    // PCL_REGISTRATION_CORRESPONDENCE_REJECTION_SAMPLE_CONSENSUS_2D_H_
+

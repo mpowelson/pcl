@@ -31,17 +31,17 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- *
+ * 
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_SURFACE_IM_H
+#define NURBS_FITTING_SURFACE_IM_H
 
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
 #include <pcl/surface/on_nurbs/nurbs_data.h>
 #include <pcl/surface/on_nurbs/nurbs_solve.h>
 
-#include <pcl/pcl_macros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -80,7 +80,8 @@ namespace pcl
       computeMean () const;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
       inline ON_NurbsSurface&
       getSurface ()
@@ -171,3 +172,5 @@ namespace pcl
     };
   }
 }
+
+#endif

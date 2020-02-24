@@ -55,9 +55,9 @@
 using namespace pcl;
 using namespace pcl::io;
 
-using SampleConsensusModelPlanePtr = SampleConsensusModelPlane<PointXYZ>::Ptr;
-using SampleConsensusModelNormalPlanePtr = SampleConsensusModelNormalPlane<PointXYZ, Normal>::Ptr;
-using SampleConsensusModelNormalParallelPlanePtr = SampleConsensusModelNormalParallelPlane<PointXYZ, Normal>::Ptr;
+typedef SampleConsensusModelPlane<PointXYZ>::Ptr SampleConsensusModelPlanePtr;
+typedef SampleConsensusModelNormalPlane<PointXYZ, Normal>::Ptr SampleConsensusModelNormalPlanePtr;
+typedef SampleConsensusModelNormalParallelPlane<PointXYZ, Normal>::Ptr SampleConsensusModelNormalParallelPlanePtr;
 
 PointCloud<PointXYZ>::Ptr cloud_ (new PointCloud<PointXYZ> ());
 PointCloud<Normal>::Ptr normals_ (new PointCloud<Normal> ());
@@ -123,7 +123,7 @@ TEST (SampleConsensusModelPlane, Base)
   cloud = model->getInputCloud ();
   ASSERT_EQ (cloud_->points.size (), cloud->points.size ());
 
-  auto indices = model->getIndices ();
+  boost::shared_ptr<std::vector<int> > indices = model->getIndices ();
   ASSERT_EQ (indices_.size (), indices->size ());
   model->setIndices (indices_);
   indices = model->getIndices ();
@@ -186,8 +186,8 @@ TEST (SampleConsensusModelPlane, RRANSAC)
   // Create the RRANSAC object
   RandomizedRandomSampleConsensus<PointXYZ> sac (model, 0.03);
 
-  sac.setFractionNrPretest (0.1);
-  ASSERT_EQ (0.1, sac.getFractionNrPretest ());
+  sac.setFractionNrPretest (10.0);
+  ASSERT_EQ (10.0, sac.getFractionNrPretest ());
 
   verifyPlaneSac (model, sac, 600, 1.0f, 1.0f, 0.01f);
 }
@@ -250,7 +250,7 @@ TEST (SampleConsensusModelNormalParallelPlane, RANSAC)
   cloud.points.resize (10);
   normals.resize (10);
 
-  for (std::size_t idx = 0; idx < cloud.size (); ++idx)
+  for (unsigned idx = 0; idx < cloud.size (); ++idx)
   {
     cloud.points[idx].x = static_cast<float> ((rand () % 200) - 100);
     cloud.points[idx].y = static_cast<float> ((rand () % 200) - 100);
@@ -283,7 +283,7 @@ TEST (SampleConsensusModelNormalParallelPlane, RANSAC)
 
   // test axis slightly in valid range
   {
-    model->setAxis (Eigen::Vector3f (0, sin (max_angle_rad * (1 - angle_eps)), std::cos (max_angle_rad * (1 - angle_eps))));
+    model->setAxis (Eigen::Vector3f (0, sin (max_angle_rad * (1 - angle_eps)), cos (max_angle_rad * (1 - angle_eps))));
     RandomSampleConsensus<PointXYZ> sac (model, 0.03);
     sac.computeModel ();
 
@@ -294,7 +294,7 @@ TEST (SampleConsensusModelNormalParallelPlane, RANSAC)
 
   // test axis slightly out of valid range
   {
-    model->setAxis (Eigen::Vector3f (0, sin (max_angle_rad * (1 + angle_eps)), std::cos (max_angle_rad * (1 + angle_eps))));
+    model->setAxis (Eigen::Vector3f (0, sin (max_angle_rad * (1 + angle_eps)), cos (max_angle_rad * (1 + angle_eps))));
     RandomSampleConsensus<PointXYZ> sac (model, 0.03);
     sac.computeModel ();
 
@@ -326,7 +326,7 @@ main (int argc, char** argv)
   fromPCLPointCloud2 (cloud_blob, *normals_);
 
   indices_.resize (cloud_->points.size ());
-  for (std::size_t i = 0; i < indices_.size (); ++i) { indices_[i] = int (i); }
+  for (size_t i = 0; i < indices_.size (); ++i) { indices_[i] = int (i); }
 
   testing::InitGoogleTest (&argc, argv);
   return (RUN_ALL_TESTS ());

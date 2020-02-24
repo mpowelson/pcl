@@ -70,7 +70,7 @@ TEST (BearingAngleImageTest, GenerateBAImage)
 
   bearing_angle_image.generateBAImage (point_cloud);
 
-  std::uint8_t grays[6];
+  uint8_t grays[6];
   for (int i = 0; i < 3 * 2; ++i)
   {
     grays[i] = (bearing_angle_image.points[i].rgba >> 8) & 0xff;

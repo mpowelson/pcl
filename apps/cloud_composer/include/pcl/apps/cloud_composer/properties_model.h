@@ -35,11 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef PROPERTIES_MODEL_H_
+#define PROPERTIES_MODEL_H_
 
-#include <QStandardItemModel>
-
+#include <pcl/apps/cloud_composer/qt.h>
 #include <pcl/common/boost.h> 
+
 
 namespace pcl
 {
@@ -52,23 +53,23 @@ namespace pcl
       public:
         
         /** \brief Constructor used for tool parameters */
-        PropertiesModel (QObject *parent = nullptr);
+        PropertiesModel (QObject *parent = 0);
         /** \brief Constructor used for item parameters */
-        PropertiesModel (CloudComposerItem* parent_item, QObject *parent = nullptr);
+        PropertiesModel (CloudComposerItem* parent_item, QObject *parent = 0);
         PropertiesModel (const PropertiesModel& to_copy);
-        ~PropertiesModel ();
+        virtual ~PropertiesModel ();
         
         /** \brief Helper function for adding a new property */
         void
-        addProperty (const QString& prop_name, const QVariant& value, const Qt::ItemFlags flags = Qt::ItemIsSelectable, const QString& category = "");
+        addProperty (const QString prop_name, const QVariant value, const Qt::ItemFlags flags = Qt::ItemIsSelectable, const QString category = "");
         
         /** \brief Helper function for adding a new property category */
         void
-        addCategory (const QString& category_name);
+        addCategory (const QString category_name);
         
         /** \brief Helper function to get a property */
         QVariant 
-        getProperty (const QString& prop_name) const;
+        getProperty (const QString prop_name) const;
         
         void 
         copyProperties (const PropertiesModel* to_copy);
@@ -91,3 +92,5 @@ namespace pcl
 
 Q_DECLARE_METATYPE (pcl::cloud_composer::PropertiesModel);
 Q_DECLARE_METATYPE (pcl::cloud_composer::PropertiesModel*);
+
+#endif //PROPERTIES_MODEL_H_

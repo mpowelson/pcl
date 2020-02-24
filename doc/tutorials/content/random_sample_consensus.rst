@@ -56,19 +56,19 @@ The following source code initializes two PointClouds and fills one of them with
 
 .. literalinclude:: sources/random_sample_consensus/random_sample_consensus.cpp
    :language: cpp
-   :lines: 33-66
+   :lines: 30-63
 
 Next we create a vector of ints that can store the locations of our inlier points from our PointCloud and now we can build our RandomSampleConsensus object using either a plane or a sphere model from our input cloud.
 
 .. literalinclude:: sources/random_sample_consensus/random_sample_consensus.cpp
    :language: cpp
-   :lines: 68-88
+   :lines: 65-85
 
 This last bit of code copies all of the points that fit our model to another cloud and then display either that or our original cloud in the viewer.
 
 .. literalinclude:: sources/random_sample_consensus/random_sample_consensus.cpp
    :language: cpp
-   :lines: 90-99
+   :lines: 87-96
 
 There is some extra code that relates to the display of the PointClouds in the 3D Viewer, but I'm not going to explain that here.
 

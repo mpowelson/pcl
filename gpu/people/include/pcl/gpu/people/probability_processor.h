@@ -34,17 +34,17 @@
  * @author: Koen Buys
  */
 
-#pragma once
+#ifndef PCL_GPU_PROBABILITY_PROCESSOR_H_
+#define PCL_GPU_PROBABILITY_PROCESSOR_H_
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 #include <pcl/point_types.h>
 #include <pcl/console/print.h>
 #include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/people/label_common.h>
-
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
 
 namespace pcl
 {
@@ -60,10 +60,9 @@ namespace pcl
       class PCL_EXPORTS ProbabilityProcessor
       {        
         public:
-          using Ptr = shared_ptr<ProbabilityProcessor>;
-          using ConstPtr = shared_ptr<const ProbabilityProcessor>;
-          using Depth = DeviceArray2D<unsigned short>;
-          using Labels = DeviceArray2D<unsigned char>;
+          typedef boost::shared_ptr<ProbabilityProcessor> Ptr;
+          typedef DeviceArray2D<unsigned short> Depth;
+          typedef DeviceArray2D<unsigned char> Labels;
 
           ProbabilityProcessor();
 
@@ -105,9 +104,11 @@ namespace pcl
                         pcl::device::LabelProbability&  probOut);
 
         private:
-          std::shared_ptr<pcl::device::ProbabilityProc> impl_;
+          boost::shared_ptr<pcl::device::ProbabilityProc> impl_;
 
       };
     }
   }
 }
+
+#endif // PCL_GPU_PROBABILITY_PROCESSOR_H_

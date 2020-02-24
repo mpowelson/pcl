@@ -39,9 +39,6 @@
 #ifndef PCL_COMMON_EIGEN_IMPL_HPP_
 #define PCL_COMMON_EIGEN_IMPL_HPP_
 
-#include <array>
-#include <algorithm>
-
 #include <pcl/console/print.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +50,7 @@ pcl::computeRoots2 (const Scalar& b, const Scalar& c, Roots& roots)
   if (d < 0.0)  // no real roots ! THIS SHOULD NOT HAPPEN!
     d = 0.0;
 
-  Scalar sd = std::sqrt (d);
+  Scalar sd = ::std::sqrt (d);
 
   roots (2) = 0.5f * (b + sd);
   roots (1) = 0.5f * (b - sd);
@@ -63,7 +60,7 @@ pcl::computeRoots2 (const Scalar& b, const Scalar& c, Roots& roots)
 template <typename Matrix, typename Roots> inline void
 pcl::computeRoots (const Matrix& m, Roots& roots)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
 
   // The characteristic equation is x^3 - c2*x^2 + c1*x - c0 = 0.  The
   // eigenvalues are the roots to this equation, all guaranteed to be
@@ -81,7 +78,7 @@ pcl::computeRoots (const Matrix& m, Roots& roots)
         m (1, 2) * m (1, 2);
   Scalar c2 = m (0, 0) + m (1, 1) + m (2, 2);
 
-  if (std::abs (c0) < Eigen::NumTraits < Scalar > ::epsilon ())  // one root is 0 -> quadratic equation
+  if (fabs (c0) < Eigen::NumTraits < Scalar > ::epsilon ())  // one root is 0 -> quadratic equation
     computeRoots2 (c2, c1, roots);
   else
   {
@@ -130,7 +127,7 @@ pcl::eigen22 (const Matrix& mat, typename Matrix::Scalar& eigenvalue, Vector& ei
 {
   // if diagonal matrix, the eigenvalues are the diagonal elements
   // and the eigenvectors are not unique, thus set to Identity
-  if (std::abs (mat.coeff (1)) <= std::numeric_limits<typename Matrix::Scalar>::min ())
+  if (fabs (mat.coeff (1)) <= std::numeric_limits<typename Matrix::Scalar>::min ())
   {
     if (mat.coeff (0) < mat.coeff (2))
     {
@@ -156,7 +153,7 @@ pcl::eigen22 (const Matrix& mat, typename Matrix::Scalar& eigenvalue, Vector& ei
   if (temp < 0)
     temp = 0;
 
-  eigenvalue = trace - std::sqrt (temp);
+  eigenvalue = trace - ::std::sqrt (temp);
 
   eigenvector[0] = -mat.coeff (1);
   eigenvector[1] = mat.coeff (0) - eigenvalue;
@@ -169,7 +166,7 @@ pcl::eigen22 (const Matrix& mat, Matrix& eigenvectors, Vector& eigenvalues)
 {
   // if diagonal matrix, the eigenvalues are the diagonal elements
   // and the eigenvectors are not unique, thus set to Identity
-  if (std::abs (mat.coeff (1)) <= std::numeric_limits<typename Matrix::Scalar>::min ())
+  if (fabs (mat.coeff (1)) <= std::numeric_limits<typename Matrix::Scalar>::min ())
   {
     if (mat.coeff (0) < mat.coeff (3))
     {
@@ -201,7 +198,7 @@ pcl::eigen22 (const Matrix& mat, Matrix& eigenvectors, Vector& eigenvalues)
   if (temp < 0)
     temp = 0;
   else
-    temp = std::sqrt (temp);
+    temp = ::std::sqrt (temp);
 
   eigenvalues.coeffRef (0) = trace - temp;
   eigenvalues.coeffRef (1) = trace + temp;
@@ -210,7 +207,7 @@ pcl::eigen22 (const Matrix& mat, Matrix& eigenvectors, Vector& eigenvalues)
   eigenvectors.coeffRef (0) = -mat.coeff (1);
   eigenvectors.coeffRef (2) = mat.coeff (0) - eigenvalues.coeff (0);
   typename Matrix::Scalar norm = static_cast<typename Matrix::Scalar> (1.0)
-      / static_cast<typename Matrix::Scalar> (std::sqrt (eigenvectors.coeffRef (0) * eigenvectors.coeffRef (0) + eigenvectors.coeffRef (2) * eigenvectors.coeffRef (2)));
+      / static_cast<typename Matrix::Scalar> (::std::sqrt (eigenvectors.coeffRef (0) * eigenvectors.coeffRef (0) + eigenvectors.coeffRef (2) * eigenvectors.coeffRef (2)));
   eigenvectors.coeffRef (0) *= norm;
   eigenvectors.coeffRef (2) *= norm;
   eigenvectors.coeffRef (1) = eigenvectors.coeffRef (2);
@@ -221,7 +218,7 @@ pcl::eigen22 (const Matrix& mat, Matrix& eigenvectors, Vector& eigenvalues)
 template <typename Matrix, typename Vector> inline void
 pcl::computeCorrespondingEigenVector (const Matrix& mat, const typename Matrix::Scalar& eigenvalue, Vector& eigenvector)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   // Scale the matrix so its entries are in [-1,1].  The scaling is applied
   // only when at least one matrix entry has magnitude larger than 1.
 
@@ -249,48 +246,11 @@ pcl::computeCorrespondingEigenVector (const Matrix& mat, const typename Matrix::
     eigenvector = vec3 / std::sqrt (len3);
 }
 
-namespace pcl {
-namespace detail{
-template <typename Vector, typename Scalar>
-struct EigenVector {
-  Vector vector;
-  Scalar length;
-};  // struct EigenVector
-
-/**
- * @brief returns the unit vector along the largest eigen value as well as the
- *        length of the largest eigenvector
- * @tparam Vector Requested result type, needs to be explicitly provided and has
- *                to be implicitly constructible from ConstRowExpr
- * @tparam Matrix deduced input type providing similar in API as Eigen::Matrix
- */
-template <typename Vector, typename Matrix> static EigenVector<Vector, typename Matrix::Scalar>
-getLargest3x3Eigenvector (const Matrix scaledMatrix)
-{
-  using Scalar = typename Matrix::Scalar;
-  using Index = typename Matrix::Index;
-
-  Matrix crossProduct;
-  crossProduct << scaledMatrix.row (0).cross (scaledMatrix.row (1)),
-                  scaledMatrix.row (0).cross (scaledMatrix.row (2)),
-                  scaledMatrix.row (1).cross (scaledMatrix.row (2));
-
-  // expression template, no evaluation here
-  const auto len = crossProduct.rowwise ().norm ();
-
-  Index index;
-  const Scalar length = len.maxCoeff (&index);  // <- first evaluation
-  return EigenVector<Vector, Scalar> {crossProduct.row (index) / length,
-                                      length};
-}
-}  // namespace detail
-}  // namespace pcl
-
 //////////////////////////////////////////////////////////////////////////////////////////
 template <typename Matrix, typename Vector> inline void
 pcl::eigen33 (const Matrix& mat, typename Matrix::Scalar& eigenvalue, Vector& eigenvector)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   // Scale the matrix so its entries are in [-1,1].  The scaling is applied
   // only when at least one matrix entry has magnitude larger than 1.
 
@@ -307,14 +267,27 @@ pcl::eigen33 (const Matrix& mat, typename Matrix::Scalar& eigenvalue, Vector& ei
 
   scaledMat.diagonal ().array () -= eigenvalues (0);
 
-  eigenvector = detail::getLargest3x3Eigenvector<Vector> (scaledMat).vector;
+  Vector vec1 = scaledMat.row (0).cross (scaledMat.row (1));
+  Vector vec2 = scaledMat.row (0).cross (scaledMat.row (2));
+  Vector vec3 = scaledMat.row (1).cross (scaledMat.row (2));
+
+  Scalar len1 = vec1.squaredNorm ();
+  Scalar len2 = vec2.squaredNorm ();
+  Scalar len3 = vec3.squaredNorm ();
+
+  if (len1 >= len2 && len1 >= len3)
+    eigenvector = vec1 / std::sqrt (len1);
+  else if (len2 >= len1 && len2 >= len3)
+    eigenvector = vec2 / std::sqrt (len2);
+  else
+    eigenvector = vec3 / std::sqrt (len3);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 template <typename Matrix, typename Vector> inline void
 pcl::eigen33 (const Matrix& mat, Vector& evals)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   Scalar scale = mat.cwiseAbs ().maxCoeff ();
   if (scale <= std::numeric_limits < Scalar > ::min ())
     scale = Scalar (1.0);
@@ -328,7 +301,7 @@ pcl::eigen33 (const Matrix& mat, Vector& evals)
 template <typename Matrix, typename Vector> inline void
 pcl::eigen33 (const Matrix& mat, Matrix& evecs, Vector& evals)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   // Scale the matrix so its entries are in [-1,1].  The scaling is applied
   // only when at least one matrix entry has magnitude larger than 1.
 
@@ -353,7 +326,21 @@ pcl::eigen33 (const Matrix& mat, Matrix& evecs, Vector& evals)
     tmp = scaledMat;
     tmp.diagonal ().array () -= evals (2);
 
-    evecs.col (2) = detail::getLargest3x3Eigenvector<Vector> (tmp).vector;
+    Vector vec1 = tmp.row (0).cross (tmp.row (1));
+    Vector vec2 = tmp.row (0).cross (tmp.row (2));
+    Vector vec3 = tmp.row (1).cross (tmp.row (2));
+
+    Scalar len1 = vec1.squaredNorm ();
+    Scalar len2 = vec2.squaredNorm ();
+    Scalar len3 = vec3.squaredNorm ();
+
+    if (len1 >= len2 && len1 >= len3)
+      evecs.col (2) = vec1 / std::sqrt (len1);
+    else if (len2 >= len1 && len2 >= len3)
+      evecs.col (2) = vec2 / std::sqrt (len2);
+    else
+      evecs.col (2) = vec3 / std::sqrt (len3);
+
     evecs.col (1) = evecs.col (2).unitOrthogonal ();
     evecs.col (0) = evecs.col (1).cross (evecs.col (2));
   }
@@ -364,32 +351,130 @@ pcl::eigen33 (const Matrix& mat, Matrix& evecs, Vector& evals)
     tmp = scaledMat;
     tmp.diagonal ().array () -= evals (0);
 
-    evecs.col (0) = detail::getLargest3x3Eigenvector<Vector> (tmp).vector;
+    Vector vec1 = tmp.row (0).cross (tmp.row (1));
+    Vector vec2 = tmp.row (0).cross (tmp.row (2));
+    Vector vec3 = tmp.row (1).cross (tmp.row (2));
+
+    Scalar len1 = vec1.squaredNorm ();
+    Scalar len2 = vec2.squaredNorm ();
+    Scalar len3 = vec3.squaredNorm ();
+
+    if (len1 >= len2 && len1 >= len3)
+      evecs.col (0) = vec1 / std::sqrt (len1);
+    else if (len2 >= len1 && len2 >= len3)
+      evecs.col (0) = vec2 / std::sqrt (len2);
+    else
+      evecs.col (0) = vec3 / std::sqrt (len3);
+
     evecs.col (1) = evecs.col (0).unitOrthogonal ();
     evecs.col (2) = evecs.col (0).cross (evecs.col (1));
   }
   else
   {
-    std::array<Scalar, 3> eigenVecLen;
+    Matrix tmp;
+    tmp = scaledMat;
+    tmp.diagonal ().array () -= evals (2);
 
-    for (int i = 0; i < 3; ++i)
+    Vector vec1 = tmp.row (0).cross (tmp.row (1));
+    Vector vec2 = tmp.row (0).cross (tmp.row (2));
+    Vector vec3 = tmp.row (1).cross (tmp.row (2));
+
+    Scalar len1 = vec1.squaredNorm ();
+    Scalar len2 = vec2.squaredNorm ();
+    Scalar len3 = vec3.squaredNorm ();
+#ifdef _WIN32
+    Scalar *mmax = new Scalar[3];
+#else
+    Scalar mmax[3];
+#endif
+    unsigned int min_el = 2;
+    unsigned int max_el = 2;
+    if (len1 >= len2 && len1 >= len3)
     {
-      Matrix tmp = scaledMat;
-      tmp.diagonal ().array () -= evals (i);
-      const auto vec_len = detail::getLargest3x3Eigenvector<Vector> (tmp);
-      evecs.col (i) = vec_len.vector;
-      eigenVecLen[i] = vec_len.length;
+      mmax[2] = len1;
+      evecs.col (2) = vec1 / std::sqrt (len1);
+    }
+    else if (len2 >= len1 && len2 >= len3)
+    {
+      mmax[2] = len2;
+      evecs.col (2) = vec2 / std::sqrt (len2);
+    }
+    else
+    {
+      mmax[2] = len3;
+      evecs.col (2) = vec3 / std::sqrt (len3);
     }
 
-    // @TODO: might be redundant or over-complicated as per @SergioRAgostinho
-    // see: https://github.com/PointCloudLibrary/pcl/pull/3441#discussion_r341024181
-    const auto minmax_it = std::minmax_element (eigenVecLen.cbegin (), eigenVecLen.cend ());
-    int min_idx = std::distance (eigenVecLen.cbegin (), minmax_it.first);
-    int max_idx = std::distance (eigenVecLen.cbegin (), minmax_it.second);
-    int mid_idx = 3 - min_idx - max_idx;
+    tmp = scaledMat;
+    tmp.diagonal ().array () -= evals (1);
 
-    evecs.col (min_idx) = evecs.col ( (min_idx + 1) % 3).cross (evecs.col ( (min_idx + 2) % 3)).normalized ();
-    evecs.col (mid_idx) = evecs.col ( (mid_idx + 1) % 3).cross (evecs.col ( (mid_idx + 2) % 3)).normalized ();
+    vec1 = tmp.row (0).cross (tmp.row (1));
+    vec2 = tmp.row (0).cross (tmp.row (2));
+    vec3 = tmp.row (1).cross (tmp.row (2));
+
+    len1 = vec1.squaredNorm ();
+    len2 = vec2.squaredNorm ();
+    len3 = vec3.squaredNorm ();
+    if (len1 >= len2 && len1 >= len3)
+    {
+      mmax[1] = len1;
+      evecs.col (1) = vec1 / std::sqrt (len1);
+      min_el = len1 <= mmax[min_el] ? 1 : min_el;
+      max_el = len1 > mmax[max_el] ? 1 : max_el;
+    }
+    else if (len2 >= len1 && len2 >= len3)
+    {
+      mmax[1] = len2;
+      evecs.col (1) = vec2 / std::sqrt (len2);
+      min_el = len2 <= mmax[min_el] ? 1 : min_el;
+      max_el = len2 > mmax[max_el] ? 1 : max_el;
+    }
+    else
+    {
+      mmax[1] = len3;
+      evecs.col (1) = vec3 / std::sqrt (len3);
+      min_el = len3 <= mmax[min_el] ? 1 : min_el;
+      max_el = len3 > mmax[max_el] ? 1 : max_el;
+    }
+
+    tmp = scaledMat;
+    tmp.diagonal ().array () -= evals (0);
+
+    vec1 = tmp.row (0).cross (tmp.row (1));
+    vec2 = tmp.row (0).cross (tmp.row (2));
+    vec3 = tmp.row (1).cross (tmp.row (2));
+
+    len1 = vec1.squaredNorm ();
+    len2 = vec2.squaredNorm ();
+    len3 = vec3.squaredNorm ();
+    if (len1 >= len2 && len1 >= len3)
+    {
+      mmax[0] = len1;
+      evecs.col (0) = vec1 / std::sqrt (len1);
+      min_el = len3 <= mmax[min_el] ? 0 : min_el;
+      max_el = len3 > mmax[max_el] ? 0 : max_el;
+    }
+    else if (len2 >= len1 && len2 >= len3)
+    {
+      mmax[0] = len2;
+      evecs.col (0) = vec2 / std::sqrt (len2);
+      min_el = len3 <= mmax[min_el] ? 0 : min_el;
+      max_el = len3 > mmax[max_el] ? 0 : max_el;
+    }
+    else
+    {
+      mmax[0] = len3;
+      evecs.col (0) = vec3 / std::sqrt (len3);
+      min_el = len3 <= mmax[min_el] ? 0 : min_el;
+      max_el = len3 > mmax[max_el] ? 0 : max_el;
+    }
+
+    unsigned mid_el = 3 - min_el - max_el;
+    evecs.col (min_el) = evecs.col ( (min_el + 1) % 3).cross (evecs.col ( (min_el + 2) % 3)).normalized ();
+    evecs.col (mid_el) = evecs.col ( (mid_el + 1) % 3).cross (evecs.col ( (mid_el + 2) % 3)).normalized ();
+#ifdef _WIN32
+    delete [] mmax;
+#endif
   }
   // Rescale back to the original size.
   evals *= scale;
@@ -399,7 +484,7 @@ pcl::eigen33 (const Matrix& mat, Matrix& evecs, Vector& evals)
 template <typename Matrix> inline typename Matrix::Scalar
 pcl::invert2x2 (const Matrix& matrix, Matrix& inverse)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   Scalar det = matrix.coeff (0) * matrix.coeff (3) - matrix.coeff (1) * matrix.coeff (2);
 
   if (det != 0)
@@ -418,7 +503,7 @@ pcl::invert2x2 (const Matrix& matrix, Matrix& inverse)
 template <typename Matrix> inline typename Matrix::Scalar
 pcl::invert3x3SymMatrix (const Matrix& matrix, Matrix& inverse)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
   // elements
   // a b c
   // b d e
@@ -453,7 +538,7 @@ pcl::invert3x3SymMatrix (const Matrix& matrix, Matrix& inverse)
 template <typename Matrix> inline typename Matrix::Scalar
 pcl::invert3x3Matrix (const Matrix& matrix, Matrix& inverse)
 {
-  using Scalar = typename Matrix::Scalar;
+  typedef typename Matrix::Scalar Scalar;
 
   //| a b c |-1             |   ie-hf    hc-ib   fb-ec  |
   //| d e f |    =  1/det * |   gf-id    ia-gc   dc-fa  |
@@ -578,9 +663,9 @@ pcl::getTransformationFromTwoUnitVectorsAndOrigin (const Eigen::Vector3f& y_dire
 template <typename Scalar> void
 pcl::getEulerAngles (const Eigen::Transform<Scalar, 3, Eigen::Affine> &t, Scalar &roll, Scalar &pitch, Scalar &yaw)
 {
-  roll = std::atan2 (t (2, 1), t (2, 2));
+  roll = atan2 (t (2, 1), t (2, 2));
   pitch = asin (-t (2, 0));
-  yaw = std::atan2 (t (1, 0), t (0, 0));
+  yaw = atan2 (t (1, 0), t (0, 0));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -592,9 +677,9 @@ pcl::getTranslationAndEulerAngles (const Eigen::Transform<Scalar, 3, Eigen::Affi
   x = t (0, 3);
   y = t (1, 3);
   z = t (2, 3);
-  roll = std::atan2 (t (2, 1), t (2, 2));
+  roll = atan2 (t (2, 1), t (2, 2));
   pitch = asin (-t (2, 0));
-  yaw = std::atan2 (t (1, 0), t (0, 0));
+  yaw = atan2 (t (1, 0), t (0, 0));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -603,8 +688,8 @@ pcl::getTransformation (Scalar x, Scalar y, Scalar z,
                         Scalar roll, Scalar pitch, Scalar yaw, 
                         Eigen::Transform<Scalar, 3, Eigen::Affine> &t)
 {
-  Scalar A = std::cos (yaw),  B = sin (yaw),  C  = std::cos (pitch), D  = sin (pitch),
-         E = std::cos (roll), F = sin (roll), DE = D*E,         DF = D*F;
+  Scalar A = cos (yaw),  B = sin (yaw),  C  = cos (pitch), D  = sin (pitch),
+         E = cos (roll), F = sin (roll), DE = D*E,         DF = D*F;
 
   t (0, 0) = A*C;  t (0, 1) = A*DF - B*E;  t (0, 2) = B*F + A*DE;  t (0, 3) = x;
   t (1, 0) = B*C;  t (1, 1) = A*E + B*DF;  t (1, 2) = B*DE - A*F;  t (1, 3) = y;
@@ -616,11 +701,11 @@ pcl::getTransformation (Scalar x, Scalar y, Scalar z,
 template <typename Derived> void 
 pcl::saveBinary (const Eigen::MatrixBase<Derived>& matrix, std::ostream& file)
 {
-  std::uint32_t rows = static_cast<std::uint32_t> (matrix.rows ()), cols = static_cast<std::uint32_t> (matrix.cols ());
+  uint32_t rows = static_cast<uint32_t> (matrix.rows ()), cols = static_cast<uint32_t> (matrix.cols ());
   file.write (reinterpret_cast<char*> (&rows), sizeof (rows));
   file.write (reinterpret_cast<char*> (&cols), sizeof (cols));
-  for (std::uint32_t i = 0; i < rows; ++i)
-    for (std::uint32_t j = 0; j < cols; ++j)
+  for (uint32_t i = 0; i < rows; ++i)
+    for (uint32_t j = 0; j < cols; ++j)
     {
       typename Derived::Scalar tmp = matrix(i,j);
       file.write (reinterpret_cast<const char*> (&tmp), sizeof (tmp));
@@ -633,14 +718,14 @@ pcl::loadBinary (Eigen::MatrixBase<Derived> const & matrix_, std::istream& file)
 {
   Eigen::MatrixBase<Derived> &matrix = const_cast<Eigen::MatrixBase<Derived> &> (matrix_);
 
-  std::uint32_t rows, cols;
+  uint32_t rows, cols;
   file.read (reinterpret_cast<char*> (&rows), sizeof (rows));
   file.read (reinterpret_cast<char*> (&cols), sizeof (cols));
   if (matrix.rows () != static_cast<int>(rows) || matrix.cols () != static_cast<int>(cols))
     matrix.derived().resize(rows, cols);
   
-  for (std::uint32_t i = 0; i < rows; ++i)
-    for (std::uint32_t j = 0; j < cols; ++j)
+  for (uint32_t i = 0; i < rows; ++i)
+    for (uint32_t j = 0; j < cols; ++j)
     {
       typename Derived::Scalar tmp;
       file.read (reinterpret_cast<char*> (&tmp), sizeof (tmp));
@@ -656,20 +741,20 @@ pcl::umeyama (const Eigen::MatrixBase<Derived>& src, const Eigen::MatrixBase<Oth
 #if EIGEN_VERSION_AT_LEAST (3, 3, 0)
   return Eigen::umeyama (src, dst, with_scaling);
 #else
-  using TransformationMatrixType = typename Eigen::internal::umeyama_transform_matrix_type<Derived, OtherDerived>::type;
-  using Scalar = typename Eigen::internal::traits<TransformationMatrixType>::Scalar;
-  using RealScalar = typename Eigen::NumTraits<Scalar>::Real;
-  using Index = typename Derived::Index;
+  typedef typename Eigen::internal::umeyama_transform_matrix_type<Derived, OtherDerived>::type TransformationMatrixType;
+  typedef typename Eigen::internal::traits<TransformationMatrixType>::Scalar Scalar;
+  typedef typename Eigen::NumTraits<Scalar>::Real RealScalar;
+  typedef typename Derived::Index Index;
 
-  static_assert (!Eigen::NumTraits<Scalar>::IsComplex, "Numeric type must be real.");
-  static_assert ((Eigen::internal::is_same<Scalar, typename Eigen::internal::traits<OtherDerived>::Scalar>::value),
-    "You mixed different numeric types. You need to use the cast method of matrixbase to cast numeric types explicitly.");
+  EIGEN_STATIC_ASSERT (!Eigen::NumTraits<Scalar>::IsComplex, NUMERIC_TYPE_MUST_BE_REAL)
+  EIGEN_STATIC_ASSERT ((Eigen::internal::is_same<Scalar, typename Eigen::internal::traits<OtherDerived>::Scalar>::value),
+    YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY)
 
   enum { Dimension = PCL_EIGEN_SIZE_MIN_PREFER_DYNAMIC (Derived::RowsAtCompileTime, OtherDerived::RowsAtCompileTime) };
 
-  using VectorType = Eigen::Matrix<Scalar, Dimension, 1>;
-  using MatrixType = Eigen::Matrix<Scalar, Dimension, Dimension>;
-  using RowMajorMatrixType = typename Eigen::internal::plain_matrix_type_row_major<Derived>::type;
+  typedef Eigen::Matrix<Scalar, Dimension, 1> VectorType;
+  typedef Eigen::Matrix<Scalar, Dimension, Dimension> MatrixType;
+  typedef typename Eigen::internal::plain_matrix_type_row_major<Derived>::type RowMajorMatrixType;
 
   const Index m = src.rows (); // dimension
   const Index n = src.cols (); // number of measurements
@@ -774,7 +859,8 @@ pcl::transformPlane (const pcl::ModelCoefficients::Ptr plane_in,
   Eigen::Matrix < Scalar, 4, 1 > v_plane_in (values.data ());
   pcl::transformPlane (v_plane_in, v_plane_in, transformation);
   plane_out->values.resize (4);
-  std::copy_n(v_plane_in.data (), 4, plane_in->values.begin ());
+  for (int i = 0; i < 4; i++)
+    plane_in->values[i] = v_plane_in[i];
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

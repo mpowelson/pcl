@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_PATCH_H
+#define NURBS_FITTING_PATCH_H
 
 #include <pcl/pcl_exports.h>
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
@@ -105,9 +106,6 @@ namespace pcl
        * \param[in] z vector defining front face of surface.
        */
       FittingSurface (int order, NurbsDataSurface *data, Eigen::Vector3d z = Eigen::Vector3d (0.0, 0.0, 1.0));
-
-      /** \brief Default virtual destructor */
-      virtual ~FittingSurface() = default;
 
       /** \brief Refines surface by inserting a knot in the middle of each element.
        * \param[in] dim dimension of refinement (0,1)
@@ -314,3 +312,5 @@ namespace pcl
 
   } // namespace on_nurbs
 } // namespace pcl
+
+#endif    // PATCHFITTING_H_

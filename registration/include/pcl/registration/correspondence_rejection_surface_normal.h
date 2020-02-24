@@ -36,8 +36,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_SURFACE_NORMAL_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_SURFACE_NORMAL_H_
 
 #include <pcl/registration/correspondence_rejection.h>
 #include <pcl/point_cloud.h>
@@ -64,12 +64,13 @@ namespace pcl
       using CorrespondenceRejector::getClassName;
 
       public:
-        using Ptr = shared_ptr<CorrespondenceRejectorSurfaceNormal>;
-        using ConstPtr = shared_ptr<const CorrespondenceRejectorSurfaceNormal>;
+        typedef boost::shared_ptr<CorrespondenceRejectorSurfaceNormal> Ptr;
+        typedef boost::shared_ptr<const CorrespondenceRejectorSurfaceNormal> ConstPtr;
 
         /** \brief Empty constructor. Sets the threshold to 1.0. */
         CorrespondenceRejectorSurfaceNormal () 
           : threshold_ (1.0)
+          , data_container_ ()
         {
           rejection_name_ = "CorrespondenceRejectorSurfaceNormal";
         }
@@ -80,7 +81,7 @@ namespace pcl
           */
         void 
         getRemainingCorrespondences (const pcl::Correspondences& original_correspondences, 
-                                     pcl::Correspondences& remaining_correspondences) override;
+                                     pcl::Correspondences& remaining_correspondences);
 
         /** \brief Set the thresholding angle between the normals for correspondence rejection. 
           * \param[in] threshold cosine of the thresholding angle between the normals for rejection
@@ -162,8 +163,8 @@ namespace pcl
           * confident that the tree will be set correctly.
           */
         template <typename PointT> inline void
-        setSearchMethodTarget (const typename pcl::search::KdTree<PointT>::Ptr &tree,
-                               bool force_no_recompute = false)
+        setSearchMethodTarget (const boost::shared_ptr<pcl::search::KdTree<PointT> > &tree, 
+                               bool force_no_recompute = false) 
         { 
           boost::static_pointer_cast< DataContainer<PointT> > 
             (data_container_)->setSearchMethodTarget (tree, force_no_recompute );
@@ -236,12 +237,12 @@ namespace pcl
 
         /** \brief See if this rejector requires source points */
         bool
-        requiresSourcePoints () const override
+        requiresSourcePoints () const
         { return (true); }
 
         /** \brief Blob method for setting the source cloud */
         void
-        setSourcePoints (pcl::PCLPointCloud2::ConstPtr cloud2) override
+        setSourcePoints (pcl::PCLPointCloud2::ConstPtr cloud2)
         { 
           if (!data_container_)
             initializeDataContainer<PointXYZ, Normal> ();
@@ -252,12 +253,12 @@ namespace pcl
         
         /** \brief See if this rejector requires a target cloud */
         bool
-        requiresTargetPoints () const override
+        requiresTargetPoints () const
         { return (true); }
 
         /** \brief Method for setting the target cloud */
         void
-        setTargetPoints (pcl::PCLPointCloud2::ConstPtr cloud2) override
+        setTargetPoints (pcl::PCLPointCloud2::ConstPtr cloud2)
         { 
           if (!data_container_)
             initializeDataContainer<PointXYZ, Normal> ();
@@ -268,12 +269,12 @@ namespace pcl
         
         /** \brief See if this rejector requires source normals */
         bool
-        requiresSourceNormals () const override
+        requiresSourceNormals () const
         { return (true); }
 
         /** \brief Blob method for setting the source normals */
         void
-        setSourceNormals (pcl::PCLPointCloud2::ConstPtr cloud2) override
+        setSourceNormals (pcl::PCLPointCloud2::ConstPtr cloud2)
         { 
           if (!data_container_)
             initializeDataContainer<PointXYZ, Normal> ();
@@ -284,12 +285,12 @@ namespace pcl
         
         /** \brief See if this rejector requires target normals*/
         bool
-        requiresTargetNormals () const override
+        requiresTargetNormals () const
         { return (true); }
 
         /** \brief Method for setting the target normals */
         void
-        setTargetNormals (pcl::PCLPointCloud2::ConstPtr cloud2) override
+        setTargetNormals (pcl::PCLPointCloud2::ConstPtr cloud2)
         { 
           if (!data_container_)
             initializeDataContainer<PointXYZ, Normal> ();
@@ -304,7 +305,7 @@ namespace pcl
           * \param[out] correspondences the set of resultant correspondences.
           */
         inline void 
-        applyRejection (pcl::Correspondences &correspondences) override
+        applyRejection (pcl::Correspondences &correspondences)
         {
           getRemainingCorrespondences (*input_correspondences_, correspondences);
         }
@@ -312,7 +313,7 @@ namespace pcl
         /** \brief The median distance threshold between two correspondent points in source <-> target. */
         double threshold_;
 
-        using DataContainerPtr = DataContainerInterface::Ptr;
+        typedef boost::shared_ptr<DataContainerInterface> DataContainerPtr;
         /** \brief A pointer to the DataContainer object containing the input and target point clouds */
         DataContainerPtr data_container_;
     };
@@ -320,3 +321,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_rejection_surface_normal.hpp>
+
+#endif

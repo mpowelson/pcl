@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_INTERSECTIONS_H_
+#define PCL_INTERSECTIONS_H_
 
 #include <pcl/ModelCoefficients.h>
 #include <pcl/common/common.h>
@@ -155,3 +156,5 @@ namespace pcl
 /*@}*/
 
 #include <pcl/common/impl/intersections.hpp>
+
+#endif  //#ifndef PCL_INTERSECTIONS_H_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_OUTOFCORE_GEOMETRY_H_
+#define PCL_OUTOFCORE_GEOMETRY_H_
 
 // C++
 #include <string>
@@ -23,7 +24,7 @@ protected:
 
 public:
 
-  
+  virtual
   ~Geometry () { }
 
 public:
@@ -34,7 +35,9 @@ public:
   getActor () const
   {
     std::cout << "Get Geometry Actor" << std::endl;
-    return nullptr;
+    return NULL;
   }
 
 };
+
+#endif

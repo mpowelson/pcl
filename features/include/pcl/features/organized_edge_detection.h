@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_ORGANIZED_EDGE_DETECTION_H_
+#define PCL_FEATURES_ORGANIZED_EDGE_DETECTION_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/PointIndices.h>
@@ -56,17 +57,17 @@ namespace pcl
   template <typename PointT, typename PointLT>
   class OrganizedEdgeBase : public PCLBase<PointT>
   {
-    using PointCloud = pcl::PointCloud<PointT>;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename pcl::PointCloud<PointT> PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
       
-    using PointCloudL = pcl::PointCloud<PointLT>;
-    using PointCloudLPtr = typename PointCloudL::Ptr;
-    using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+    typedef typename pcl::PointCloud<PointLT> PointCloudL;
+    typedef typename PointCloudL::Ptr PointCloudLPtr;
+    typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
     public:
-      using Ptr = shared_ptr<OrganizedEdgeBase<PointT, PointLT> >;
-      using ConstPtr = shared_ptr<const OrganizedEdgeBase<PointT, PointLT> >;
+      typedef boost::shared_ptr<OrganizedEdgeBase<PointT, PointLT> > Ptr;
+      typedef boost::shared_ptr<const OrganizedEdgeBase<PointT, PointLT> > ConstPtr;
       using PCLBase<PointT>::input_;
       using PCLBase<PointT>::indices_;
       using PCLBase<PointT>::initCompute;
@@ -81,7 +82,7 @@ namespace pcl
       }
 
       /** \brief Destructor for OrganizedEdgeBase */
-      
+      virtual
       ~OrganizedEdgeBase ()
       {
       }
@@ -181,13 +182,13 @@ namespace pcl
   template <typename PointT, typename PointLT>
   class OrganizedEdgeFromRGB : virtual public OrganizedEdgeBase<PointT, PointLT>
   {
-    using PointCloud = pcl::PointCloud<PointT>;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename pcl::PointCloud<PointT> PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
       
-    using PointCloudL = pcl::PointCloud<PointLT>;
-    using PointCloudLPtr = typename PointCloudL::Ptr;
-    using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+    typedef typename pcl::PointCloud<PointLT> PointCloudL;
+    typedef typename PointCloudL::Ptr PointCloudLPtr;
+    typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
     public:
       using OrganizedEdgeBase<PointT, PointLT>::input_;
@@ -210,7 +211,7 @@ namespace pcl
       }
 
       /** \brief Destructor for OrganizedEdgeFromRGB */
-      
+      virtual
       ~OrganizedEdgeFromRGB ()
       {
       }
@@ -267,17 +268,17 @@ namespace pcl
   template <typename PointT, typename PointNT, typename PointLT>
   class OrganizedEdgeFromNormals : virtual public OrganizedEdgeBase<PointT, PointLT>
   {
-    using PointCloud = pcl::PointCloud<PointT>;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename pcl::PointCloud<PointT> PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
       
-    using PointCloudN = pcl::PointCloud<PointNT>;
-    using PointCloudNPtr = typename PointCloudN::Ptr;
-    using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+    typedef typename pcl::PointCloud<PointNT> PointCloudN;
+    typedef typename PointCloudN::Ptr PointCloudNPtr;
+    typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-    using PointCloudL = pcl::PointCloud<PointLT>;
-    using PointCloudLPtr = typename PointCloudL::Ptr;
-    using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+    typedef typename pcl::PointCloud<PointLT> PointCloudL;
+    typedef typename PointCloudL::Ptr PointCloudLPtr;
+    typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
     public:
       using OrganizedEdgeBase<PointT, PointLT>::input_;
@@ -301,7 +302,7 @@ namespace pcl
       }
 
       /** \brief Destructor for OrganizedEdgeFromNormals */
-      
+      virtual
       ~OrganizedEdgeFromNormals ()
       {
       }
@@ -377,17 +378,17 @@ namespace pcl
   template <typename PointT, typename PointNT, typename PointLT>
   class OrganizedEdgeFromRGBNormals : public OrganizedEdgeFromRGB<PointT, PointLT>, public OrganizedEdgeFromNormals<PointT, PointNT, PointLT>
   {
-    using PointCloud = pcl::PointCloud<PointT>;
-    using PointCloudPtr = typename PointCloud::Ptr;
-    using PointCloudConstPtr = typename PointCloud::ConstPtr;
+    typedef typename pcl::PointCloud<PointT> PointCloud;
+    typedef typename PointCloud::Ptr PointCloudPtr;
+    typedef typename PointCloud::ConstPtr PointCloudConstPtr;
       
-    using PointCloudN = pcl::PointCloud<PointNT>;
-    using PointCloudNPtr = typename PointCloudN::Ptr;
-    using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+    typedef typename pcl::PointCloud<PointNT> PointCloudN;
+    typedef typename PointCloudN::Ptr PointCloudNPtr;
+    typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-    using PointCloudL = pcl::PointCloud<PointLT>;
-    using PointCloudLPtr = typename PointCloudL::Ptr;
-    using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+    typedef typename pcl::PointCloud<PointLT> PointCloudL;
+    typedef typename PointCloudL::Ptr PointCloudLPtr;
+    typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
     public:
       using OrganizedEdgeFromNormals<PointT, PointNT, PointLT>::input_;
@@ -410,7 +411,7 @@ namespace pcl
       }
 
       /** \brief Destructor for OrganizedEdgeFromRGBNormals */
-      
+      virtual
       ~OrganizedEdgeFromRGBNormals ()
       {
       }
@@ -427,3 +428,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/organized_edge_detection.hpp>
 #endif
+
+#endif //#ifndef PCL_FEATURES_ORGANIZED_EDGE_DETECTION_H_

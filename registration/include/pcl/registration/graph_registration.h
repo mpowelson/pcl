@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GRAPH_REGISTRATION_H_
+#define PCL_GRAPH_REGISTRATION_H_
 
 #include <pcl/point_cloud.h>
 #include <pcl/registration/graph_handler.h>
@@ -53,10 +54,10 @@ namespace pcl
   class GraphRegistration
   {
     public:
-      using GraphHandler = pcl::registration::GraphHandler<GraphT>;
-      using GraphHandlerPtr = typename pcl::registration::GraphHandler<GraphT>::Ptr;
-      using GraphHandlerConstPtr = typename pcl::registration::GraphHandler<GraphT>::ConstPtr;
-      using GraphHandlerVertex = typename pcl::registration::GraphHandler<GraphT>::Vertex;
+      typedef pcl::registration::GraphHandler<GraphT> GraphHandler;
+      typedef typename pcl::registration::GraphHandler<GraphT>::Ptr GraphHandlerPtr;
+      typedef typename pcl::registration::GraphHandler<GraphT>::ConstPtr GraphHandlerConstPtr;
+      typedef typename pcl::registration::GraphHandler<GraphT>::Vertex GraphHandlerVertex;
 
       /** \brief Empty constructor */
       GraphRegistration ()  : graph_handler_ (new GraphHandler),
@@ -122,3 +123,5 @@ namespace pcl
       computeRegistration () = 0;
   };
 }
+
+#endif // PCL_GRAPH_REGISTRATION_H_

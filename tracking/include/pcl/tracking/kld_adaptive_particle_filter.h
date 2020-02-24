@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_KLD_ADAPTIVE_PARTICLE_FILTER_H_
+#define PCL_TRACKING_KLD_ADAPTIVE_PARTICLE_FILTER_H_
 
 #include <pcl/tracking/tracking.h>
 #include <pcl/tracking/particle_filter.h>
@@ -41,26 +42,23 @@ namespace pcl
       using ParticleFilterTracker<PointInT, StateT>::representative_state_;
       using ParticleFilterTracker<PointInT, StateT>::sampleWithReplacement;
 
-      using BaseClass = Tracker<PointInT, StateT>;
+      typedef Tracker<PointInT, StateT> BaseClass;
+      
+      typedef typename Tracker<PointInT, StateT>::PointCloudIn PointCloudIn;
+      typedef typename PointCloudIn::Ptr PointCloudInPtr;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
-      using Ptr = shared_ptr<KLDAdaptiveParticleFilterTracker<PointInT, StateT>>;
-      using ConstPtr = shared_ptr<const KLDAdaptiveParticleFilterTracker<PointInT, StateT>>;
+      typedef typename Tracker<PointInT, StateT>::PointCloudState PointCloudState;
+      typedef typename PointCloudState::Ptr PointCloudStatePtr;
+      typedef typename PointCloudState::ConstPtr PointCloudStateConstPtr;
 
-      using PointCloudIn = typename Tracker<PointInT, StateT>::PointCloudIn;
-      using PointCloudInPtr = typename PointCloudIn::Ptr;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef PointCoherence<PointInT> Coherence;
+      typedef boost::shared_ptr< Coherence > CoherencePtr;
+      typedef boost::shared_ptr< const Coherence > CoherenceConstPtr;
 
-      using PointCloudState = typename Tracker<PointInT, StateT>::PointCloudState;
-      using PointCloudStatePtr = typename PointCloudState::Ptr;
-      using PointCloudStateConstPtr = typename PointCloudState::ConstPtr;
-
-      using Coherence = PointCoherence<PointInT>;
-      using CoherencePtr = typename Coherence::Ptr;
-      using CoherenceConstPtr = typename Coherence::ConstPtr;
-
-      using CloudCoherence = PointCloudCoherence<PointInT>;
-      using CloudCoherencePtr = typename CloudCoherence::Ptr;
-      using CloudCoherenceConstPtr = typename CloudCoherence::ConstPtr;
+      typedef PointCloudCoherence<PointInT> CloudCoherence;
+      typedef boost::shared_ptr< CloudCoherence > CloudCoherencePtr;
+      typedef boost::shared_ptr< const CloudCoherence > CloudCoherenceConstPtr;
 
       /** \brief Empty constructor. */
       KLDAdaptiveParticleFilterTracker ()
@@ -112,7 +110,7 @@ namespace pcl
         * \param b index of the bin
         */
       virtual bool 
-      equalBin (const std::vector<int> &a, const std::vector<int> &b)
+      equalBin (std::vector<int> a, std::vector<int> b)
       {
         int dimension = StateT::stateDimension ();
         for (int i = 0; i < dimension; i++)
@@ -136,6 +134,7 @@ namespace pcl
                                0.011630447319,-9.279453341e-3, 5.353579108e-3,
                                -2.141268741e-3, 5.35310549e-4,  0.999936657524};
         double w, y, z;
+        int i;
 
         if (u == 0.)
           return (0.5);
@@ -150,7 +149,7 @@ namespace pcl
         {
           w = y * y;
           z = a[0];
-          for (int i = 1; i < 9; i++)
+          for (i = 1; i < 9; i++)
             z = z * w + a[i];
           z *= (y * 2.0);
         }
@@ -158,7 +157,7 @@ namespace pcl
         {
           y -= 2.0;
           z = b[0];
-          for (int i = 1; i < 15; i++)
+          for (i = 1; i < 15; i++)
             z = z * y + b[i];
         }
 
@@ -180,22 +179,22 @@ namespace pcl
 
       /** \brief insert a bin into the set of the bins. if that bin is already registered,
           return false. if not, return true.
-        * \param new_bin a bin to be inserted.
-        * \param bins a set of the bins
+        * \param bin a bin to be inserted.
+        * \param B a set of the bins
         */
       virtual bool 
-      insertIntoBins (std::vector<int> &&new_bin, std::vector<std::vector<int> > &bins);
+      insertIntoBins (std::vector<int> bin, std::vector<std::vector<int> > &B);
             
       /** \brief This method should get called before starting the actual computation. */
-      bool 
-      initCompute () override;
+      virtual bool 
+      initCompute ();
 
       /** \brief resampling phase of particle filter method.
           sampling the particles according to the weights calculated in weight method.
           in particular, "sample with replacement" is archieved by walker's alias method.
         */
-      void 
-      resample () override;
+      virtual void 
+      resample ();
 
       /** \brief the maximum number of the particles. */
       unsigned int maximum_particle_number_;
@@ -214,4 +213,6 @@ namespace pcl
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/kld_adaptive_particle_filter.hpp>
+#endif
+
 #endif

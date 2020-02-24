@@ -35,13 +35,16 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_KINFU_TSDF_RAYCASTER_H_
+#define PCL_KINFU_TSDF_RAYCASTER_H_
+
 
 #include <pcl/pcl_macros.h>
 #include <pcl/point_types.h>
 #include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/kinfu/pixel_rgb.h>
-#include <pcl/make_shared.h>
+#include <boost/shared_ptr.hpp>
 #include <Eigen/Geometry>
 
 namespace pcl
@@ -56,11 +59,10 @@ namespace pcl
     struct PCL_EXPORTS RayCaster
     {
     public:
-      using Ptr = shared_ptr<RayCaster>;
-      using ConstPtr = shared_ptr<const RayCaster>;
-      using MapArr = DeviceArray2D<float>;
-      using View = DeviceArray2D<PixelRGB>;
-      using Depth = DeviceArray2D<unsigned short>;     
+      typedef boost::shared_ptr<RayCaster> Ptr;
+      typedef DeviceArray2D<float> MapArr;
+      typedef DeviceArray2D<PixelRGB> View;
+      typedef DeviceArray2D<unsigned short> Depth;     
 
       /** \brief Image with height */ 
       const int cols, rows;      
@@ -140,11 +142,13 @@ namespace pcl
       Eigen::Vector3f volume_size_;
 
 public:
-  PCL_MAKE_ALIGNED_OPERATOR_NEW
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
-
+    
     /** \brief Converts from map representation to organized not-dence point cloud. */
     template<typename PointType>
     void convertMapToOranizedCloud(const RayCaster::MapArr& map, DeviceArray2D<PointType>& cloud);
   }
 }
+
+#endif /* PCL_KINFU_TSDF_RAYCASTER_H_ */

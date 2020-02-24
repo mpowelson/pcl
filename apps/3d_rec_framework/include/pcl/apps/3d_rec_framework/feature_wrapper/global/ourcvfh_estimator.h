@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_OURCVFH_ESTIMATOR_H_
+#define REC_FRAMEWORK_OURCVFH_ESTIMATOR_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/global/global_estimator.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/normal_estimator.h>
@@ -21,7 +22,7 @@ namespace pcl
       {
 
       protected:
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
         using GlobalEstimator<PointInT, FeatureT>::normal_estimator_;
         using GlobalEstimator<PointInT, FeatureT>::normals_;
         float eps_angle_threshold_;
@@ -78,9 +79,9 @@ namespace pcl
           trans = transforms_;
         }
 
-        void
+        virtual void
         estimate (PointInTPtr & in, PointInTPtr & processed, typename pcl::PointCloud<FeatureT>::CloudVectorType & signatures,
-                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids) override
+                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
         {
 
           valid_roll_transforms_.clear ();
@@ -130,7 +131,7 @@ namespace pcl
           /*normals_.reset(new pcl::PointCloud<pcl::Normal>);
            normal_estimator_->estimate (in, processed, normals_);*/
 
-          using OURCVFHEstimation = pcl::OURCVFHEstimation<PointInT, pcl::Normal, pcl::VFHSignature308>;
+          typedef typename pcl::OURCVFHEstimation<PointInT, pcl::Normal, pcl::VFHSignature308> OURCVFHEstimation;
           pcl::PointCloud<pcl::VFHSignature308> cvfh_signatures;
           typename pcl::search::KdTree<PointInT>::Ptr cvfh_tree (new pcl::search::KdTree<PointInT>);
 
@@ -165,13 +166,13 @@ namespace pcl
 
           //std::cout << "Res:" << normal_estimator_->mesh_resolution_ << " Radius normals:" << radius << " Cluster tolerance:" << cluster_tolerance_radius << " " << eps_angle_threshold_ << " " << curvature_threshold_ << std::endl;
 
-          for (const auto &point : cvfh_signatures.points)
+          for (size_t i = 0; i < cvfh_signatures.points.size (); i++)
           {
             pcl::PointCloud<FeatureT> vfh_signature;
             vfh_signature.points.resize (1);
             vfh_signature.width = vfh_signature.height = 1;
             for (int d = 0; d < 308; ++d)
-              vfh_signature.points[0].histogram[d] = point.histogram[d];
+              vfh_signature.points[0].histogram[d] = cvfh_signatures.points[i].histogram[d];
 
             signatures.push_back (vfh_signature);
           }
@@ -183,7 +184,7 @@ namespace pcl
         }
 
         bool
-        computedNormals () override
+        computedNormals ()
         {
           return true;
         }
@@ -196,3 +197,5 @@ namespace pcl
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_OURCVFH_ESTIMATOR_H_ */

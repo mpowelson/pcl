@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GEOMETRY_POLYGON_OPERATORS_H
+#define PCL_GEOMETRY_POLYGON_OPERATORS_H
 
 #include "planar_polygon.h"
 #include <pcl/point_cloud.h>
@@ -68,3 +69,4 @@ namespace pcl
 } // namespace pcl
 
 #include "impl/polygon_operations.hpp"
+#endif // PCL_GEOMETRY_POLYGON_OPERATORS_H=======

@@ -34,6 +34,14 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+    #define GTEST_USE_OWN_TR1_TUPLE 0
+#endif
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+    #define GTEST_USE_OWN_TR1_TUPLE 0
+#endif
+
 #include "gtest/gtest.h"
 
 #include <pcl/point_types.h>
@@ -47,7 +55,7 @@ using namespace std;
 using namespace pcl;
 using namespace pcl::gpu;
 
-using SpinImage = pcl::Histogram<153>;
+typedef pcl::Histogram<153> SpinImage;
 
 //TEST(PCL_FeaturesGPU, DISABLED_spinImages_rectangular)
 TEST(PCL_FeaturesGPU, spinImages_rectangular)
@@ -61,7 +69,7 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular)
 
 	const int min_beighbours = 15;
                    
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
     
     //uploading data to GPU
@@ -92,8 +100,8 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular)
     }
 
 	int c;
-    std::vector<SpinImage> downloaded;
-	std::vector<unsigned char> downloaded_mask;
+    vector<SpinImage> downloaded;
+	vector<unsigned char> downloaded_mask;
     spin_images_device.download(downloaded, c);
 	mask_device.download(downloaded_mask);
 
@@ -113,7 +121,7 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular)
 		se.compute (*spin_images);
 	}
 	
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
 		if(!downloaded_mask[i]) // less than min neighbours, so spinimage wasn't computed
 			continue;  
@@ -121,10 +129,10 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular)
         SpinImage& gpu = downloaded[i];
         SpinImage& cpu = spin_images->points[i];
         
-        std::size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -150,7 +158,7 @@ TEST(PCL_FeaturesGPU, spinImages_radial)
 
 	const int min_beighbours = 15;
                    
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
     
 
@@ -182,8 +190,8 @@ TEST(PCL_FeaturesGPU, spinImages_radial)
     }
 
 	int c;
-    std::vector<SpinImage> downloaded;
-	std::vector<unsigned char> downloaded_mask;
+    vector<SpinImage> downloaded;
+	vector<unsigned char> downloaded_mask;
     spin_images_device.download(downloaded, c);
 	mask_device.download(downloaded_mask);
 
@@ -203,7 +211,7 @@ TEST(PCL_FeaturesGPU, spinImages_radial)
 		se.compute (*spin_images);
 	}
 	
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
 		if(!downloaded_mask[i]) // less than min neighbours, so spinimage wasn't computed
 			continue;  
@@ -211,10 +219,10 @@ TEST(PCL_FeaturesGPU, spinImages_radial)
         SpinImage& gpu = downloaded[i];
         SpinImage& cpu = spin_images->points[i];
         
-        std::size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -240,7 +248,7 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular_angular)
 
 	const int min_beighbours = 15;
                    
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
     
 
@@ -272,8 +280,8 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular_angular)
     }
 
 	int c;
-    std::vector<SpinImage> downloaded;
-	std::vector<unsigned char> downloaded_mask;
+    vector<SpinImage> downloaded;
+	vector<unsigned char> downloaded_mask;
     spin_images_device.download(downloaded, c);
 	mask_device.download(downloaded_mask);
 
@@ -293,7 +301,7 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular_angular)
 		se.compute (*spin_images);
 	}
 	
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
 		if(!downloaded_mask[i]) // less than min neighbours, so spinimage wasn't computed
 			continue;  
@@ -301,10 +309,10 @@ TEST(PCL_FeaturesGPU, spinImages_rectangular_angular)
         SpinImage& gpu = downloaded[i];
         SpinImage& cpu = spin_images->points[i];
         
-        std::size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];
@@ -330,7 +338,7 @@ TEST(PCL_FeaturesGPU, spinImages_radial_angular)
 
 	const int min_beighbours = 15;
                    
-    std::vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
     
 
@@ -362,8 +370,8 @@ TEST(PCL_FeaturesGPU, spinImages_radial_angular)
     }
 
 	int c;
-    std::vector<SpinImage> downloaded;
-	std::vector<unsigned char> downloaded_mask;
+    vector<SpinImage> downloaded;
+	vector<unsigned char> downloaded_mask;
     spin_images_device.download(downloaded, c);
 	mask_device.download(downloaded_mask);
 
@@ -383,7 +391,7 @@ TEST(PCL_FeaturesGPU, spinImages_radial_angular)
 		se.compute (*spin_images);
 	}
 	
-    for(std::size_t i = 0; i < downloaded.size(); ++i)
+    for(size_t i = 0; i < downloaded.size(); ++i)
     {
 		if(!downloaded_mask[i]) // less than min neighbours, so spinimage wasn't computed
 			continue;  
@@ -391,10 +399,10 @@ TEST(PCL_FeaturesGPU, spinImages_radial_angular)
         SpinImage& gpu = downloaded[i];
         SpinImage& cpu = spin_images->points[i];
         
-        std::size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
+        size_t FSize = sizeof(SpinImage)/sizeof(gpu.histogram[0]);                                
         
         float norm = 0, norm_diff = 0;
-        for(std::size_t j = 0; j < FSize; ++j)
+        for(size_t j = 0; j < FSize; ++j)
         {
             norm_diff += (gpu.histogram[j] - cpu.histogram[j]) * (gpu.histogram[j] - cpu.histogram[j]);
             norm += cpu.histogram[j] * cpu.histogram[j];

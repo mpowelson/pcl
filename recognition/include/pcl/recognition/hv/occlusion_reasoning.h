@@ -34,7 +34,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_OCCLUSION_REASONING_H_
+#define PCL_RECOGNITION_OCCLUSION_REASONING_H_
 
 #include <pcl/common/common.h>
 #include <pcl/common/transforms.h>
@@ -82,7 +83,7 @@ namespace pcl
       indices_to_keep.resize (to_be_filtered->points.size ());
 
       int keep = 0;
-      for (std::size_t i = 0; i < to_be_filtered->points.size (); i++)
+      for (size_t i = 0; i < to_be_filtered->points.size (); i++)
       {
         float x = to_be_filtered->points[i].x;
         float y = to_be_filtered->points[i].y;
@@ -95,8 +96,8 @@ namespace pcl
           continue;
 
         //Check for invalid depth
-        if (!std::isfinite (organized_cloud->at (u, v).x) || !std::isfinite (organized_cloud->at (u, v).y)
-            || !std::isfinite (organized_cloud->at (u, v).z))
+        if (!pcl_isfinite (organized_cloud->at (u, v).x) || !pcl_isfinite (organized_cloud->at (u, v).y)
+            || !pcl_isfinite (organized_cloud->at (u, v).z))
           continue;
 
         float z_oc = organized_cloud->at (u, v).z;
@@ -126,7 +127,7 @@ namespace pcl
       indices_to_keep.resize (to_be_filtered->points.size ());
 
       int keep = 0;
-      for (std::size_t i = 0; i < to_be_filtered->points.size (); i++)
+      for (size_t i = 0; i < to_be_filtered->points.size (); i++)
       {
         float x = to_be_filtered->points[i].x;
         float y = to_be_filtered->points[i].y;
@@ -141,8 +142,8 @@ namespace pcl
         //Check for invalid depth
         if (check_invalid_depth)
         {
-          if (!std::isfinite (organized_cloud->at (u, v).x) || !std::isfinite (organized_cloud->at (u, v).y)
-              || !std::isfinite (organized_cloud->at (u, v).z))
+          if (!pcl_isfinite (organized_cloud->at (u, v).x) || !pcl_isfinite (organized_cloud->at (u, v).y)
+              || !pcl_isfinite (organized_cloud->at (u, v).z))
             continue;
         }
 
@@ -173,7 +174,7 @@ namespace pcl
       indices_to_keep.resize (to_be_filtered->points.size ());
 
       int keep = 0;
-      for (std::size_t i = 0; i < to_be_filtered->points.size (); i++)
+      for (size_t i = 0; i < to_be_filtered->points.size (); i++)
       {
         float x = to_be_filtered->points[i].x;
         float y = to_be_filtered->points[i].y;
@@ -188,8 +189,8 @@ namespace pcl
         //Check for invalid depth
         if (check_invalid_depth)
         {
-          if (!std::isfinite (organized_cloud->at (u, v).x) || !std::isfinite (organized_cloud->at (u, v).y)
-              || !std::isfinite (organized_cloud->at (u, v).z))
+          if (!pcl_isfinite (organized_cloud->at (u, v).x) || !pcl_isfinite (organized_cloud->at (u, v).y)
+              || !pcl_isfinite (organized_cloud->at (u, v).z))
             continue;
         }
 
@@ -213,3 +214,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/recognition/impl/hv/occlusion_reasoning.hpp>
 #endif
+
+#endif /* PCL_RECOGNITION_OCCLUSION_REASONING_H_ */

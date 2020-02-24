@@ -5,7 +5,11 @@
 #include <pcl/point_types.h>
 
 
-Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(cloud_composer_voxel_grid_downsample_tool, pcl::cloud_composer::VoxelGridDownsampleToolFactory)
+#else
+  Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#endif
 
 pcl::cloud_composer::VoxelGridDownsampleTool::VoxelGridDownsampleTool (PropertiesModel* parameter_model, QObject* parent)
   : ModifyItemTool (parameter_model, parent)
@@ -25,12 +29,12 @@ pcl::cloud_composer::VoxelGridDownsampleTool::performAction (ConstItemList input
   QList <CloudComposerItem*> output;
   const CloudComposerItem* input_item;
   // Check input data length
-  if ( input_data.empty ())
+  if ( input_data.size () == 0)
   {
     qCritical () << "Empty input in VoxelGridDownsampleTool!";
     return output;
   }
-  if ( input_data.size () > 1)
+  else if ( input_data.size () > 1)
   {
     qWarning () << "Input vector has more than one item in VoxelGridDownsampleTool";
   }

@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_TSDF_BUFFER_STRUCT_H_
+#define PCL_TSDF_BUFFER_STRUCT_H_
 
 #include <cuda_runtime.h>
 //#include <boost/graph/buffer_concepts.hpp>
@@ -70,7 +71,7 @@ namespace pcl
             /** \brief Default constructor*/ 
             tsdf_buffer () 
             {
-              tsdf_memory_start = nullptr;  tsdf_memory_end = nullptr; tsdf_rolling_buff_origin = nullptr; 
+              tsdf_memory_start = 0;  tsdf_memory_end = 0; tsdf_rolling_buff_origin = 0; 
               origin_GRID.x = 0; origin_GRID.y = 0; origin_GRID.z = 0;
               origin_GRID_global.x = 0.f; origin_GRID_global.y = 0.f; origin_GRID_global.z = 0.f;
               origin_metric.x = 0.f; origin_metric.y = 0.f; origin_metric.z = 0.f;
@@ -82,3 +83,5 @@ namespace pcl
     }
   }
 }
+
+#endif /*PCL_TSDF_BUFFER_STRUCT_H_*/

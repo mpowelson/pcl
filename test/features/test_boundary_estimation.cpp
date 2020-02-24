@@ -47,10 +47,10 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace std;
 
-using KdTreePtr = search::KdTree<PointXYZ>::Ptr;
+typedef search::KdTree<PointXYZ>::Ptr KdTreePtr;
 
 PointCloud<PointXYZ> cloud;
-std::vector<int> indices;
+vector<int> indices;
 KdTreePtr tree;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ TEST (PCL, BoundaryEstimation)
   PointCloud<Normal>::Ptr normals (new PointCloud<Normal> ());
   // set parameters
   n.setInputCloud (cloud.makeShared ());
-  pcl::IndicesPtr indicesptr (new pcl::Indices (indices));
+  boost::shared_ptr<vector<int> > indicesptr (new vector<int> (indices));
   n.setIndices (indicesptr);
   n.setSearchMethod (tree);
   n.setKSearch (static_cast<int> (indices.size ()));
@@ -76,10 +76,10 @@ TEST (PCL, BoundaryEstimation)
   EXPECT_EQ (b.getInputNormals (), normals);
 
   // getCoordinateSystemOnPlane
-  for (const auto &point : normals->points)
+  for (size_t i = 0; i < normals->points.size (); ++i)
   {
-    b.getCoordinateSystemOnPlane (point, u, v);
-    Vector4fMapConst n4uv = point.getNormalVector4fMap ();
+    b.getCoordinateSystemOnPlane (normals->points[i], u, v);
+    Vector4fMap n4uv = normals->points[i].getNormalVector4fMap ();
     EXPECT_NEAR (n4uv.dot(u), 0, 1e-4);
     EXPECT_NEAR (n4uv.dot(v), 0, 1e-4);
     EXPECT_NEAR (u.dot(v), 0, 1e-4);
@@ -97,6 +97,7 @@ TEST (PCL, BoundaryEstimation)
   EXPECT_EQ (pt, true);
 
   // isBoundaryPoint (points)
+  pt = false;
   pt = b.isBoundaryPoint (cloud, cloud.points[0], indices, u, v, float (M_PI) / 2.0);
   EXPECT_EQ (pt, false);
   pt = b.isBoundaryPoint (cloud, cloud.points[indices.size () / 3], indices, u, v, float (M_PI) / 2.0);
@@ -146,7 +147,7 @@ main (int argc, char** argv)
   }
 
   indices.resize (cloud.points.size ());
-  for (std::size_t i = 0; i < indices.size (); ++i)
+  for (size_t i = 0; i < indices.size (); ++i)
     indices[i] = static_cast<int> (i);
 
   tree.reset (new search::KdTree<PointXYZ> (false));

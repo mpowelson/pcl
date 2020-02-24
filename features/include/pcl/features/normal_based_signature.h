@@ -37,7 +37,8 @@
  *  $Id$
  */
 
-#pragma once
+#ifndef PCL_NORMAL_BASED_SIGNATURE_H_
+#define PCL_NORMAL_BASED_SIGNATURE_H_
 
 #include <pcl/features/feature.h>
 
@@ -66,9 +67,9 @@ namespace pcl
       using PCLBase<PointT>::indices_;
       using FeatureFromNormals<PointT, PointNT, PointFeature>::normals_;
 
-      using FeatureCloud = pcl::PointCloud<PointFeature>;
-      using Ptr = shared_ptr<NormalBasedSignatureEstimation<PointT, PointNT, PointFeature> >;
-      using ConstPtr = shared_ptr<const NormalBasedSignatureEstimation<PointT, PointNT, PointFeature> >;
+      typedef pcl::PointCloud<PointFeature> FeatureCloud;
+      typedef typename boost::shared_ptr<NormalBasedSignatureEstimation<PointT, PointNT, PointFeature> > Ptr;
+      typedef typename boost::shared_ptr<const NormalBasedSignatureEstimation<PointT, PointNT, PointFeature> > ConstPtr;
 
 
 
@@ -88,20 +89,20 @@ namespace pcl
         * \param[in] n the length of the columns used for the Discrete Fourier Transform. 
         */
       inline void
-      setN (std::size_t n) { N_ = n; }
+      setN (size_t n) { N_ = n; }
 
       /** \brief Returns the N parameter - the length of the columns used for the Discrete Fourier Transform. */
-      inline std::size_t
+      inline size_t
       getN () { return N_; }
 
       /** \brief Setter method for the M parameter - the length of the rows used for the Discrete Cosine Transform.
         * \param[in] m the length of the rows used for the Discrete Cosine Transform.
         */
       inline void
-      setM (std::size_t m) { M_ = m; }
+      setM (size_t m) { M_ = m; }
 
       /** \brief Returns the M parameter - the length of the rows used for the Discrete Cosine Transform */
-      inline std::size_t
+      inline size_t
       getM () { return M_; }
 
       /** \brief Setter method for the N' parameter - the number of columns to be taken from the matrix of DFT and DCT
@@ -110,13 +111,13 @@ namespace pcl
         * \param[in] n_prime the number of columns from the matrix of DFT and DCT that will be contained in the output
         */
       inline void
-      setNPrime (std::size_t n_prime) { N_prime_ = n_prime; }
+      setNPrime (size_t n_prime) { N_prime_ = n_prime; }
 
       /** \brief Returns the N' parameter - the number of rows to be taken from the matrix of DFT and DCT
         * values that will be contained in the output feature vector
         * \note This value directly influences the dimensions of the type of output points (PointFeature)
         */
-      inline std::size_t
+      inline size_t
       getNPrime () { return N_prime_; }
 
       /** \brief Setter method for the M' parameter - the number of rows to be taken from the matrix of DFT and DCT
@@ -125,13 +126,13 @@ namespace pcl
         * \param[in] m_prime the number of rows from the matrix of DFT and DCT that will be contained in the output
         */
       inline void
-      setMPrime (std::size_t m_prime) { M_prime_ = m_prime; }
+      setMPrime (size_t m_prime) { M_prime_ = m_prime; }
 
       /** \brief Returns the M' parameter - the number of rows to be taken from the matrix of DFT and DCT
         * values that will be contained in the output feature vector
         * \note This value directly influences the dimensions of the type of output points (PointFeature)
         */
-      inline std::size_t
+      inline size_t
       getMPrime () { return M_prime_; }
 
       /** \brief Setter method for the scale parameter - used to determine the radius of the sampling disc around the
@@ -149,14 +150,16 @@ namespace pcl
 
     protected:
       void
-      computeFeature (FeatureCloud &output) override;
+      computeFeature (FeatureCloud &output);
 
     private:
       float scale_h_;
-      std::size_t N_, M_, N_prime_, M_prime_;
+      size_t N_, M_, N_prime_, M_prime_;
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/normal_based_signature.hpp>
 #endif
+
+#endif /* PCL_NORMAL_BASED_SIGNATURE_H_ */

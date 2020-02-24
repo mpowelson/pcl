@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_COMMON_FILE_IO_H_
+#define PCL_COMMON_FILE_IO_H_
 
 #include <iostream>
 #ifndef _WIN32
@@ -86,3 +87,5 @@ namespace pcl
 }  // namespace end
 /*@}*/
 #include <pcl/common/impl/file_io.hpp>
+
+#endif  //#ifndef PCL_FILE_IO_H_

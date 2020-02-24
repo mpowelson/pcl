@@ -39,8 +39,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_COMMON_EIGEN_H_
+#define PCL_COMMON_EIGEN_H_
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -718,3 +718,5 @@ namespace pcl
 #if defined __SUNPRO_CC
 #  pragma enable_warn
 #endif
+
+#endif  //PCL_COMMON_EIGEN_H_

@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_KDTREE_IO_H_
+#define PCL_KDTREE_IO_H_
 
 #include <pcl/point_cloud.h>
 
@@ -73,3 +74,6 @@ namespace pcl
 }
 
 #include <pcl/kdtree/impl/io.hpp>
+
+#endif  //#ifndef PCL_KDTREE_IO_H_
+

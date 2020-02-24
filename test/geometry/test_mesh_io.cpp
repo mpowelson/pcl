@@ -49,13 +49,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using MeshTraits = pcl::geometry::DefaultMeshTraits<>;
-using Mesh = pcl::geometry::TriangleMesh<MeshTraits>;
-using MeshIO = pcl::geometry::MeshIO<Mesh>;
+typedef pcl::geometry::DefaultMeshTraits <>      MeshTraits;
+typedef pcl::geometry::TriangleMesh <MeshTraits> Mesh;
+typedef pcl::geometry::MeshIO <Mesh>             MeshIO;
 
-using VertexIndex = Mesh::VertexIndex;
-using HalfEdgeIndex = Mesh::HalfEdgeIndex;
-using FaceIndex = Mesh::FaceIndex;
+typedef Mesh::VertexIndex   VertexIndex;
+typedef Mesh::HalfEdgeIndex HalfEdgeIndex;
+typedef Mesh::FaceIndex     FaceIndex;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_PLY_IO_OPERATORS_H
+#define PCL_IO_PLY_IO_OPERATORS_H
 
 #include <istream>
 #include <limits>
@@ -97,3 +98,5 @@ namespace pcl
     } // namespace ply
   } // namespace io
 } // namespace pcl
+
+#endif // PLY_IO_OPERATORS_H

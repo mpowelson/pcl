@@ -1,11 +1,10 @@
-#pragma once
+#ifndef OPENNI_CAPTURE_H
+#define OPENNI_CAPTURE_H
 
 #include "typedefs.h"
 
 #include <pcl/io/openni_grabber.h>
 #include <pcl/visualization/pcl_visualizer.h>
-
-#include <mutex>
 
 /* A simple class for capturing data from an OpenNI camera */
 class OpenNICapture
@@ -29,5 +28,7 @@ protected:
   int frame_counter_;
   PointCloudPtr most_recent_frame_;
   bool use_trigger_, trigger_;
-  std::mutex mutex_;
+  boost::mutex mutex_;
 };
+
+#endif

@@ -36,7 +36,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_SEARCH_OCTREE_H
+#define PCL_SEARCH_OCTREE_H
 
 #include <pcl/search/search.h>
 #include <pcl/octree/octree_search.h>
@@ -69,19 +70,19 @@ namespace pcl
     {
       public:
         // public typedefs
-        using Ptr = shared_ptr<pcl::search::Octree<PointT,LeafTWrap,BranchTWrap,OctreeT> >;
-        using ConstPtr = shared_ptr<const pcl::search::Octree<PointT,LeafTWrap,BranchTWrap,OctreeT> >;
+        typedef boost::shared_ptr<pcl::search::Octree<PointT,LeafTWrap,BranchTWrap,OctreeT> > Ptr;
+        typedef boost::shared_ptr<const pcl::search::Octree<PointT,LeafTWrap,BranchTWrap,OctreeT> > ConstPtr;
 
-        using typename Search<PointT>::IndicesPtr;
-        using typename Search<PointT>::IndicesConstPtr;
+        typedef boost::shared_ptr<std::vector<int> > IndicesPtr;
+        typedef boost::shared_ptr<const std::vector<int> > IndicesConstPtr;
 
-        using PointCloud = pcl::PointCloud<PointT>;
-        using PointCloudPtr = typename PointCloud::Ptr;
-        using PointCloudConstPtr = typename PointCloud::ConstPtr;
+        typedef pcl::PointCloud<PointT> PointCloud;
+        typedef boost::shared_ptr<PointCloud> PointCloudPtr;
+        typedef boost::shared_ptr<const PointCloud> PointCloudConstPtr;
 
         // Boost shared pointers
-        using OctreePointCloudSearchPtr = typename pcl::octree::OctreePointCloudSearch<PointT, LeafTWrap, BranchTWrap>::Ptr;
-        using OctreePointCloudSearchConstPtr = typename pcl::octree::OctreePointCloudSearch<PointT, LeafTWrap, BranchTWrap>::ConstPtr;
+        typedef boost::shared_ptr<pcl::octree::OctreePointCloudSearch<PointT, LeafTWrap, BranchTWrap> > OctreePointCloudSearchPtr;
+        typedef boost::shared_ptr<const pcl::octree::OctreePointCloudSearch<PointT, LeafTWrap, BranchTWrap> > OctreePointCloudSearchConstPtr;
         OctreePointCloudSearchPtr tree_;
 
         using pcl::search::Search<PointT>::input_;
@@ -98,7 +99,7 @@ namespace pcl
         }
 
         /** \brief Empty Destructor. */
-        
+        virtual
         ~Octree ()
         {
         }
@@ -120,7 +121,7 @@ namespace pcl
           * \param[in] indices the point indices subset that is to be used from \a cloud 
           */
         inline void
-        setInputCloud (const PointCloudConstPtr &cloud, const IndicesConstPtr& indices) override
+        setInputCloud (const PointCloudConstPtr &cloud, const IndicesConstPtr& indices)
         {
           tree_->deleteTree ();
           tree_->setInputCloud (cloud, indices);
@@ -140,7 +141,7 @@ namespace pcl
           */
         inline int
         nearestKSearch (const PointCloud &cloud, int index, int k, std::vector<int> &k_indices,
-                        std::vector<float> &k_sqr_distances) const override
+                        std::vector<float> &k_sqr_distances) const
         {
           return (tree_->nearestKSearch (cloud, index, k, k_indices, k_sqr_distances));
         }
@@ -155,7 +156,7 @@ namespace pcl
           */
         inline int
         nearestKSearch (const PointT &point, int k, std::vector<int> &k_indices,
-                        std::vector<float> &k_sqr_distances) const override
+                        std::vector<float> &k_sqr_distances) const
         {
           return (tree_->nearestKSearch (point, k, k_indices, k_sqr_distances));
         }
@@ -172,7 +173,7 @@ namespace pcl
           * \return number of neighbors found
           */
         inline int
-        nearestKSearch (int index, int k, std::vector<int> &k_indices, std::vector<float> &k_sqr_distances) const override
+        nearestKSearch (int index, int k, std::vector<int> &k_indices, std::vector<float> &k_sqr_distances) const
         {
           return (tree_->nearestKSearch (index, k, k_indices, k_sqr_distances));
         }
@@ -192,7 +193,7 @@ namespace pcl
                       double radius,
                       std::vector<int> &k_indices, 
                       std::vector<float> &k_sqr_distances, 
-                      unsigned int max_nn = 0) const override
+                      unsigned int max_nn = 0) const
         {
           tree_->radiusSearch (cloud, index, radius, k_indices, k_sqr_distances, max_nn);
           if (sorted_results_)
@@ -213,7 +214,7 @@ namespace pcl
                       double radius, 
                       std::vector<int> &k_indices,
                       std::vector<float> &k_sqr_distances, 
-                      unsigned int max_nn = 0) const override
+                      unsigned int max_nn = 0) const
         {
           tree_->radiusSearch (p_q, radius, k_indices, k_sqr_distances, max_nn);
           if (sorted_results_)
@@ -232,7 +233,7 @@ namespace pcl
          */
         inline int
         radiusSearch (int index, double radius, std::vector<int> &k_indices,
-                      std::vector<float> &k_sqr_distances, unsigned int max_nn = 0) const override
+                      std::vector<float> &k_sqr_distances, unsigned int max_nn = 0) const
         {
           tree_->radiusSearch (index, radius, k_indices, k_sqr_distances, max_nn);
           if (sorted_results_)
@@ -288,3 +289,5 @@ namespace pcl
 #else
 #define PCL_INSTANTIATE_Octree(T) template class PCL_EXPORTS pcl::search::Octree<T>;
 #endif
+
+#endif    // PCL_SEARCH_OCTREE_H

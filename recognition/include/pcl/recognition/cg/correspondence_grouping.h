@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_CORRESPONDENCE_GROUPING_H_
+#define PCL_RECOGNITION_CORRESPONDENCE_GROUPING_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/correspondence.h>
@@ -54,15 +55,15 @@ namespace pcl
   class CorrespondenceGrouping : public PCLBase<PointModelT>
   {
     public:
-      using SceneCloud = pcl::PointCloud<PointSceneT>;
-      using SceneCloudPtr = typename SceneCloud::Ptr;
-      using SceneCloudConstPtr = typename SceneCloud::ConstPtr;
+      typedef pcl::PointCloud<PointSceneT> SceneCloud;
+      typedef typename SceneCloud::Ptr SceneCloudPtr;
+      typedef typename SceneCloud::ConstPtr SceneCloudConstPtr;
 
       /** \brief Empty constructor. */
-      CorrespondenceGrouping () : scene_ () {}
+      CorrespondenceGrouping () : scene_ (), model_scene_corrs_ () {}
 
       /** \brief destructor. */
-      ~CorrespondenceGrouping() 
+      virtual ~CorrespondenceGrouping() 
       {
         scene_.reset ();
         model_scene_corrs_.reset ();
@@ -197,3 +198,5 @@ namespace pcl
 }
 
 #include <pcl/recognition/impl/cg/correspondence_grouping.hpp>
+
+#endif // PCL_RECOGNITION_CORRESPONDENCE_GROUPING_H_

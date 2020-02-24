@@ -1,9 +1,10 @@
-#pragma once
+#ifndef PLC_GPU_PEOPLE_PERSON_ATTRIBS_H_
+#define PLC_GPU_PEOPLE_PERSON_ATTRIBS_H_
 
 #include <string>
 #include <vector>
 #include <iosfwd>
-#include <pcl/make_shared.h>
+#include <boost/shared_ptr.hpp>
 
 #include <pcl/pcl_exports.h>
 
@@ -16,8 +17,7 @@ namespace pcl
       class PCL_EXPORTS PersonAttribs
       {
         public:
-          using Ptr = shared_ptr<PersonAttribs>;
-          using ConstPtr = shared_ptr<const PersonAttribs>;
+          typedef boost::shared_ptr<PersonAttribs> Ptr;
 
           /** \brief Constructor creates generic values from **/
           PersonAttribs();
@@ -46,3 +46,5 @@ namespace pcl
     }
   }
 }
+
+#endif /* PLC_GPU_PEOPLE_PERSON_ATTRIBS_H_ */

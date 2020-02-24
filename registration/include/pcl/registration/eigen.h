@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_EIGEN_H_
+#define PCL_REGISTRATION_EIGEN_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -47,3 +48,5 @@
 #include <Eigen/Geometry>
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Dense>
+
+#endif    // PCL_REGISTRATION_EIGEN_H_

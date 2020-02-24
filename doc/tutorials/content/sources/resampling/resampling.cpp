@@ -24,7 +24,7 @@ main (int argc, char** argv)
 
   // Set parameters
   mls.setInputCloud (cloud);
-  mls.setPolynomialOrder (2);
+  mls.setPolynomialFit (true);
   mls.setSearchMethod (tree);
   mls.setSearchRadius (0.03);
 

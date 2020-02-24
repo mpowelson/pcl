@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_KINFU_PIXEL_RGB_HPP_
+#define PCL_KINFU_PIXEL_RGB_HPP_
 
 namespace pcl
 {
@@ -49,3 +50,5 @@ namespace pcl
     };
   }
 }
+
+#endif /* PCL_KINFU_PIXEL_RGB_HPP_ */

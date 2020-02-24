@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_SPHERE_H
+#define NURBS_FITTING_SPHERE_H
 
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
 #include <pcl/surface/on_nurbs/nurbs_data.h>
@@ -189,3 +190,5 @@ namespace pcl
 
   }
 }
+
+#endif /* NURBS_FITTING_SPHERE_H */

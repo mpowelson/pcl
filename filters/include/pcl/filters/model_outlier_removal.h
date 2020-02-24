@@ -35,7 +35,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_FILTERS_MODEL_OUTLIER_REMOVAL_H_
+#define PCL_FILTERS_MODEL_OUTLIER_REMOVAL_H_
 
 #include <pcl/filters/filter_indices.h>
 #include <pcl/ModelCoefficients.h>
@@ -68,14 +69,14 @@ namespace pcl
   class ModelOutlierRemoval : public FilterIndices<PointT>
   {
     protected:
-      using PointCloud = typename FilterIndices<PointT>::PointCloud;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
-      using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+      typedef typename FilterIndices<PointT>::PointCloud PointCloud;
+      typedef typename PointCloud::Ptr PointCloudPtr;
+      typedef typename PointCloud::ConstPtr PointCloudConstPtr;
+      typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
 
     public:
-      using PointCloudNPtr = pcl::PointCloud<pcl::Normal>::Ptr;
-      using PointCloudNConstPtr = pcl::PointCloud<pcl::Normal>::ConstPtr;
+      typedef typename pcl::PointCloud<pcl::Normal>::Ptr PointCloudNPtr;
+      typedef typename pcl::PointCloud<pcl::Normal>::ConstPtr PointCloudNConstPtr;
 
       /** \brief Constructor.
        * \param[in] extract_removed_indices Set to true if you want to be able to extract the indices of points being removed (default = false).
@@ -95,7 +96,7 @@ namespace pcl
       setModelCoefficients (const pcl::ModelCoefficients model_coefficients)
       {
         model_coefficients_.resize (model_coefficients.values.size ());
-        for (std::size_t i = 0; i < model_coefficients.values.size (); i++)
+        for (unsigned int i = 0; i < model_coefficients.values.size (); i++)
         {
           model_coefficients_[i] = model_coefficients.values[i];
         }
@@ -108,7 +109,7 @@ namespace pcl
       {
         pcl::ModelCoefficients mc;
         mc.values.resize (model_coefficients_.size ());
-        for (std::size_t i = 0; i < mc.values.size (); i++)
+        for (unsigned int i = 0; i < mc.values.size (); i++)
           mc.values[i] = model_coefficients_[i];
         return (mc);
       }
@@ -173,7 +174,7 @@ namespace pcl
        * \param[in] thresh pointer to a threshold function
        */
       void
-      setThresholdFunction (std::function<bool (double)> thresh)
+      setThresholdFunction (boost::function<bool (double)> thresh)
       {
         threshold_function_ = thresh;
       }
@@ -185,7 +186,7 @@ namespace pcl
       template <typename T> void
       setThresholdFunction (bool (T::*thresh_function) (double), T& instance)
       {
-        setThresholdFunction ([=, &instance] (double threshold) { return (instance.*thresh_function) (threshold); });
+        setThresholdFunction (boost::bind (thresh_function, boost::ref (instance), _1));
       }
 
     protected:
@@ -203,13 +204,13 @@ namespace pcl
        * \param[out] output The resultant point cloud.
        */
       void
-      applyFilter (PointCloud &output) override;
+      applyFilter (PointCloud &output);
 
       /** \brief Filtered results are indexed by an indices array.
        * \param[out] indices The resultant indices.
        */
       void
-      applyFilter (std::vector<int> &indices) override
+      applyFilter (std::vector<int> &indices)
       {
         applyFilterIndices (indices);
       }
@@ -235,7 +236,7 @@ namespace pcl
 
       /** \brief The type of model to use (user given parameter). */
       pcl::SacModel model_type_;
-      std::function<bool (double)> threshold_function_;
+      boost::function<bool (double)> threshold_function_;
 
       inline bool
       checkSingleThreshold (double value)
@@ -252,3 +253,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/model_outlier_removal.hpp>
 #endif
+
+#endif  // PCL_FILTERS_MODEL_OUTLIER_REMOVAL_H_

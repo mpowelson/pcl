@@ -360,12 +360,14 @@ pcl::visualization::PCLPainter2D::getWindowSize ()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool 
 pcl::visualization::PCLPainter2D::Paint (vtkContext2D *painter)
-{
+{  
   //draw every figures
-  for (auto &figure : figures_)
+  for (size_t i = 0; i < figures_.size (); i++)
   {
-    figure->draw (painter); //that's it ;-)
+    figures_[i]->draw (painter); 	//that's it ;-)
   }
-
+  
   return true;
 }
+
+

@@ -37,10 +37,13 @@
  *
  */
 
-#pragma once
+#ifndef PCL_TRACKING_BOOST_H_
+#define PCL_TRACKING_BOOST_H_
 
-#include <pcl/pcl_macros.h>
-
-PCL_PRAGMA_WARNING("This header is deprecated and will be removed in an upcoming release.")
+#if defined __GNUC__
+#  pragma GCC system_header 
+#endif
 
 #include <boost/random.hpp>
+
+#endif    // PCL_TRACKING_BOOST_H_

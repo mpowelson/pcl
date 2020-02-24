@@ -36,11 +36,12 @@
  *  Author: Francisco, Technical University Eindhoven, (f.j.mysurname.soriano <At > tue.nl)
  */
 
-#pragma once
+#ifndef PCL_SCREENSHOT_MANAGER_H_
+#define PCL_SCREENSHOT_MANAGER_H_
 
 #include <iostream>
 #include <fstream>
-#include <cstdio>
+#include <stdio.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -48,6 +49,7 @@
 #include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/containers/kernel_containers.h>
 #include <pcl/gpu/kinfu_large_scale/pixel_rgb.h> 
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp> 
 //#include <boost/graph/buffer_concepts.hpp>
 
@@ -67,7 +69,7 @@ namespace pcl
       {
         public:
 
-          using PixelRGB = pcl::gpu::kinfuLS::PixelRGB;
+          typedef pcl::gpu::kinfuLS::PixelRGB PixelRGB;
 
           /** Constructor */
           ScreenshotManager();
@@ -101,3 +103,5 @@ namespace pcl
     };
   }
 }
+
+#endif // PCL_SCREENSHOT_MANAGER_H_

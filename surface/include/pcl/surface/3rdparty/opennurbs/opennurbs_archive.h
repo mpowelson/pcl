@@ -660,7 +660,7 @@ class ON_Linetype;
 
 struct ON_3DM_CHUNK
 {
-  std::size_t m_offset; // In read or write_using_fseek mode, this is the
+  size_t m_offset; // In read or write_using_fseek mode, this is the
                    // file position of first byte after chunk's length.
                    // In write_using_buffer mode, this of the m_buffer[]
                    // position of first byte after chunk's length.
@@ -735,7 +735,7 @@ public:
   virtual ~ON_BinaryArchive();
 
   virtual 
-  std::size_t CurrentPosition( // current offset (in bytes) into archive ( like ftell() )
+  size_t CurrentPosition( // current offset (in bytes) into archive ( like ftell() )
                 ) const = 0; 
   virtual 
   bool SeekFromCurrentPosition( // seek from current position ( like fseek( ,SEEK_CUR) )
@@ -743,7 +743,7 @@ public:
                 ) = 0; 
   virtual 
   bool SeekFromStart(  // seek from current position ( like fseek( ,SEEK_SET) )
-                std::size_t // byte offset ( >= 0 )
+                size_t // byte offset ( >= 0 )
                 ) = 0;
   virtual 
   bool AtEnd() const = 0; // true if at end of file
@@ -774,7 +774,7 @@ public:
   const char* TypecodeName( unsigned int tcode );
 
   static
-  char* ON_TypecodeParse( unsigned int tcode, char* typecode_name, std::size_t max_length );
+  char* ON_TypecodeParse( unsigned int tcode, char* typecode_name, size_t max_length );
 
   bool ReadMode() const;  // true if reading is permitted
   bool WriteMode() const; // true if writing is permitted
@@ -789,9 +789,9 @@ public:
 
   int BadCRCCount() const; // number of chunks read with bad CRC 
 
-  bool ReadByte( std::size_t, void* ); // must fail if mode is not read or readwrite
+  bool ReadByte( size_t, void* ); // must fail if mode is not read or readwrite
 
-  bool WriteByte( std::size_t, const void* ); // must fail if mode is not write or readwrite
+  bool WriteByte( size_t, const void* ); // must fail if mode is not write or readwrite
 
   /*
   Description:
@@ -828,7 +828,7 @@ public:
   // To read data archived by WriteCompressedBuffer( sizeof_buffer, buffer )
   // do something like:
   //
-  //   std::size_t sizeof_buffer = 0;
+  //   size_t sizeof_buffer = 0;
   //   ReadCompressedBufferSize(&sizeof_buffer);
   //   buffer = something with sizeof_buffer bytes.
   //   int bFailedCRC = false;
@@ -844,7 +844,7 @@ public:
   Returns:
     True if read was successful.
   */
-  bool ReadCompressedBufferSize( std::size_t* sizeof__outbuffer );
+  bool ReadCompressedBufferSize( size_t* sizeof__outbuffer );
 
   /*
   Description:
@@ -857,7 +857,7 @@ public:
 
   Example:
 
-          std::size_t sizeof_buffer = 0;
+          size_t sizeof_buffer = 0;
           ReadCompressedBufferSize(&sizeof_buffer);
           buffer = ...; // something with sizeof_buffer bytes.
           int bFailedCRC = false;
@@ -868,7 +868,7 @@ public:
     of bFailedCRC to see if the information that was read is valid.
   */
   bool ReadCompressedBuffer(
-          std::size_t sizeof__outbuffer,
+          size_t sizeof__outbuffer,
           void* outbuffer,
           int* bFailedCRC
           );
@@ -883,18 +883,18 @@ public:
     True if write was successful.
   */
   bool WriteCompressedBuffer(
-    std::size_t sizeof__inbuffer,
+    size_t sizeof__inbuffer,
     const void* inbuffer
     );
 
   bool ReadBool( bool* );
 
 	bool ReadChar(    // Read an array of 8 bit chars
-			std::size_t,       // number of chars to read
+			size_t,       // number of chars to read
 			char*    
 			);  
 	bool ReadChar(    // Read an array of 8 bit unsigned chars
-			std::size_t,       // number of unsigned chars to read
+			size_t,       // number of unsigned chars to read
 			unsigned char*    
 			);  
 	bool ReadChar(    // Read a single 8 bit char
@@ -905,11 +905,11 @@ public:
 			);  
 
 	bool ReadShort(   // Read an array of 16 bit shorts
-			std::size_t,       // number of shorts to read
+			size_t,       // number of shorts to read
 			short*    
 			);  
 	bool ReadShort(   // Read an array of 16 bit unsigned shorts
-			std::size_t,       // number of shorts to read
+			size_t,       // number of shorts to read
 			unsigned short*    
 			);  
 	bool ReadShort(   // Read a single 16 bit short
@@ -920,11 +920,11 @@ public:
 			);  
 
 	bool ReadInt( // Read an array of 32 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			int*      
 			); 
 	bool ReadInt( // Read an array of 32 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			unsigned int*      
 			); 
 	bool ReadInt( // Read a single 32 bit integer
@@ -935,11 +935,11 @@ public:
 			); 
 
 	bool ReadBigInt( // Read an array of 64 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			ON__INT64*      
 			); 
 	bool ReadBigInt( // Read an array of 64 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			ON__UINT64*      
 			); 
 	bool ReadBigInt( // Read a single 64 bit integer
@@ -950,11 +950,11 @@ public:
 			); 
 
 	bool ReadLong( // Read an array of 32 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			long*      
 			); 
 	bool ReadLong( // Read an array of 32 bit integers
-			std::size_t,	      // number of ints to read
+			size_t,	      // number of ints to read
 			unsigned long*      
 			); 
 	bool ReadLong( // Read a single 32 bit integer
@@ -963,24 +963,24 @@ public:
 	bool ReadLong( // Read a single 32 bit unsigned integer
 			unsigned long*      
 			); 
-	bool ReadSize( // Read a single std::size_t
-			std::size_t*
+	bool ReadSize( // Read a single size_t
+			size_t*
 			); 
 
-  bool ReadBigSize( std::size_t* ); // 64 bits
+  bool ReadBigSize( size_t* ); // 64 bits
   
   bool ReadBigTime( time_t* ); // UCT seconds since 1 January 1970 (64 bits)
 
 
 	bool ReadFloat(   // Read an array of floats
-			std::size_t,       // number of floats
+			size_t,       // number of floats
 			float*
 			);
 	bool ReadFloat(   // Read a single float
 			float*
 			);
 	bool ReadDouble(  // Read an array of IEEE doubles
-			std::size_t,       // number of doubles
+			size_t,       // number of doubles
 			double*
 			);
 	bool ReadDouble(  // Read a single double
@@ -1046,7 +1046,7 @@ public:
     when reading UTF-16 encoded strings.
   */
   ON_DEPRECATED bool ReadStringSize(
-      std::size_t* str_array_count
+      size_t* str_array_count
       );
 
   /*
@@ -1059,7 +1059,7 @@ public:
       or string_element_count >= 2.
   */
   bool ReadStringUTF8ElementCount(
-    std::size_t* string_utf8_element_count
+    size_t* string_utf8_element_count
     );
 
   /*
@@ -1072,7 +1072,7 @@ public:
       or string_element_count >= 2.
   */
   bool ReadStringUTF16ElementCount(
-    std::size_t* string_utf16_element_count
+    size_t* string_utf16_element_count
     );
 
 
@@ -1090,7 +1090,7 @@ public:
       unicode strings.
   */
   bool ReadString(
-      std::size_t str_array_count,
+      size_t str_array_count,
       char* str_array
       );
 
@@ -1108,7 +1108,7 @@ public:
       unicode strings.
   */
   bool ReadString(
-      std::size_t str_array_count,
+      size_t str_array_count,
       unsigned char* str_array
       );
 
@@ -1126,7 +1126,7 @@ public:
       unicode strings.
   */
   bool ReadString(
-      std::size_t str_array_count,
+      size_t str_array_count,
       unsigned short*  str_array
       );
 
@@ -1173,11 +1173,11 @@ public:
   bool WriteBool( bool );
 
   bool WriteChar(    // Write an array of 8 bit chars
-			std::size_t,       // number of chars to write
+			size_t,       // number of chars to write
 			const char*    
 			);  
 	bool WriteChar(    // Write an array of 8 bit unsigned chars
-			std::size_t,       // number of unsigned chars to write
+			size_t,       // number of unsigned chars to write
 			const unsigned char*    
 			);  
 	bool WriteChar(    // Write a single 8 bit char
@@ -1188,11 +1188,11 @@ public:
 			);  
 
 	bool WriteShort(   // Write an array of 16 bit shorts
-			std::size_t,       // number of shorts to write
+			size_t,       // number of shorts to write
 			const short*    
 			);  
 	bool WriteShort(   // Write an array of 16 bit unsigned shorts
-			std::size_t,       // number of shorts to write
+			size_t,       // number of shorts to write
 			const unsigned short*    
 			);  
 	bool WriteShort(   // Write a single 16 bit short
@@ -1203,11 +1203,11 @@ public:
 			);  
 
 	bool WriteInt( // Write an array of 32 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const int*      
 			); 
 	bool WriteInt( // Write an array of 32 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const unsigned int*      
 			); 
 	bool WriteInt( // Write a single 32 bit integer
@@ -1218,11 +1218,11 @@ public:
 			); 
 
 	bool WriteBigInt( // Write an array of 64 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const ON__INT64*      
 			); 
 	bool WriteBigInt( // Write an array of 64 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const ON__UINT64*      
 			); 
 	bool WriteBigInt( // Write a single 64 bit integer
@@ -1233,11 +1233,11 @@ public:
 			); 
 
 	bool WriteLong( // Write an array of 32 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const long*      
 			); 
 	bool WriteLong( // Write an array of 32 bit integers
-			std::size_t,	      // number of ints to write
+			size_t,	      // number of ints to write
 			const unsigned long*      
 			); 
 	bool WriteLong( // Write a single 32 bit integer
@@ -1246,23 +1246,23 @@ public:
 	bool WriteLong( // Write a single 32 bit unsigned integer
 			unsigned long
 			); 
-	bool WriteSize( // Write a single std::size_t
-			std::size_t
+	bool WriteSize( // Write a single size_t
+			size_t
 			); 
 
-  bool WriteBigSize( std::size_t ); // 64 bits 
+  bool WriteBigSize( size_t ); // 64 bits 
   
   bool WriteBigTime( time_t ); // UCT seconds since 1 January 1970 (64 bits)
 
 	bool WriteFloat(   // Write a number of IEEE floats
-			std::size_t,       // number of doubles
+			size_t,       // number of doubles
 			const float*
 			);
 	bool WriteFloat(   // Write a single float
 			float
 			);
 	bool WriteDouble(  // Write a single double
-      std::size_t,
+      size_t,
 			const double*
 			);
 	bool WriteDouble(  // Write a single double
@@ -2054,7 +2054,7 @@ public:
   //   true if successful, false if unable to find or read
   //   a TCODE_ENDOFFILE chunk.
   bool Read3dmEndMark( 
-           std::size_t* // sizeof_archive
+           size_t* // sizeof_archive
            );
 
   ///////////////////////////////////////////////////////////////////
@@ -2376,7 +2376,7 @@ public:
     Generally, this value can be ignored. This function is
     a diagnostice tool that is used to analyzed damaged files.
   */
-  std::size_t ArchiveStartOffset() const;
+  size_t ArchiveStartOffset() const;
 
   enum table_type
   {
@@ -2463,7 +2463,7 @@ protected:
     actual number of bytes read (like fread())
   */
   virtual
-  std::size_t Read( std::size_t, void* ) = 0; 
+  size_t Read( size_t, void* ) = 0; 
 
   /*
   Description:
@@ -2472,7 +2472,7 @@ protected:
     actual number of bytes written (like fwrite())
   */
   virtual
-  std::size_t Write( std::size_t, const void* ) = 0;
+  size_t Write( size_t, const void* ) = 0;
 
   /*
   Description:
@@ -2485,7 +2485,6 @@ protected:
   bool Flush() = 0;
 
   /*
-  Applications (like Rhino) override this function to load plug-ins
   Description:
     When ON_BinaryArchive::ReadObject() encounters userdata and
     the user data class id is not present,  LoadUserDataApplication
@@ -2496,31 +2495,28 @@ protected:
     2 - the application was already loaded
   */
   virtual
-  int LoadUserDataApplication(
-    ON_UUID /*application_id*/
-    )
-  {
-    return 0;
-  }
+  int LoadUserDataApplication( 
+    ON_UUID application_id 
+    );
 
   bool SetArchive3dmVersion(int);
 
 private:
   // 16 bit integer IO
-  bool WriteInt8( std::size_t, const ON__INT8* );
-  bool ReadInt8( std::size_t, ON__INT8* );
+  bool WriteInt8( size_t, const ON__INT8* );
+  bool ReadInt8( size_t, ON__INT8* );
 
   // 16 bit integer IO
-  bool WriteInt16( std::size_t, const ON__INT16* );
-  bool ReadInt16( std::size_t, ON__INT16* );
+  bool WriteInt16( size_t, const ON__INT16* );
+  bool ReadInt16( size_t, ON__INT16* );
 
   // 32 bit integer IO
-  bool WriteInt32( std::size_t, const ON__INT32* );
-  bool ReadInt32( std::size_t, ON__INT32* );
+  bool WriteInt32( size_t, const ON__INT32* );
+  bool ReadInt32( size_t, ON__INT32* );
 
   // 64 bit integer IO
-  bool WriteInt64( std::size_t, const ON__INT64* );
-  bool ReadInt64(  std::size_t, ON__INT64* );
+  bool WriteInt64( size_t, const ON__INT64* );
+  bool ReadInt64(  size_t, ON__INT64* );
 
   bool BeginWrite3dmTable( 
     unsigned int // tcode
@@ -2578,7 +2574,7 @@ public:
 
 private:
   ON::archive_mode Mode() const; // current read/write mode
-  void UpdateCRC( std::size_t, const void* );
+  void UpdateCRC( size_t, const void* );
   int ReadObjectHelper(ON_Object**);
 
   int m_3dm_version;
@@ -2638,7 +2634,7 @@ private:
   // Windows linking/embedding, the first 5kb to 1mb of the file contains
   // information that is put there by MFC.  m_3dm_start_section_offset
   // records the offset into the file where the 3dm archive actually begins.
-  std::size_t m_3dm_start_section_offset;
+  size_t m_3dm_start_section_offset;
 
   table_type m_active_table;
 
@@ -2669,7 +2665,7 @@ private:
           class ON_UserData* ud );
 
 public:
-  std::size_t SizeofChunkLength() const;
+  size_t SizeofChunkLength() const;
 
 private:
   bool WriteEOFSizeOfFile( ON__UINT64 );
@@ -2694,12 +2690,12 @@ private:
   } m_zlib;
 
   // returns number of bytes written
-  std::size_t WriteDeflate(
-        std::size_t,         // sizeof uncompressed input data
+  size_t WriteDeflate(
+        size_t,         // sizeof uncompressed input data
         const void*  // uncompressed input data
         );
   bool ReadInflate(
-        std::size_t,  // sizeof uncompressed input data
+        size_t,  // sizeof uncompressed input data
         void* // buffer to hold uncompressed data
         );
   bool CompressionInit();
@@ -2773,9 +2769,9 @@ public:
   virtual ~ON_BinaryFile();
 
   // ON_BinaryArchive overrides
-  std::size_t CurrentPosition() const; 
+  size_t CurrentPosition() const; 
   bool SeekFromCurrentPosition(int);
-  bool SeekFromStart(std::size_t);
+  bool SeekFromStart(size_t);
   bool AtEnd() const;
 
   // fseek from end (since the file has an end)
@@ -2794,8 +2790,8 @@ public:
          );
 
 protected:
-  std::size_t Read( std::size_t, void* );
-  std::size_t Write( std::size_t, const void* );
+  size_t Read( size_t, void* );
+  size_t Write( size_t, const void* );
   bool Flush();
 
 private:
@@ -2808,9 +2804,9 @@ private:
   // into m_memory_buffer.  This is provided to work around
   // bugs in some networks that result in extremely slow
   // performance when seeking is used.
-  std::size_t m_memory_buffer_capacity;
-  std::size_t m_memory_buffer_size;
-  std::size_t m_memory_buffer_ptr;
+  size_t m_memory_buffer_capacity;
+  size_t m_memory_buffer_size;
+  size_t m_memory_buffer_ptr;
   unsigned char* m_memory_buffer;
 
 private:
@@ -2857,16 +2853,16 @@ public:
   ON_Buffer* Buffer() const;
 
   // virtual ON_BinaryArchive overrides
-  std::size_t CurrentPosition() const; 
+  size_t CurrentPosition() const; 
   bool SeekFromCurrentPosition(int);
-  bool SeekFromStart(std::size_t);
+  bool SeekFromStart(size_t);
   bool AtEnd() const;
 
   bool SeekFromEnd( ON__INT64 ); 
 
 protected:
-  std::size_t Read( std::size_t, void* );
-  std::size_t Write( std::size_t, const void* );
+  size_t Read( size_t, void* );
+  size_t Write( size_t, const void* );
   bool Flush();
 
 private:
@@ -2904,7 +2900,7 @@ public:
     archive_opennurbs_version - [in] YYYYMMDDn
   */
   ON_Read3dmBufferArchive( 
-    std::size_t sizeof_buffer, 
+    size_t sizeof_buffer, 
     const void* buffer,
     bool bCopyBuffer,
     int archive_3dm_version,
@@ -2917,7 +2913,7 @@ public:
   Returns: 
      value of m_sizeof_buffer
   */
-  std::size_t SizeOfBuffer() const;
+  size_t SizeOfBuffer() const;
 
   /*
   Returns: 
@@ -2926,22 +2922,22 @@ public:
   const void* Buffer() const;
 
   // ON_BinaryArchive overrides
-  std::size_t CurrentPosition() const; 
+  size_t CurrentPosition() const; 
   bool SeekFromCurrentPosition(int); 
-  bool SeekFromStart(std::size_t);
+  bool SeekFromStart(size_t);
   bool AtEnd() const;
 
 protected:
   // ON_BinaryArchive overrides
-  std::size_t Read( std::size_t, void* ); // return actual number of bytes read (like fread())
-  std::size_t Write( std::size_t, const void* );
+  size_t Read( size_t, void* ); // return actual number of bytes read (like fread())
+  size_t Write( size_t, const void* );
   bool Flush();
 
 private:
   void* m_p;
   const unsigned char* m_buffer;
-  std::size_t m_sizeof_buffer;
-  std::size_t m_buffer_position;
+  size_t m_sizeof_buffer;
+  size_t m_buffer_position;
   ON__INT_PTR m_reserved1;
   ON__INT_PTR m_reserved2;
   ON__INT_PTR m_reserved3;
@@ -2976,8 +2972,8 @@ public:
     archive_opennurbs_version - [in] YYYYMMDDn
   */
   ON_Write3dmBufferArchive( 
-    std::size_t initial_sizeof_buffer, 
-    std::size_t max_sizeof_buffer, 
+    size_t initial_sizeof_buffer, 
+    size_t max_sizeof_buffer, 
     int archive_3dm_version,
     int archive_opennurbs_version
     );
@@ -2988,13 +2984,13 @@ public:
   Returns: 
      Size of the archive in bytes.
   */
-  std::size_t SizeOfArchive() const;
+  size_t SizeOfArchive() const;
 
   /*
   Returns: 
      value of m_sizeof_buffer
   */
-  std::size_t SizeOfBuffer() const;
+  size_t SizeOfBuffer() const;
 
   /*
   Returns: 
@@ -3017,25 +3013,25 @@ public:
   void* HarvestBuffer();
 
   // ON_BinaryArchive overrides
-  std::size_t CurrentPosition() const; 
+  size_t CurrentPosition() const; 
   bool SeekFromCurrentPosition(int); 
-  bool SeekFromStart(std::size_t);
+  bool SeekFromStart(size_t);
   bool AtEnd() const;
 
 protected:
   // ON_BinaryArchive overrides
-  std::size_t Read( std::size_t, void* ); 
-  std::size_t Write( std::size_t, const void* ); // return actual number of bytes written (like fwrite())
+  size_t Read( size_t, void* ); 
+  size_t Write( size_t, const void* ); // return actual number of bytes written (like fwrite())
   bool Flush();
 
 private:
-  void AllocBuffer(std::size_t);
+  void AllocBuffer(size_t);
   void* m_p;
   unsigned char* m_buffer;
-  std::size_t m_sizeof_buffer;
-  const std::size_t m_max_sizeof_buffer;
-  std::size_t m_sizeof_archive;
-  std::size_t m_buffer_position;
+  size_t m_sizeof_buffer;
+  const size_t m_max_sizeof_buffer;
+  size_t m_sizeof_archive;
+  size_t m_buffer_position;
   ON__INT_PTR m_reserved1;
   ON__INT_PTR m_reserved2;
   ON__INT_PTR m_reserved3;

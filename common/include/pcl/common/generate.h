@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_COMMON_GENERATE_H_
+#define PCL_COMMON_GENERATE_H_
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -58,7 +59,7 @@ namespace pcl
     class CloudGenerator
     {
       public:
-      using GeneratorParameters = typename GeneratorT::Parameters;
+      typedef typename GeneratorT::Parameters GeneratorParameters;
 
       /// Default constructor
       CloudGenerator ();
@@ -143,7 +144,7 @@ namespace pcl
     class CloudGenerator<pcl::PointXY, GeneratorT>
     {
       public:
-      using GeneratorParameters = typename GeneratorT::Parameters;
+      typedef typename GeneratorT::Parameters GeneratorParameters;
       
       CloudGenerator ();
       
@@ -184,3 +185,5 @@ namespace pcl
 }
 
 #include <pcl/common/impl/generate.hpp>
+
+#endif

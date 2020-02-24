@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef OCTREE_COMPRESSION_H
+#define OCTREE_COMPRESSION_H
 
 #include <pcl/common/common.h>
 #include <pcl/common/io.h>
@@ -47,11 +48,13 @@
 
 #include "compression_profiles.h"
 
-#include <cstdio>
-#include <cstring>
-#include <iostream>
 #include <iterator>
+#include <iostream>
 #include <vector>
+#include <string.h>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
 
 using namespace pcl::octree;
 
@@ -73,19 +76,19 @@ namespace pcl
     {
       public:
         // public typedefs
-        using PointCloud = typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloud;
-        using PointCloudPtr = typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloudPtr;
-        using PointCloudConstPtr = typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloudConstPtr;
+        typedef typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloud PointCloud;
+        typedef typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloudPtr PointCloudPtr;
+        typedef typename OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::PointCloudConstPtr PointCloudConstPtr;
 
         // Boost shared pointers
-        using Ptr = shared_ptr<OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT> >;
-        using ConstPtr = shared_ptr<const OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT> >;
+        typedef boost::shared_ptr<OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT> > Ptr;
+        typedef boost::shared_ptr<const OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT> > ConstPtr;
 
-        using LeafNode = typename OctreeT::LeafNode;
-        using BranchNode = typename OctreeT::BranchNode;
+        typedef typename OctreeT::LeafNode LeafNode;
+        typedef typename OctreeT::BranchNode BranchNode;
 
-        using RealTimeStreamCompression = OctreePointCloudCompression<PointT, LeafT, BranchT, Octree2BufBase<LeafT, BranchT> >;
-        using SinglePointCloudCompressionLowMemory = OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeBase<LeafT, BranchT> >;
+        typedef OctreePointCloudCompression<PointT, LeafT, BranchT, Octree2BufBase<LeafT, BranchT> > RealTimeStreamCompression;
+        typedef OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeBase<LeafT, BranchT> > SinglePointCloudCompressionLowMemory;
 
 
         /** \brief Constructor
@@ -108,8 +111,13 @@ namespace pcl
                                const unsigned char colorBitResolution_arg = 6) :
           OctreePointCloud<PointT, LeafT, BranchT, OctreeT> (octreeResolution_arg),
           output_ (PointCloudPtr ()),
+          binary_tree_data_vector_ (),
+          binary_color_tree_vector_ (),
+          point_count_data_vector_ (),
+          point_count_data_vector_iterator_ (),
           color_coder_ (),
           point_coder_ (),
+          entropy_coder_ (),
           do_voxel_grid_enDecoding_ (doVoxelGridDownDownSampling_arg), i_frame_rate_ (iFrameRate_arg),
           i_frame_counter_ (0), frame_ID_ (0), point_count_ (0), i_frame_ (true),
           do_color_encoding_ (doColorEncoding_arg), cloud_with_color_ (false), data_with_color_ (false),
@@ -123,7 +131,7 @@ namespace pcl
         }
 
         /** \brief Empty deconstructor. */
-        
+        virtual
         ~OctreePointCloudCompression ()
         {
         }
@@ -162,8 +170,8 @@ namespace pcl
         /** \brief Add point at index from input pointcloud dataset to octree
          * \param[in] pointIdx_arg the index representing the point in the dataset given by \a setInputCloud to be added
          */
-        void
-        addPointIdx (const int pointIdx_arg) override
+        virtual void
+        addPointIdx (const int pointIdx_arg)
         {
           ++object_count_;
           OctreePointCloud<PointT, LeafT, BranchT, OctreeT>::addPointIdx(pointIdx_arg);
@@ -240,15 +248,15 @@ namespace pcl
           * \param leaf_arg: reference to new leaf node
           * \param key_arg: octree key of new leaf node
          */
-        void
-        serializeTreeCallback (LeafT &leaf_arg, const OctreeKey& key_arg) override;
+        virtual void
+        serializeTreeCallback (LeafT &leaf_arg, const OctreeKey& key_arg);
 
         /** \brief Decode leaf nodes information during deserialization
          * \param key_arg octree key of new leaf node
          */
         // param leaf_arg reference to new leaf node
-        void
-        deserializeTreeCallback (LeafT&, const OctreeKey& key_arg) override;
+        virtual void
+        deserializeTreeCallback (LeafT&, const OctreeKey& key_arg);
 
 
         /** \brief Pointer to output point cloud dataset. */
@@ -276,10 +284,10 @@ namespace pcl
         StaticRangeCoder entropy_coder_;
 
         bool do_voxel_grid_enDecoding_;
-        std::uint32_t i_frame_rate_;
-        std::uint32_t i_frame_counter_;
-        std::uint32_t frame_ID_;
-        std::uint64_t point_count_;
+        uint32_t i_frame_rate_;
+        uint32_t i_frame_counter_;
+        uint32_t frame_ID_;
+        uint64_t point_count_;
         bool i_frame_;
 
         bool do_color_encoding_;
@@ -289,8 +297,8 @@ namespace pcl
 
         //bool activating statistics
         bool b_show_statistics_;
-        std::uint64_t compressed_point_data_len_;
-        std::uint64_t compressed_color_data_len_;
+        uint64_t compressed_point_data_len_;
+        uint64_t compressed_color_data_len_;
 
         // frame header identifier
         static const char* frame_header_identifier_;
@@ -310,3 +318,7 @@ namespace pcl
   }
 
 }
+
+
+#endif
+

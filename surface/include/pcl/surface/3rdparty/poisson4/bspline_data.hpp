@@ -26,7 +26,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 DAMAGE.
 */
 
-#include "poisson_exceptions.h"
 
 namespace pcl
 {
@@ -444,7 +443,8 @@ namespace pcl
     template< int Degree >
     void BSplineElements< Degree >::upSample( BSplineElements< Degree >& high ) const
     {
-      POISSON_THROW_EXCEPTION (pcl::poisson::PoissonBadArgumentException, "B-spline up-sampling not supported for degree " << Degree);
+      fprintf( stderr , "[ERROR] B-spline up-sampling not supported for degree %d\n" , Degree );
+      exit( 0 );
     }
     template<>
     void BSplineElements< 1 >::upSample( BSplineElements< 1 >& high ) const

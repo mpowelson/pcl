@@ -35,7 +35,10 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_KINFU_TSDF_RAYCASTERLS_H_
+#define PCL_KINFU_TSDF_RAYCASTERLS_H_
+
 
 #include <pcl/pcl_macros.h>
 #include <pcl/point_types.h>
@@ -61,11 +64,10 @@ namespace pcl
       struct PCL_EXPORTS RayCaster
       {
       public:
-        using Ptr = shared_ptr<RayCaster>;
-        using ConstPtr = shared_ptr<const RayCaster>;
-        using MapArr = pcl::gpu::DeviceArray2D<float>;
-        using View = pcl::gpu::DeviceArray2D<PixelRGB>;
-        using Depth = pcl::gpu::DeviceArray2D<unsigned short>;     
+        typedef boost::shared_ptr<RayCaster> Ptr;
+        typedef pcl::gpu::DeviceArray2D<float> MapArr;
+        typedef pcl::gpu::DeviceArray2D<PixelRGB> View;
+        typedef pcl::gpu::DeviceArray2D<unsigned short> Depth;     
 
         /** \brief Image with height */ 
         const int cols, rows;      
@@ -147,7 +149,7 @@ namespace pcl
         Eigen::Vector3f volume_size_;
 
 public:
-  PCL_MAKE_ALIGNED_OPERATOR_NEW
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
       };
       
@@ -157,3 +159,5 @@ public:
     }
   }
 }
+
+#endif /* PCL_KINFU_TSDF_RAYCASTER_H_ */

@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_AUTO_IO_H_
+#define PCL_IO_AUTO_IO_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/common/io.h>
@@ -120,3 +121,5 @@ namespace pcl
 }
 
 #include <pcl/io/impl/auto_io.hpp>
+
+#endif  //#ifndef PCL_IO_AUTO_IO_H_

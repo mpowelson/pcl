@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef VTK_MESH_QUADRIC_DECIMATION_H_
+#define VTK_MESH_QUADRIC_DECIMATION_H_
 
 #include <pcl/surface/processing.h>
 #include <pcl/surface/vtk_smoothing/vtk.h>
@@ -72,7 +73,7 @@ namespace pcl
 
     protected:
       void
-      performProcessing (pcl::PolygonMesh &output) override;
+      performProcessing (pcl::PolygonMesh &output);
 
     private:
       float target_reduction_factor_;
@@ -80,3 +81,4 @@ namespace pcl
       vtkSmartPointer<vtkPolyData> vtk_polygons_;
   };
 }
+#endif /* VTK_MESH_QUADRIC_DECIMATION_H_ */

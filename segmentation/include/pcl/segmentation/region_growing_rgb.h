@@ -37,9 +37,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGION_GROWING_RGB_H_
+#define PCL_REGION_GROWING_RGB_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/segmentation/region_growing.h>
 
 namespace pcl
@@ -85,7 +85,7 @@ namespace pcl
       RegionGrowingRGB ();
 
       /** \brief Destructor that frees memory. */
-      
+      virtual
       ~RegionGrowingRGB ();
 
       /** \brief Returns the color threshold value used for testing if points belong to the same region. */
@@ -152,43 +152,43 @@ namespace pcl
       /** \brief Allows to turn on/off the curvature test.
         * \param[in] value new value for curvature test. If set to true then the test will be turned on
         */
-      void
-      setCurvatureTestFlag (bool value) override;
+      virtual void
+      setCurvatureTestFlag (bool value);
 
       /** \brief
         * Allows to turn on/off the residual test.
         * \param[in] value new value for residual test. If set to true then the test will be turned on
         */
-      void
-      setResidualTestFlag (bool value) override;
+      virtual void
+      setResidualTestFlag (bool value);
 
       /** \brief This method launches the segmentation algorithm and returns the clusters that were
         * obtained during the segmentation.
         * \param[out] clusters clusters that were obtained. Each cluster is an array of point indices.
         */
-      void
-      extract (std::vector <pcl::PointIndices>& clusters) override;
+      virtual void
+      extract (std::vector <pcl::PointIndices>& clusters);
 
       /** \brief For a given point this function builds a segment to which it belongs and returns this segment.
         * \param[in] index index of the initial point which will be the seed for growing a segment.
         * \param cluster
         */
-      void
-      getSegmentFromPoint (int index, pcl::PointIndices& cluster) override;
+      virtual void
+      getSegmentFromPoint (int index, pcl::PointIndices& cluster);
 
     protected:
 
       /** \brief This method simply checks if it is possible to execute the segmentation algorithm with
         * the current settings. If it is possible then it returns true.
         */
-      bool
-      prepareForSegmentation () override;
+      virtual bool
+      prepareForSegmentation ();
 
       /** \brief This method finds KNN for each point and saves them to the array
         * because the algorithm needs to find KNN a few times.
         */
-      void
-      findPointNeighbours () override;
+      virtual void
+      findPointNeighbours ();
 
       /** \brief This method simply calls the findRegionsKNN for each segment and
         * saves the results for later use.
@@ -244,8 +244,8 @@ namespace pcl
         * \param[in] nghbr index of the point that is neighbour of the current seed
         * \param[out] is_a_seed this value is set to true if the point with index 'nghbr' can serve as the seed
         */
-      bool
-      validatePoint (int initial_seed, int point, int nghbr, bool& is_a_seed) const override;
+      virtual bool
+      validatePoint (int initial_seed, int point, int nghbr, bool& is_a_seed) const;
 
     protected:
 
@@ -274,10 +274,12 @@ namespace pcl
       std::vector<int> segment_labels_;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/segmentation/impl/region_growing_rgb.hpp>
+#endif
+
 #endif

@@ -35,11 +35,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef TERMINAL_TOOLS_TIME_H_
+#define TERMINAL_TOOLS_TIME_H_
 
-#pragma once
+#ifdef __GNUC__
+#pragma GCC system_header 
+#endif
 
-#include <chrono>
-
+#ifndef Q_MOC_RUN
+#include <boost/date_time/posix_time/posix_time.hpp>
+#endif
 #include <pcl/console/print.h>
 
 namespace pcl
@@ -50,26 +55,26 @@ namespace pcl
     {
       public:
 
-        TicToc () {}
+        TicToc () : tictic (), toctoc () {}
 
         void 
         tic ()
         {
-          tictic_ = std::chrono::steady_clock::now();
+          tictic = boost::posix_time::microsec_clock::local_time ();
         };
 
         inline double 
-        toc () const
+        toc ()
         {
-          auto end_time = std::chrono::steady_clock::now();
-          return std::chrono::duration<double, std::ratio<1, 1000>>(end_time - tictic_).count();
+          toctoc = boost::posix_time::microsec_clock::local_time ();
+          return (static_cast<double> ((toctoc - tictic).total_milliseconds ()));
         };
         
         inline void 
-        toc_print () const
+        toc_print ()
         {
           double milliseconds = toc ();
-          //int minutes = (int) std::floor ( seconds / 60.0 );
+          //int minutes = (int) floor ( seconds / 60.0 );
           //seconds -= minutes * 60.0;
           //if (minutes != 0)
           //{
@@ -81,7 +86,10 @@ namespace pcl
         };
       
       private:
-        std::chrono::time_point<std::chrono::steady_clock> tictic_;
+        boost::posix_time::ptime tictic;
+        boost::posix_time::ptime toctoc;
     };
   } 
 }
+
+#endif

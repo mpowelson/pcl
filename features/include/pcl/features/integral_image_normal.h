@@ -36,14 +36,17 @@
  *
  */
 
-#pragma once
+#ifndef PCL_INTEGRALIMAGE_BASED_NORMAL_ESTIMATOR_H_
+#define PCL_INTEGRALIMAGE_BASED_NORMAL_ESTIMATOR_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/features/feature.h>
 #include <pcl/features/integral_image2D.h>
 
+#if defined BUILD_Maintainer && defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ > 3
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
 namespace pcl
 {
   /** \brief Surface normal estimation on organized data using integral images.
@@ -71,8 +74,8 @@ namespace pcl
     using Feature<PointInT, PointOutT>::indices_;
 
     public:
-      using Ptr = shared_ptr<IntegralImageNormalEstimation<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr<const IntegralImageNormalEstimation<PointInT, PointOutT> >;
+      typedef boost::shared_ptr<IntegralImageNormalEstimation<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const IntegralImageNormalEstimation<PointInT, PointOutT> > ConstPtr;
 
       /** \brief Different types of border handling. */
         enum BorderPolicy
@@ -100,8 +103,8 @@ namespace pcl
         SIMPLE_3D_GRADIENT
       };
 
-      using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudIn  PointCloudIn;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
       /** \brief Constructor */
       IntegralImageNormalEstimation ()
@@ -114,10 +117,10 @@ namespace pcl
         , integral_image_DY_ (false)
         , integral_image_depth_ (false)
         , integral_image_XYZ_ (true)
-        , diff_x_ (nullptr)
-        , diff_y_ (nullptr)
-        , depth_data_ (nullptr)
-        , distance_map_ (nullptr)
+        , diff_x_ (NULL)
+        , diff_y_ (NULL)
+        , depth_data_ (NULL)
+        , distance_map_ (NULL)
         , use_depth_dependent_smoothing_ (false)
         , max_depth_change_factor_ (20.0f*0.001f)
         , normal_smoothing_size_ (10.0f)
@@ -136,7 +139,7 @@ namespace pcl
       }
 
       /** \brief Destructor **/
-      ~IntegralImageNormalEstimation ();
+      virtual ~IntegralImageNormalEstimation ();
 
       /** \brief Set the regions size which is considered for normal estimation.
         * \param[in] width the width of the search rectangle
@@ -228,8 +231,8 @@ namespace pcl
        /** \brief Provide a pointer to the input dataset (overwrites the PCLBase::setInputCloud method)
          * \param[in] cloud the const boost shared pointer to a PointCloud message
          */
-      inline void
-      setInputCloud (const typename PointCloudIn::ConstPtr &cloud) override
+      virtual inline void
+      setInputCloud (const typename PointCloudIn::ConstPtr &cloud)
       {
         input_ = cloud;
         if (!cloud->isOrganized ())
@@ -317,7 +320,7 @@ namespace pcl
         * \param[out] output the resultant normals
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
       /** \brief Computes the normal for the complete cloud.
         * \param[in] distance_map distance map
@@ -446,7 +449,7 @@ namespace pcl
       
       /** \brief This method should get called before starting the actual computation. */
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief Internal initialization method for COVARIANCE_MATRIX estimation. */
       void
@@ -465,10 +468,16 @@ namespace pcl
       initSimple3DGradientMethod ();
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
+#if defined BUILD_Maintainer && defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ > 3
+#pragma GCC diagnostic warning "-Weffc++"
+#endif
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/integral_image_normal.hpp>
 #endif
+
+#endif
+

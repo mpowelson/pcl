@@ -37,8 +37,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ONE_TO_ONE_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ONE_TO_ONE_H_
 
 #include <pcl/registration/correspondence_rejection.h>
 
@@ -62,8 +62,8 @@ namespace pcl
       using CorrespondenceRejector::getClassName;
 
       public:
-        using Ptr = shared_ptr<CorrespondenceRejectorOneToOne>;
-        using ConstPtr = shared_ptr<const CorrespondenceRejectorOneToOne>;
+        typedef boost::shared_ptr<CorrespondenceRejectorOneToOne> Ptr;
+        typedef boost::shared_ptr<const CorrespondenceRejectorOneToOne> ConstPtr;
 
         /** \brief Empty constructor. */
         CorrespondenceRejectorOneToOne ()
@@ -77,14 +77,14 @@ namespace pcl
           */
         void 
         getRemainingCorrespondences (const pcl::Correspondences& original_correspondences, 
-                                     pcl::Correspondences& remaining_correspondences) override;
+                                     pcl::Correspondences& remaining_correspondences);
 
       protected:
         /** \brief Apply the rejection algorithm.
           * \param[out] correspondences the set of resultant correspondences.
           */
         inline void 
-        applyRejection (pcl::Correspondences &correspondences) override
+        applyRejection (pcl::Correspondences &correspondences)
         {
           getRemainingCorrespondences (*input_correspondences_, correspondences);
         }
@@ -94,3 +94,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_rejection_one_to_one.hpp>
+
+#endif    // PCL_REGISTRATION_CORRESPONDENCE_REJECTION_ONE_TO_ONE_H_

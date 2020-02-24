@@ -71,14 +71,14 @@ pcl::NormalEstimationOMP<PointInT, PointOutT>::computeFeature (PointCloudOut &ou
   if (input_->is_dense)
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared (output) firstprivate (nn_indices, nn_dists) num_threads(threads_)
+#pragma omp parallel for shared (output) private (nn_indices, nn_dists) num_threads(threads_)
 #endif
     // Iterating over the entire index vector
-    for (std::ptrdiff_t idx = 0; idx < static_cast<std::ptrdiff_t> (indices_->size ()); ++idx)
+    for (int idx = 0; idx < static_cast<int> (indices_->size ()); ++idx)
     {
       Eigen::Vector4f n;
       if (this->searchForNeighbors ((*indices_)[idx], search_parameter_, nn_indices, nn_dists) == 0 ||
-          !pcl::computePointNormal (*surface_, nn_indices, n, output.points[idx].curvature))
+          !computePointNormal (*surface_, nn_indices, n, output.points[idx].curvature))
       {
         output.points[idx].normal[0] = output.points[idx].normal[1] = output.points[idx].normal[2] = output.points[idx].curvature = std::numeric_limits<float>::quiet_NaN ();
 
@@ -98,15 +98,15 @@ pcl::NormalEstimationOMP<PointInT, PointOutT>::computeFeature (PointCloudOut &ou
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared (output) firstprivate (nn_indices, nn_dists) num_threads(threads_)
+#pragma omp parallel for shared (output) private (nn_indices, nn_dists) num_threads(threads_)
 #endif
     // Iterating over the entire index vector
-    for (std::ptrdiff_t idx = 0; idx < static_cast<std::ptrdiff_t> (indices_->size ()); ++idx)
+    for (int idx = 0; idx < static_cast<int> (indices_->size ()); ++idx)
     {
       Eigen::Vector4f n;
       if (!isFinite ((*input_)[(*indices_)[idx]]) ||
           this->searchForNeighbors ((*indices_)[idx], search_parameter_, nn_indices, nn_dists) == 0 ||
-          !pcl::computePointNormal (*surface_, nn_indices, n, output.points[idx].curvature))
+          !computePointNormal (*surface_, nn_indices, n, output.points[idx].curvature))
       {
         output.points[idx].normal[0] = output.points[idx].normal[1] = output.points[idx].normal[2] = output.points[idx].curvature = std::numeric_limits<float>::quiet_NaN ();
 

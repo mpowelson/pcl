@@ -87,7 +87,7 @@ namespace pcl
             {
               float3 vec = normalized (light.pos[i] - v);
 
-              weight *= std::abs (dot (vec, n));
+              weight *= fabs (dot (vec, n));
             }
 
             int br = (int)(205 * weight) + 50;

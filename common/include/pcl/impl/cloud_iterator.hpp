@@ -90,7 +90,7 @@ namespace pcl
         return (iterator_ - cloud_.begin ());
       }
 
-      std::size_t size () const
+      size_t size () const
       {
         return cloud_.size ();
       }
@@ -162,7 +162,7 @@ namespace pcl
         return (iterator_ - indices_.begin ());
       }
 
-      std::size_t size () const
+      size_t size () const
       {
         return indices_.size ();
       }
@@ -200,47 +200,47 @@ namespace pcl
       {
       }
 
-      void operator ++ () override
+      void operator ++ ()
       {
         ++iterator_;
       }
 
-      void operator ++ (int) override
+      void operator ++ (int)
       {
         iterator_++;
       }
 
-      const PointT& operator* () const override
+      const PointT& operator* () const
       {
         return (*iterator_);
       }
 
-      const PointT* operator-> () const override
+      const PointT* operator-> () const
       {
         return (&(*iterator_));
       }
 
-      unsigned getCurrentPointIndex () const override
+      unsigned getCurrentPointIndex () const
       {
         return (unsigned (iterator_ - cloud_.begin ()));
       }
 
-      unsigned getCurrentIndex () const override
+      unsigned getCurrentIndex () const
       {
         return (unsigned (iterator_ - cloud_.begin ()));
       }
 
-      std::size_t size () const override
+      size_t size () const
       {
         return cloud_.size ();
       }
 
-      void reset () override
+      void reset ()
       {
         iterator_ = cloud_.begin ();
       }
 
-      bool isValid () const override
+      bool isValid () const
       {
         return (iterator_ != cloud_.end ());
       }
@@ -272,49 +272,49 @@ namespace pcl
       {
       }
 
-      ~ConstIteratorIdx () {}
+      virtual ~ConstIteratorIdx () {}
 
-      void operator ++ () override
+      void operator ++ ()
       {
         ++iterator_;
       }
 
-      void operator ++ (int) override
+      void operator ++ (int)
       {
         iterator_++;
       }
 
-      const PointT& operator* () const override
+      const PointT& operator* () const
       {
         return (cloud_.points[*iterator_]);
       }
 
-      const PointT* operator-> () const override
+      const PointT* operator-> () const
       {
         return (&(cloud_.points [*iterator_]));
       }
 
-      unsigned getCurrentPointIndex () const override
+      unsigned getCurrentPointIndex () const
       {
         return (unsigned (*iterator_));
       }
 
-      unsigned getCurrentIndex () const override
+      unsigned getCurrentIndex () const
       {
         return (unsigned (iterator_ - indices_.begin ()));
       }
 
-      std::size_t size () const override
+      size_t size () const
       {
         return indices_.size ();
       }
 
-      void reset () override
+      void reset ()
       {
         iterator_ = indices_.begin ();
       }
 
-      bool isValid () const override
+      bool isValid () const
       {
         return (iterator_ != indices_.end ());
       }
@@ -358,13 +358,13 @@ pcl::CloudIterator<PointT>::CloudIterator (
   indices.reserve (corrs.size ());
   if (source)
   {
-    for (const auto &corr : corrs)
-      indices.push_back (corr.index_query);
+    for (typename Correspondences::const_iterator indexIt = corrs.begin (); indexIt != corrs.end (); ++indexIt)
+      indices.push_back (indexIt->index_query);
   }
   else
   {
-    for (const auto &corr : corrs)
-      indices.push_back (corr.index_match);
+    for (typename Correspondences::const_iterator indexIt = corrs.begin (); indexIt != corrs.end (); ++indexIt)
+      indices.push_back (indexIt->index_match);
   }
   iterator_ = new IteratorIdx<PointT> (cloud, indices);
 }
@@ -419,7 +419,7 @@ pcl::CloudIterator<PointT>::getCurrentIndex () const
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template <class PointT> std::size_t
+template <class PointT> size_t
 pcl::CloudIterator<PointT>::size () const
 {
   return (iterator_->size ());
@@ -472,13 +472,13 @@ pcl::ConstCloudIterator<PointT>::ConstCloudIterator (
   indices.reserve (corrs.size ());
   if (source)
   {
-    for (const auto &corr : corrs)
-      indices.push_back (corr.index_query);
+    for (typename Correspondences::const_iterator indexIt = corrs.begin (); indexIt != corrs.end (); ++indexIt)
+      indices.push_back (indexIt->index_query);
   }
   else
   {
-    for (const auto &corr : corrs)
-      indices.push_back (corr.index_match);
+    for (typename Correspondences::const_iterator indexIt = corrs.begin (); indexIt != corrs.end (); ++indexIt)
+      indices.push_back (indexIt->index_match);
   }
   iterator_ = new typename pcl::ConstCloudIterator<PointT>::ConstIteratorIdx (cloud, indices);
 }
@@ -533,7 +533,7 @@ pcl::ConstCloudIterator<PointT>::getCurrentIndex () const
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template <class PointT> std::size_t
+template <class PointT> size_t
 pcl::ConstCloudIterator<PointT>::size () const
 {
   return (iterator_->size ());

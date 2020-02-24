@@ -43,7 +43,8 @@
  *      Author: papazov
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_HYPOTHESIS_H_
+#define PCL_RECOGNITION_HYPOTHESIS_H_
 
 #include <pcl/recognition/ransac_based/model_library.h>
 #include <pcl/recognition/ransac_based/auxiliary.h>
@@ -81,7 +82,7 @@ namespace pcl
     class Hypothesis: public HypothesisBase
     {
       public:
-        Hypothesis (const ModelLibrary::Model* obj_model = nullptr)
+        Hypothesis (const ModelLibrary::Model* obj_model = NULL)
          : HypothesisBase (obj_model),
            match_confidence_ (-1.0f),
            linear_id_ (-1)
@@ -95,7 +96,7 @@ namespace pcl
         {
         }
 
-        ~Hypothesis (){}
+        virtual ~Hypothesis (){}
 
         const Hypothesis&
         operator =(const Hypothesis& src)
@@ -155,3 +156,5 @@ namespace pcl
     };
   } // namespace recognition
 } // namespace pcl
+
+#endif /* PCL_RECOGNITION_HYPOTHESIS_H_ */

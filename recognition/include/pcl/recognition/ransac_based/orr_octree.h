@@ -43,7 +43,8 @@
  *      Author: papazov
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_ORR_OCTREE_H_
+#define PCL_RECOGNITION_ORR_OCTREE_H_
 
 #include "auxiliary.h"
 #include <pcl/point_types.h>
@@ -70,9 +71,9 @@ namespace pcl
     class PCL_EXPORTS ORROctree
     {
       public:
-        using PointCloudIn = pcl::PointCloud<pcl::PointXYZ>;
-        using PointCloudOut = pcl::PointCloud<pcl::PointXYZ>;
-        using PointCloudN = pcl::PointCloud<pcl::Normal>;
+        typedef pcl::PointCloud<pcl::PointXYZ> PointCloudIn;
+        typedef pcl::PointCloud<pcl::PointXYZ> PointCloudOut;
+        typedef pcl::PointCloud<pcl::Normal> PointCloudN;
 
         class Node
         {
@@ -80,7 +81,7 @@ namespace pcl
             class Data
             {
               public:
-                Data (int id_x, int id_y, int id_z, int lin_id, void* user_data = nullptr)
+                Data (int id_x, int id_y, int id_z, int lin_id, void* user_data = NULL)
                 : id_x_ (id_x),
                   id_y_ (id_y),
                   id_z_ (id_z),
@@ -165,9 +166,9 @@ namespace pcl
             };
 
             Node ()
-            : data_ (nullptr),
-              parent_ (nullptr),
-              children_(nullptr)
+            : data_ (NULL),
+              parent_ (NULL),
+              children_(NULL)
             {}
 
             virtual~ Node ()
@@ -245,7 +246,7 @@ namespace pcl
               if ( children_ )
               {
                 delete[] children_;
-                children_ = nullptr;
+                children_ = NULL;
               }
             }
 
@@ -255,7 +256,7 @@ namespace pcl
               if ( data_ )
               {
                 delete data_;
-                data_ = nullptr;
+                data_ = NULL;
               }
             }
 
@@ -288,7 +289,7 @@ namespace pcl
           * by enlarging the bounds by that factor. For example, enlarge_bounds = 1 means that the
           * bounds will be enlarged by 100%. The default value is fine. */
         void
-        build (const PointCloudIn& points, float voxel_size, const PointCloudN* normals = nullptr, float enlarge_bounds = 0.00001f);
+        build (const PointCloudIn& points, float voxel_size, const PointCloudN* normals = NULL, float enlarge_bounds = 0.00001f);
 
         /** \brief Creates an empty octree with bounds at least as large as the ones provided as input and with leaf
           * size equal to 'voxel_size'. */
@@ -307,7 +308,7 @@ namespace pcl
                y < bounds_[2] || y > bounds_[3] ||
                z < bounds_[4] || z > bounds_[5] )
           {
-            return (nullptr);
+            return (NULL);
           }
 
           ORROctree::Node* node = root_;
@@ -380,7 +381,7 @@ namespace pcl
                y < bounds_[2] || y > bounds_[3] ||
                z < bounds_[4] || z > bounds_[5] )
           {
-            return (nullptr);
+            return (NULL);
           }
 
           ORROctree::Node* node = root_;
@@ -391,7 +392,7 @@ namespace pcl
           for ( int l = 0 ; l < tree_levels_ ; ++l )
           {
             if ( !node->hasChildren () )
-              return (nullptr);
+              return (NULL);
 
             c = node->getCenter ();
             id = 0;
@@ -487,3 +488,5 @@ namespace pcl
     };
   } // namespace recognition
 } // namespace pcl
+
+#endif /* PCL_RECOGNITION_ORR_OCTREE_H_ */

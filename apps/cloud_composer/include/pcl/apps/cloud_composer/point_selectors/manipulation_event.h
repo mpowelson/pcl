@@ -35,10 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef MANIPULATION_EVENT_H_
+#define MANIPULATION_EVENT_H_
 
 #include <pcl/visualization/vtk.h>
 #include <pcl/apps/cloud_composer/items/cloud_item.h>
+#include <pcl/apps/cloud_composer/qt.h>
 
 namespace pcl
 {
@@ -46,7 +48,7 @@ namespace pcl
   {
       
     
-    class ManipulationEvent
+    class PCL_EXPORTS ManipulationEvent
     {
       
       public:
@@ -56,7 +58,7 @@ namespace pcl
         ~ManipulationEvent ();
         
         void
-        addManipulation (const QString& id, const vtkSmartPointer<vtkMatrix4x4>& start, const vtkSmartPointer<vtkMatrix4x4>& end);
+        addManipulation (QString id, vtkSmartPointer<vtkMatrix4x4> start, vtkSmartPointer<vtkMatrix4x4> end);
         
         inline QMap <QString, vtkSmartPointer<vtkMatrix4x4> >
         getStartMap () const { return id_start_map_;}
@@ -74,3 +76,7 @@ namespace pcl
   }
   
 }
+
+#endif // MANIPULATION_EVENT_H_
+        
+        

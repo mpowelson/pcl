@@ -34,7 +34,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_FEATURE_HISTOGRAM_H_
+#define PCL_FEATURE_HISTOGRAM_H_
 
 #include <vector>
 
@@ -55,7 +56,7 @@ namespace pcl
         * \param[in] min lower threshold.
         * \param[in] max upper threshold.
         */
-      FeatureHistogram (const std::size_t number_of_bins, const float min,
+      FeatureHistogram (const size_t number_of_bins, const float min,
           const float max);
 
       /** \brief Public destructor. */
@@ -76,13 +77,13 @@ namespace pcl
       /** \brief Get the number of elements was added to the histogram.
         * \return number of elements in the histogram.
         */
-      std::size_t
+      size_t
       getNumberOfElements () const;
 
       /** \brief Get number of bins in the histogram.
         * \return number of bins in the histogram.
         */
-      std::size_t
+      size_t
       getNumberOfBins () const;
 
       /** \brief Increase a bin, that corresponds the value.
@@ -115,9 +116,10 @@ namespace pcl
       float step_;
 
       /** \brief Number of values was added to the histogram. */
-      std::size_t number_of_elements_;
+      size_t number_of_elements_;
 
       /** \brief Number of bins. */
-      std::size_t number_of_bins_;
+      size_t number_of_bins_;
   };
 }
+#endif // PCL_FEATURE_HISTOGRAM_H_

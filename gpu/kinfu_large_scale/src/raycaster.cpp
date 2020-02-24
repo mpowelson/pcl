@@ -82,7 +82,7 @@ pcl::gpu::kinfuLS::RayCaster::run(const TsdfVolume& volume, const Affine3f& came
   vertex_map_.create(rows * 3, cols);
   normal_map_.create(rows * 3, cols);
 
-  using Matrix3f = Matrix<float, 3, 3, RowMajor>;
+  typedef Matrix<float, 3, 3, RowMajor> Matrix3f;
     
   Matrix3f R = camera_pose_.linear();
   Vector3f t = camera_pose_.translation();

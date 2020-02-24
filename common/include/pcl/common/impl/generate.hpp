@@ -166,11 +166,13 @@ pcl::common::CloudGenerator<PointT, GeneratorT>::fill (int width, int height, pc
   cloud.height = height;
   cloud.resize (cloud.width * cloud.height);
   cloud.is_dense = true;
-  for (auto& point: cloud)
+  for (typename pcl::PointCloud<PointT>::iterator points_it = cloud.begin ();
+       points_it != cloud.end ();
+       ++points_it)
   {
-    point.x = x_generator_.run ();
-    point.y = y_generator_.run ();
-    point.z = z_generator_.run ();
+    points_it->x = x_generator_.run ();
+    points_it->y = y_generator_.run ();
+    points_it->z = z_generator_.run ();
   }
   return (0);
 }
@@ -276,10 +278,12 @@ pcl::common::CloudGenerator<pcl::PointXY, GeneratorT>::fill (int width, int heig
   cloud.resize (cloud.width * cloud.height);
   cloud.is_dense = true;
 
-  for (auto &point : cloud)
+  for (pcl::PointCloud<pcl::PointXY>::iterator points_it = cloud.begin ();
+       points_it != cloud.end ();
+       ++points_it)
   {
-    point.x = x_generator_.run ();
-    point.y = y_generator_.run ();
+    points_it->x = x_generator_.run ();
+    points_it->y = y_generator_.run ();
   }
   return (0);
 }

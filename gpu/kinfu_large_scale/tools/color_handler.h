@@ -34,7 +34,8 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
-#pragma once
+#ifndef COLOR_HANDLER_H_
+#define COLOR_HANDLER_H_
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -50,12 +51,12 @@ namespace pcl
       using PointCloudColorHandler<PointT>::capable_;
       using PointCloudColorHandler<PointT>::cloud_;
 
-      using PointCloudConstPtr = typename PointCloudColorHandler<PointT>::PointCloud::ConstPtr;
-      using RgbCloudConstPtr = pcl::PointCloud<RGB>::ConstPtr;
+      typedef typename PointCloudColorHandler<PointT>::PointCloud::ConstPtr PointCloudConstPtr;                            
+      typedef typename pcl::PointCloud<RGB>::ConstPtr RgbCloudConstPtr;
 
     public:
-      using Ptr = shared_ptr<PointCloudColorHandlerRGBHack<PointT> >;
-      using ConstPtr = shared_ptr<const PointCloudColorHandlerRGBHack<PointT> >;
+      typedef boost::shared_ptr<PointCloudColorHandlerRGBHack<PointT> > Ptr;
+      typedef boost::shared_ptr<const PointCloudColorHandlerRGBHack<PointT> > ConstPtr;
       
       PointCloudColorHandlerRGBHack (const PointCloudConstPtr& cloud, const RgbCloudConstPtr& colors) : 
           PointCloudColorHandler<PointT> (cloud), rgb_ (colors)
@@ -63,8 +64,8 @@ namespace pcl
         capable_ = true;
       }
             
-      bool 
-      getColor (vtkSmartPointer<vtkDataArray> &scalars) const override
+      virtual bool 
+      getColor (vtkSmartPointer<vtkDataArray> &scalars) const
       {
         if (!capable_)
           return (false);
@@ -92,9 +93,12 @@ namespace pcl
       }
     
     private:
-      std::string getFieldName () const override { return ("rgb"); }    
-      inline std::string getName () const override { return ("PointCloudColorHandlerRGBHack"); }
+      virtual std::string getFieldName () const { return ("rgb"); }    
+      virtual inline std::string getName () const { return ("PointCloudColorHandlerRGBHack"); }
       RgbCloudConstPtr rgb_;    
     };
   }
 }
+
+
+#endif /* COLOR_HANDLER_H_ */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_APPROX_NEAREST_PAIR_POINT_CLOUD_COHERENCE_H_
+#define PCL_TRACKING_APPROX_NEAREST_PAIR_POINT_CLOUD_COHERENCE_H_
 
 #include <pcl/search/search.h>
 #include <pcl/search/octree.h>
@@ -16,8 +17,8 @@ namespace pcl
     class ApproxNearestPairPointCloudCoherence: public NearestPairPointCloudCoherence<PointInT>
     {
     public:
-      using PointCoherencePtr = typename NearestPairPointCloudCoherence<PointInT>::PointCoherencePtr;
-      using PointCloudInConstPtr = typename NearestPairPointCloudCoherence<PointInT>::PointCloudInConstPtr;
+      typedef typename NearestPairPointCloudCoherence<PointInT>::PointCoherencePtr PointCoherencePtr;
+      typedef typename NearestPairPointCloudCoherence<PointInT>::PointCloudInConstPtr PointCloudInConstPtr;
       //using NearestPairPointCloudCoherence<PointInT>::search_;
       using NearestPairPointCloudCoherence<PointInT>::maximum_distance_;
       using NearestPairPointCloudCoherence<PointInT>::target_input_;
@@ -35,13 +36,13 @@ namespace pcl
       
     protected:
       /** \brief This method should get called before starting the actual computation. */
-      bool initCompute () override;
+      virtual bool initCompute ();
       
       /** \brief compute the nearest pairs and compute coherence using point_coherences_ */
-      void
-      computeCoherence (const PointCloudInConstPtr &cloud, const IndicesConstPtr &indices, float &w_j) override;
+      virtual void
+      computeCoherence (const PointCloudInConstPtr &cloud, const IndicesConstPtr &indices, float &w_j);
 
-      typename pcl::search::Octree<PointInT>::Ptr search_;
+      typename boost::shared_ptr<pcl::search::Octree<PointInT> > search_;
     };
   }
 }
@@ -49,3 +50,6 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/approx_nearest_pair_point_cloud_coherence.hpp>
 #endif
+
+#endif
+

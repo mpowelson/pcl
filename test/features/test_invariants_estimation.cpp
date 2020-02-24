@@ -46,10 +46,10 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace std;
 
-using KdTreePtr = search::KdTree<PointXYZ>::Ptr;
+typedef search::KdTree<PointXYZ>::Ptr KdTreePtr;
 
 PointCloud<PointXYZ> cloud;
-std::vector<int> indices;
+vector<int> indices;
 KdTreePtr tree;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ TEST (PCL, MomentInvariantsEstimation)
 
   // set parameters
   mi.setInputCloud (cloud.makeShared ());
-  pcl::IndicesPtr indicesptr (new pcl::Indices (indices));
+  boost::shared_ptr<vector<int> > indicesptr (new vector<int> (indices));
   mi.setIndices (indicesptr);
   mi.setSearchMethod (tree);
   mi.setKSearch (static_cast<int> (indices.size ()));
@@ -85,11 +85,11 @@ TEST (PCL, MomentInvariantsEstimation)
   mi.compute (*moments);
   EXPECT_EQ (moments->points.size (), indices.size ());
 
-  for (const auto &point : moments->points)
+  for (size_t i = 0; i < moments->points.size (); ++i)
   {
-    EXPECT_NEAR (point.j1, 1.59244, 1e-4);
-    EXPECT_NEAR (point.j2, 0.652063, 1e-4);
-    EXPECT_NEAR (point.j3, 0.053917, 1e-4);
+    EXPECT_NEAR (moments->points[i].j1, 1.59244, 1e-4);
+    EXPECT_NEAR (moments->points[i].j2, 0.652063, 1e-4);
+    EXPECT_NEAR (moments->points[i].j3, 0.053917, 1e-4);
   }
 }
 

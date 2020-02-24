@@ -35,8 +35,6 @@
  *
  */
 
-#include <random>
-
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
@@ -49,7 +47,7 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace pcl::console;
 
-float default_standard_deviation = 0.01f;
+double default_standard_deviation = 0.01;
 
 void
 printHelp (int, char **argv)
@@ -77,7 +75,7 @@ loadCloud (const std::string &filename, pcl::PCLPointCloud2 &cloud)
 
 void
 compute (const pcl::PCLPointCloud2::ConstPtr &input, pcl::PCLPointCloud2 &output,
-         float standard_deviation)
+         double standard_deviation)
 {
   TicToc tt;
   tt.tic ();
@@ -94,15 +92,15 @@ compute (const pcl::PCLPointCloud2::ConstPtr &input, pcl::PCLPointCloud2 &output
   xyz_cloud_filtered->height = xyz_cloud->height;
 
 
-  std::random_device rd;
-  std::mt19937 rng(rd());
-  std::normal_distribution<float> nd (0.0f, standard_deviation);
+  boost::mt19937 rng; rng.seed (static_cast<unsigned int> (time (0)));
+  boost::normal_distribution<> nd (0, standard_deviation);
+  boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > var_nor (rng, nd);
 
-  for (std::size_t point_i = 0; point_i < xyz_cloud->points.size (); ++point_i)
+  for (size_t point_i = 0; point_i < xyz_cloud->points.size (); ++point_i)
   {
-    xyz_cloud_filtered->points[point_i].x = xyz_cloud->points[point_i].x + nd (rng);
-    xyz_cloud_filtered->points[point_i].y = xyz_cloud->points[point_i].y + nd (rng);
-    xyz_cloud_filtered->points[point_i].z = xyz_cloud->points[point_i].z + nd (rng);
+    xyz_cloud_filtered->points[point_i].x = xyz_cloud->points[point_i].x + static_cast<float> (var_nor ());
+    xyz_cloud_filtered->points[point_i].y = xyz_cloud->points[point_i].y + static_cast<float> (var_nor ());
+    xyz_cloud_filtered->points[point_i].z = xyz_cloud->points[point_i].z + static_cast<float> (var_nor ());
   }
 
   pcl::PCLPointCloud2 input_xyz_filtered;
@@ -147,7 +145,7 @@ main (int argc, char** argv)
   }
 
   // Command line parsing
-  float standard_deviation = default_standard_deviation;
+  double standard_deviation = default_standard_deviation;
   parse_argument (argc, argv, "-sd", standard_deviation);
 
   // Load the first file

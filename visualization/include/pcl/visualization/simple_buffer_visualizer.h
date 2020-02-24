@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_VISUALIZATION_SIMPLE_BUFF_H
+#define PCL_VISUALIZATION_SIMPLE_BUFF_H
 
 #include <pcl/visualization/histogram_visualizer.h>
 
@@ -191,8 +192,8 @@ namespace pcl
 
           handle_y_scale_ = false;      
 
-          min_ =  -1.0f; // std::numeric_limits<float>::max( );
-          max_ =  1.0f; // std::numeric_limits<float>::min( );  
+          min_ =  -1.0f; // numeric_limits<float>::max( );
+          max_ =  1.0f; // numeric_limits<float>::min( );  
         }
     
         /** \brief visualizer object */
@@ -223,3 +224,5 @@ namespace pcl
     };    
   }  
 }
+
+#endif // PCL_VISUALIZATION_SIMPLE_BUFF_H

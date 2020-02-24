@@ -58,11 +58,12 @@ main (int argc, char **argv)
   ss << std::numeric_limits<float>::quiet_NaN ();
   std::string nanStr (ss.str ());
 
-  std::cout << R"(converting ")" << nanStr << R"(" to "nan")" << std::endl;
+  std::cout << "converting \"" << nanStr << "\" to \"nan\"" << std::endl;
 
   std::ifstream input (argv[1]);
   std::ofstream output (argv[2]);
   std::string str;
+  char next;
 
   while (input >> str)
   {
@@ -70,7 +71,7 @@ main (int argc, char **argv)
       output << "nan";
     else
       output << str;
-    char next = static_cast<char> (input.peek ());
+    next = static_cast<char> (input.peek ());
     if (next == '\n' || next == '\r')
       output << "\n";
     else

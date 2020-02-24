@@ -49,7 +49,7 @@ ON_Light::~ON_Light()
 {
 }
 
-ON_BOOL32 ON_Light::IsValid( ON_TextLog* ) const
+ON_BOOL32 ON_Light::IsValid( ON_TextLog* text_log ) const
 {
   int s = Style();
   if ( s <= ON::unknown_light_style || s >= ON::light_style_count ) {
@@ -126,14 +126,11 @@ void ON_Light::Dump( ON_TextLog& dump ) const
 
   dump.Print("location = "); dump.Print(Location()); dump.Print("\n");
   if ( bDumpDir )
-    dump.Print("direction = ");
-  dump.Print(Direction()); dump.Print("\n");
+    dump.Print("direction = "); dump.Print(Direction()); dump.Print("\n");
   if ( bDumpLength )
-    dump.Print("length = ");
-  dump.Print(Length()); dump.Print("\n");
+    dump.Print("length = "); dump.Print(Length()); dump.Print("\n");
   if ( bDumpWidth )
-    dump.Print("width = ");
-  dump.Print(Width()); dump.Print("\n");
+    dump.Print("width = "); dump.Print(Width()); dump.Print("\n");
 
   dump.Print("intensity = %g%%\n",Intensity()*100.0);
 
@@ -369,7 +366,7 @@ ON::light_style ON_Light::Style() const
   return m_style;
 }
 
-ON_BOOL32 ON_Light::IsPointLight() const
+const ON_BOOL32 ON_Light::IsPointLight() const
 {
   ON_BOOL32 rc;
   switch(m_style)
@@ -386,7 +383,7 @@ ON_BOOL32 ON_Light::IsPointLight() const
   return rc;
 }
 
-ON_BOOL32 ON_Light::IsDirectionalLight() const
+const ON_BOOL32 ON_Light::IsDirectionalLight() const
 {
   ON_BOOL32 rc;
   switch(m_style)
@@ -403,7 +400,7 @@ ON_BOOL32 ON_Light::IsDirectionalLight() const
   return rc;
 }
 
-ON_BOOL32 ON_Light::IsSpotLight() const
+const ON_BOOL32 ON_Light::IsSpotLight() const
 {
   ON_BOOL32 rc;
   switch(m_style)
@@ -420,7 +417,7 @@ ON_BOOL32 ON_Light::IsSpotLight() const
   return rc;
 }
 
-ON_BOOL32 ON_Light::IsLinearLight() const
+const ON_BOOL32 ON_Light::IsLinearLight() const
 {
   ON_BOOL32 rc;
   switch(m_style)
@@ -437,7 +434,7 @@ ON_BOOL32 ON_Light::IsLinearLight() const
   return rc;
 }
 
-ON_BOOL32 ON_Light::IsRectangularLight() const
+const ON_BOOL32 ON_Light::IsRectangularLight() const
 {
   ON_BOOL32 rc;
   switch(m_style)

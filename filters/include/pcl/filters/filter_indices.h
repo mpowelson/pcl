@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FILTERS_FILTER_INDICES_H_
+#define PCL_FILTERS_FILTER_INDICES_H_
 
 #include <pcl/filters/filter.h>
 
@@ -75,10 +76,10 @@ namespace pcl
   {
     public:
       using Filter<PointT>::extract_removed_indices_;
-      using PointCloud = pcl::PointCloud<PointT>;
+      typedef pcl::PointCloud<PointT> PointCloud;
 
-      using Ptr = shared_ptr<FilterIndices<PointT> >;
-      using ConstPtr = shared_ptr<const FilterIndices<PointT> >;
+      typedef boost::shared_ptr< FilterIndices<PointT> > Ptr;
+      typedef boost::shared_ptr< const FilterIndices<PointT> > ConstPtr;
 
 
       /** \brief Constructor.
@@ -93,7 +94,7 @@ namespace pcl
       }
 
       /** \brief Empty virtual destructor. */
-      
+      virtual
       ~FilterIndices ()
       {
       }
@@ -186,8 +187,8 @@ namespace pcl
       applyFilter (std::vector<int> &indices) = 0;
 
       /** \brief Abstract filter method for point cloud. */
-      void
-      applyFilter (PointCloud &output) override = 0;
+      virtual void
+      applyFilter (PointCloud &output) = 0;
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +205,7 @@ namespace pcl
   class PCL_EXPORTS FilterIndices<pcl::PCLPointCloud2> : public Filter<pcl::PCLPointCloud2>
   {
     public:
-      using PCLPointCloud2 = pcl::PCLPointCloud2;
+      typedef pcl::PCLPointCloud2 PCLPointCloud2;
 
       /** \brief Constructor.
         * \param[in] extract_removed_indices Set to true if you want to extract the indices of points being removed (default = false).
@@ -218,7 +219,7 @@ namespace pcl
       }
 
       /** \brief Empty virtual destructor. */
-      
+      virtual
       ~FilterIndices ()
       {
       }
@@ -299,11 +300,14 @@ namespace pcl
       applyFilter (std::vector<int> &indices) = 0;
 
       /** \brief Abstract filter method for point cloud. */
-      void
-      applyFilter (PCLPointCloud2 &output) override = 0;
+      virtual void
+      applyFilter (PCLPointCloud2 &output) = 0;
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/filters/impl/filter_indices.hpp>
 #endif
+
+#endif  //#ifndef PCL_FILTERS_FILTER_INDICES_H_
+

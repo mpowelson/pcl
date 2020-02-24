@@ -1,4 +1,3 @@
-#include <thread>
 
 #include <pcl/stereo/stereo_matching.h>
 #include <pcl/visualization/pcl_visualizer.h>
@@ -16,8 +15,6 @@
   * \author Federico Tombari (federico.tombari@unibo.it)
   * \ingroup stereo
   */
-
-using namespace std::chrono_literals;
 
 int 
 main(int argc, char **argv)
@@ -85,7 +82,7 @@ main(int argc, char **argv)
   //iv.addRGBImage<pcl::RGB> (left_cloud);
   //iv.spin (); // press 'q' to exit
 
-  pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer->setBackgroundColor (0, 0, 0);
   
   //viewer->addPointCloud<pcl::PointXYZRGB> (out_cloud, "stereo");
@@ -99,6 +96,6 @@ main(int argc, char **argv)
   {
     viewer->spinOnce (100);
     iv.spinOnce (100); // press 'q' to exit
-    std::this_thread::sleep_for(100ms);
+    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
   }
 }

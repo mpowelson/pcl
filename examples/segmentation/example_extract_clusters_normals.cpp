@@ -47,6 +47,7 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/kdtree/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/segmentation/extract_clusters.h>
 
 
@@ -75,10 +76,11 @@ main (int, char **argv)
   std::cout << "Estimated the normals" << std::endl;
 
   // Creating the kdtree object for the search method of the extraction
-  pcl::KdTree<pcl::PointXYZ>::Ptr tree_ec  (new pcl::KdTreeFLANN<pcl::PointXYZ> ());
+  boost::shared_ptr<pcl::KdTree<pcl::PointXYZ> > tree_ec  (new pcl::KdTreeFLANN<pcl::PointXYZ> ());
   tree_ec->setInputCloud (cloud_ptr);
   
   // Extracting Euclidean clusters using cloud and its normals
+  std::vector<int> indices;
   std::vector<pcl::PointIndices> cluster_indices;
   const float tolerance = 0.5f; // 50cm tolerance in (x, y, z) coordinate system
   const double eps_angle = 5 * (M_PI / 180.0); // 5degree tolerance in normals
@@ -93,9 +95,9 @@ main (int, char **argv)
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
-    for (const int &index : it->indices)
-      cloud_cluster->points.push_back (cloud_ptr->points[index]); 
-    cloud_cluster->width = static_cast<std::uint32_t> (cloud_cluster->points.size ());
+    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+      cloud_cluster->points.push_back (cloud_ptr->points[*pit]); 
+    cloud_cluster->width = static_cast<uint32_t> (cloud_cluster->points.size ());
     cloud_cluster->height = 1;
     cloud_cluster->is_dense = true;
 

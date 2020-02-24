@@ -1,5 +1,3 @@
-#include <flann/flann.hpp>
-
 #include <pcl/apps/3d_rec_framework/pipeline/local_recognizer.h>
 #include <pcl/apps/3d_rec_framework/utils/vtk_model_sampling.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
@@ -12,23 +10,29 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
   void
   pcl::rec_3d_framework::LocalRecognitionPipeline<Distance, PointInT, FeatureT>::loadFeaturesAndCreateFLANN ()
   {
-    auto models = source_->getModels ();
+    boost::shared_ptr < std::vector<ModelT> > models = source_->getModels ();
     std::cout << "Models size:" << models->size () << std::endl;
 
-    for (std::size_t i = 0; i < models->size (); i++)
+    for (size_t i = 0; i < models->size (); i++)
     {
       std::string path = source_->getModelDescriptorDir (models->at (i), training_dir_, descr_name_);
+      bf::path inside = path;
+      bf::directory_iterator end_itr;
 
-      for (const auto& dir_entry : bf::directory_iterator(path))
+      for (bf::directory_iterator itr_in (inside); itr_in != end_itr; ++itr_in)
       {
-        std::string file_name = (dir_entry.path ().filename ()).string();
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string file_name = (itr_in->path ().filename ()).string();
+#else
+        std::string file_name = (itr_in->path ()).filename ();
+#endif
 
         std::vector < std::string > strs;
         boost::split (strs, file_name, boost::is_any_of ("_"));
 
         if (strs[0] == "descriptor")
         {
-          std::string full_file_name = dir_entry.path ().string ();
+          std::string full_file_name = itr_in->path ().string ();
           std::string name = file_name.substr (0, file_name.length () - 4);
           std::vector < std::string > strs;
           boost::split (strs, name, boost::is_any_of ("_"));
@@ -64,7 +68,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
 
           int size_feat = sizeof(signature->points[0].histogram) / sizeof(float);
 
-          for (std::size_t dd = 0; dd < signature->points.size (); dd++)
+          for (size_t dd = 0; dd < signature->points.size (); dd++)
           {
             descr_model.keypoint_id = static_cast<int> (dd);
             descr_model.descr.resize (size_feat);
@@ -103,14 +107,14 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
   void
   pcl::rec_3d_framework::LocalRecognitionPipeline<Distance, PointInT, FeatureT>::initialize (bool force_retrain)
   {
-    std::shared_ptr<std::vector<ModelT>> models;
+    boost::shared_ptr < std::vector<ModelT> > models;
 
-    if(search_model_.empty()) {
+    if(search_model_.compare("") == 0) {
       models = source_->getModels ();
     } else {
       models = source_->getModels (search_model_);
       //reset cache and flann structures
-      if(flann_index_ != nullptr)
+      if(flann_index_ != 0)
         delete flann_index_;
 
       flann_models_.clear();
@@ -122,19 +126,19 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
 
     if (force_retrain)
     {
-      for (std::size_t i = 0; i < models->size (); i++)
+      for (size_t i = 0; i < models->size (); i++)
       {
         source_->removeDescDirectory (models->at (i), training_dir_, descr_name_);
       }
     }
 
-    for (std::size_t i = 0; i < models->size (); i++)
+    for (size_t i = 0; i < models->size (); i++)
     {
       std::cout << models->at (i).class_ << " " << models->at (i).id_ << std::endl;
 
       if (!source_->modelAlreadyTrained (models->at (i), training_dir_, descr_name_))
       {
-        for (std::size_t v = 0; v < models->at (i).views_->size (); v++)
+        for (size_t v = 0; v < models->at (i).views_->size (); v++)
         {
           PointInTPtr processed (new pcl::PointCloud<PointInT>);
           typename pcl::PointCloud<FeatureT>::Ptr signatures (new pcl::PointCloud<FeatureT> ());
@@ -168,9 +172,9 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
             std::stringstream keypoints_sstr;
             keypoints_sstr << path << "/keypoint_indices_" << v << ".pcd";
 
-            /*std::shared_ptr<std::vector<int>> indices (new std::vector<int> ());
+            /*boost::shared_ptr < std::vector<int> > indices (new std::vector<int> ());
             indices->resize (keypoints.points.size ());
-            for (std::size_t kk = 0; kk < indices->size (); kk++)
+            for (size_t kk = 0; kk < indices->size (); kk++)
               (*indices)[kk] = keypoints.points[kk];
             typename pcl::PointCloud<PointInT> keypoints_pointcloud;
             pcl::copyPointCloud (*processed, *indices, keypoints_pointcloud);*/
@@ -204,7 +208,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
     //pcl::PointCloud<int> keypoints_input;
     PointInTPtr keypoints_pointcloud;
 
-    if (signatures_ != nullptr && processed_ != nullptr && (signatures_->size () == keypoints_pointcloud->points.size ()))
+    if (signatures_ != 0 && processed_ != 0 && (signatures_->size () == keypoints_pointcloud->points.size ()))
     {
       keypoints_pointcloud = keypoints_input_;
       signatures = signatures_;
@@ -214,7 +218,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
     else
     {
       processed.reset( (new pcl::PointCloud<PointInT>));
-      if (!indices_.empty ())
+      if (indices_.size () > 0)
       {
         PointInTPtr sub_input (new pcl::PointCloud<PointInT>);
         pcl::copyPointCloud (*input_, indices_, *sub_input);
@@ -236,7 +240,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
     //feature matching and object hypotheses
     std::map<std::string, ObjectHypothesis> object_hypotheses;
     {
-      for (std::size_t idx = 0; idx < signatures->points.size (); idx++)
+      for (size_t idx = 0; idx < signatures->points.size (); idx++)
       {
         float* hist = signatures->points[idx].histogram;
         std::vector<float> std_hist (hist, hist + size_feat);
@@ -285,7 +289,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
           oh.correspondences_to_inputcloud = corr;
           oh.correspondences_to_inputcloud->push_back (pcl::Correspondence (0, static_cast<int> (idx), distances[0][0]));
 
-          std::shared_ptr<std::vector<float>> feat_dist (new std::vector<float>);
+          boost::shared_ptr < std::vector<float> > feat_dist (new std::vector<float>);
           feat_dist->push_back (distances[0][0]);
 
           oh.feature_distances_ = feat_dist;
@@ -294,9 +298,13 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
       }
     }
 
+    typename std::map<std::string, ObjectHypothesis>::iterator it_map;
+
+    std::vector<float> feature_distance_avg;
+
     {
       //pcl::ScopeTime t("Geometric verification, RANSAC and transform estimation");
-      for (auto it_map = object_hypotheses.cbegin (); it_map != object_hypotheses.cend (); it_map++)
+      for (it_map = object_hypotheses.begin (); it_map != object_hypotheses.end (); it_map++)
       {
         std::vector < pcl::Correspondences > corresp_clusters;
         cg_algorithm_->setSceneCloud (keypoints_pointcloud);
@@ -311,16 +319,16 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
         {
           //sort the hypotheses for each model according to their correspondences and take those that are threshold_accept_model_hypothesis_ over the max cardinality
           int max_cardinality = -1;
-          for (const auto &corresp_cluster : corresp_clusters)
+          for (size_t i = 0; i < corresp_clusters.size (); i++)
           {
             //std::cout <<  (corresp_clusters[i]).size() << " -- " << (*(*it_map).second.correspondences_to_inputcloud).size() << std::endl;
-            if (max_cardinality < static_cast<int> (corresp_cluster.size ()))
+            if (max_cardinality < static_cast<int> (corresp_clusters[i].size ()))
             {
-              max_cardinality = static_cast<int> (corresp_cluster.size ());
+              max_cardinality = static_cast<int> (corresp_clusters[i].size ());
             }
           }
 
-          for (std::size_t i = 0; i < corresp_clusters.size (); i++)
+          for (size_t i = 0; i < corresp_clusters.size (); i++)
           {
             if (static_cast<float> ((corresp_clusters[i]).size ()) < (threshold_accept_model_hypothesis_ * static_cast<float> (max_cardinality)))
             {
@@ -329,7 +337,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
           }
         }
 
-        for (std::size_t i = 0; i < corresp_clusters.size (); i++)
+        for (size_t i = 0; i < corresp_clusters.size (); i++)
         {
 
           if (!good_indices_for_hypothesis[i])
@@ -409,7 +417,7 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
 
       std::vector<typename pcl::PointCloud<PointInT>::ConstPtr> aligned_models;
       aligned_models.resize (models_->size ());
-      for (std::size_t i = 0; i < models_->size (); i++)
+      for (size_t i = 0; i < models_->size (); i++)
       {
         ConstPointInTPtr model_cloud = models_->at (i).getAssembled (0.0025f);
         //ConstPointInTPtr model_cloud = models_->at (i).getAssembled (VOXEL_SIZE_ICP_);
@@ -424,13 +432,13 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
       hv_algorithm_->verify ();
       hv_algorithm_->getMask (mask_hv);
 
-      std::shared_ptr<std::vector<ModelT>> models_temp;
-      std::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>> transforms_temp;
+      boost::shared_ptr < std::vector<ModelT> > models_temp;
+      boost::shared_ptr < std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > > transforms_temp;
 
       models_temp.reset (new std::vector<ModelT>);
       transforms_temp.reset (new std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> >);
 
-      for (std::size_t i = 0; i < models_->size (); i++)
+      for (size_t i = 0; i < models_->size (); i++)
       {
         if (!mask_hv[i])
           continue;
@@ -452,11 +460,11 @@ template<template<class > class Distance, typename PointInT, typename FeatureT>
 
     if (use_cache_)
     {
-      using mv_pair = std::pair<std::string, int>;
+      typedef std::pair<std::string, int> mv_pair;
       mv_pair pair_model_view = std::make_pair (model.id_, view_id);
 
       std::map<mv_pair, Eigen::Matrix4f,
-               std::less<>,
+               std::less<mv_pair>,
                Eigen::aligned_allocator<std::pair<const mv_pair, Eigen::Matrix4f> > >::iterator it = poses_cache_.find (pair_model_view);
 
       if (it != poses_cache_.end ())

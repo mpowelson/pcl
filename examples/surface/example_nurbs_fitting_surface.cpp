@@ -7,7 +7,7 @@
 #include <pcl/surface/on_nurbs/fitting_curve_2d_asdm.h>
 #include <pcl/surface/on_nurbs/triangulation.h>
 
-using Point = pcl::PointXYZ;
+typedef pcl::PointXYZ Point;
 
 void
 PointCloud2Vector3d (pcl::PointCloud<Point>::Ptr cloud, pcl::on_nurbs::vector_vec3d &data);
@@ -171,10 +171,11 @@ main (int argc, char *argv[])
 void
 PointCloud2Vector3d (pcl::PointCloud<Point>::Ptr cloud, pcl::on_nurbs::vector_vec3d &data)
 {
-  for (const auto &p : *cloud)
+  for (unsigned i = 0; i < cloud->size (); i++)
   {
-    if (!std::isnan (p.x) && !std::isnan (p.y) && !std::isnan (p.z))
-      data.emplace_back (p.x, p.y, p.z);
+    Point &p = cloud->at (i);
+    if (!pcl_isnan (p.x) && !pcl_isnan (p.y) && !pcl_isnan (p.z))
+      data.push_back (Eigen::Vector3d (p.x, p.y, p.z));
   }
 }
 

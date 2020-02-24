@@ -38,6 +38,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/console/print.h>
 #include <pcl/console/parse.h>
+#include <pcl/console/time.h>
 
 using namespace std;
 using namespace pcl;
@@ -63,13 +64,13 @@ loadCloud (const string &filename, PointCloud<PointXYZ> &cloud)
   }
   
   string line;
-  std::vector<string> st;
+  vector<string> st;
 
   while (!fs.eof ())
   {
     getline (fs, line);
     // Ignore empty lines
-    if (line.empty())
+    if (line == "")
       continue;
 
     // Tokenize the line
@@ -83,7 +84,7 @@ loadCloud (const string &filename, PointCloud<PointXYZ> &cloud)
   }
   fs.close ();
 
-  cloud.width = std::uint32_t (cloud.size ()); cloud.height = 1; cloud.is_dense = true;
+  cloud.width = uint32_t (cloud.size ()); cloud.height = 1; cloud.is_dense = true;
   return (true);
 }
 
@@ -100,8 +101,8 @@ main (int argc, char** argv)
   }
 
   // Parse the command line arguments for .pcd and .ply files
-  std::vector<int> pcd_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
-  std::vector<int> xyz_file_indices = parse_file_extension_argument (argc, argv, ".xyz");
+  vector<int> pcd_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
+  vector<int> xyz_file_indices = parse_file_extension_argument (argc, argv, ".xyz");
   if (pcd_file_indices.size () != 1 || xyz_file_indices.size () != 1)
   {
     print_error ("Need one input XYZ file and one output PCD file.\n");

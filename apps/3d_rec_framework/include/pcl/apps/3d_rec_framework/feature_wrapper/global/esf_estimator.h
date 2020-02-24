@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_ESF_ESTIMATOR_H_
+#define REC_FRAMEWORK_ESF_ESTIMATOR_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/global/global_estimator.h>
 #include <pcl/features/esf.h>
@@ -18,16 +19,16 @@ namespace pcl
       class ESFEstimation : public GlobalEstimator<PointInT, FeatureT>
       {
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
 
       public:
         void
         estimate (PointInTPtr & in, PointInTPtr & processed,
                   typename pcl::PointCloud<FeatureT>::CloudVectorType & signatures,
-                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids) override
+                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
         {
 
-          using ESFEstimation = pcl::ESFEstimation<PointInT, FeatureT>;
+          typedef typename pcl::ESFEstimation<PointInT, FeatureT> ESFEstimation;
           pcl::PointCloud<FeatureT> ESF_signature;
 
           ESFEstimation esf;
@@ -48,10 +49,12 @@ namespace pcl
         }
 
         bool
-        computedNormals () override
+        computedNormals ()
         {
           return false;
         }
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_ESF_ESTIMATOR_H_ */

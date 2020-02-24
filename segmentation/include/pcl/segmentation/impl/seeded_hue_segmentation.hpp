@@ -43,12 +43,12 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>          &cloud,
-                            const search::Search<PointXYZRGB>::Ptr &tree,
-                            float                                  tolerance,
-                            PointIndices                           &indices_in,
-                            PointIndices                           &indices_out,
-                            float                                  delta_hue)
+pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>                         &cloud, 
+                            const boost::shared_ptr<search::Search<PointXYZRGB> > &tree,
+                            float                                                 tolerance, 
+                            PointIndices                                          &indices_in,
+                            PointIndices                                          &indices_out,
+                            float                                                 delta_hue)
 {
   if (tree->getInputCloud ()->points.size () != cloud.points.size ())
   {
@@ -62,8 +62,9 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>          &cloud,
   std::vector<float> nn_distances;
 
   // Process all points in the indices vector
-  for (const int &i : indices_in.indices)
+  for (size_t k = 0; k < indices_in.indices.size (); ++k)
   {
+    int i = indices_in.indices[k];
     if (processed[i])
       continue;
 
@@ -90,7 +91,7 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>          &cloud,
         continue;
       }
 
-      for (std::size_t j = 1; j < nn_indices.size (); ++j)             // nn_indices[0] should be sq_idx
+      for (size_t j = 1; j < nn_indices.size (); ++j)             // nn_indices[0] should be sq_idx
       {
         if (processed[nn_indices[j]])                             // Has this point been processed before ?
           continue;
@@ -100,7 +101,7 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>          &cloud,
         PointXYZHSV h_l;
         PointXYZRGBtoXYZHSV(p_l, h_l);
 
-        if (std::fabs(h_l.h - h.h) < delta_hue)
+        if (fabs(h_l.h - h.h) < delta_hue)
         {
           seed_queue.push_back (nn_indices[j]);
           processed[nn_indices[j]] = true;
@@ -110,20 +111,20 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>          &cloud,
       sq_idx++;
     }
     // Copy the seed queue into the output indices
-    for (const int &l : seed_queue)
-      indices_out.indices.push_back(l);
+    for (size_t l = 0; l < seed_queue.size (); ++l)
+      indices_out.indices.push_back(seed_queue[l]);
   }
   // This is purely esthetical, can be removed for speed purposes
   std::sort (indices_out.indices.begin (), indices_out.indices.end ());
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
-                            const search::Search<PointXYZRGBL>::Ptr  &tree,
-                            float                                    tolerance,
-                            PointIndices                             &indices_in,
-                            PointIndices                             &indices_out,
-                            float                                    delta_hue)
+pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>                           &cloud, 
+                            const boost::shared_ptr<search::Search<PointXYZRGBL> >  &tree,
+                            float                                                   tolerance, 
+                            PointIndices                                            &indices_in,
+                            PointIndices                                            &indices_out,
+                            float                                                   delta_hue)
 {
   if (tree->getInputCloud ()->points.size () != cloud.points.size ())
   {
@@ -137,8 +138,9 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
   std::vector<float> nn_distances;
 
   // Process all points in the indices vector
-  for (const int &i : indices_in.indices)
+  for (size_t k = 0; k < indices_in.indices.size (); ++k)
   {
+    int i = indices_in.indices[k];
     if (processed[i])
       continue;
 
@@ -164,7 +166,7 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
         sq_idx++;
         continue;
       }
-      for (std::size_t j = 1; j < nn_indices.size (); ++j)             // nn_indices[0] should be sq_idx
+      for (size_t j = 1; j < nn_indices.size (); ++j)             // nn_indices[0] should be sq_idx
       {
         if (processed[nn_indices[j]])                             // Has this point been processed before ?
           continue;
@@ -174,7 +176,7 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
         PointXYZHSV h_l;
         PointXYZRGBtoXYZHSV(p_l, h_l);
 
-        if (std::fabs(h_l.h - h.h) < delta_hue)
+        if (fabs(h_l.h - h.h) < delta_hue)
         {
           seed_queue.push_back (nn_indices[j]);
           processed[nn_indices[j]] = true;
@@ -184,8 +186,8 @@ pcl::seededHueSegmentation (const PointCloud<PointXYZRGB>            &cloud,
       sq_idx++;
     }
     // Copy the seed queue into the output indices
-    for (const int &l : seed_queue)
-      indices_out.indices.push_back(l);
+    for (size_t l = 0; l < seed_queue.size (); ++l)
+      indices_out.indices.push_back(seed_queue[l]);
   }
   // This is purely esthetical, can be removed for speed purposes
   std::sort (indices_out.indices.begin (), indices_out.indices.end ());
@@ -197,8 +199,8 @@ void
 pcl::SeededHueSegmentation::segment (PointIndices &indices_in, PointIndices &indices_out)
 {
   if (!initCompute () || 
-      (input_   && input_->points.empty ()) ||
-      (indices_ && indices_->empty ()))
+      (input_ != 0   && input_->points.empty ()) ||
+      (indices_ != 0 && indices_->empty ()))
   {
     indices_out.indices.clear ();
     return;

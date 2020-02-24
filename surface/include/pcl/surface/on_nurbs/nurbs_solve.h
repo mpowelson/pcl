@@ -35,12 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef _NURBS_SOLVE_H_
+#define _NURBS_SOLVE_H_
 
 #undef Success
 #include <Eigen/Dense>
 
-#include <pcl/pcl_macros.h>
 #include <pcl/surface/on_nurbs/sparse_mat.h>
 
 namespace pcl
@@ -130,8 +130,10 @@ namespace pcl
       Eigen::MatrixXd m_feig;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
   }
 }
+
+#endif

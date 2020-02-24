@@ -39,7 +39,8 @@
  * @brief This file contains the function prototypes for the segmentation functions
  */
 
-#pragma once
+#ifndef PCL_GPU_PEOPLE_LABEL_SEGMENT_H_
+#define PCL_GPU_PEOPLE_LABEL_SEGMENT_H_
 
 // our headers
 #include "pcl/gpu/people/label_blob2.h"
@@ -118,7 +119,7 @@ namespace pcl
         //          // get the depth of this part of the patch
         //          short depth_l = dmap.at<short>(h_l,w_l);
         //          // evaluate the difference to the centroid 
-        //          if(std::abs(depth - depth_l) < static_cast<int> (depthThres))
+        //          if(abs(depth - depth_l) < static_cast<int> (depthThres))
         //          {
         //            char label = lmap_in.at<char>(h_l,w_l);
         //            if(label >= 0 && label < NUM_PARTS)
@@ -200,7 +201,7 @@ namespace pcl
         //          // get the depth of this part of the patch
         //          short depth_l = dmap.at<short>(h_l,w_l);
         //          // evaluate the difference to the centroid 
-        //          if(std::abs(depth - depth_l) < static_cast<int> (depthThres))
+        //          if(abs(depth - depth_l) < static_cast<int> (depthThres))
         //          {
         //            char label = lmap_in.at<char>(h_l,w_l);
         //            if(label >= 0 && label < NUM_PARTS)
@@ -296,7 +297,7 @@ namespace pcl
                   // get the depth of this part of the patch
                   depth_l = drow_offset[w_l];
                   // evaluate the difference to the centroid 
-                  if(std::abs(depth - depth_l) < static_cast<int> (depthThres))
+                  if(abs(depth - depth_l) < static_cast<int> (depthThres))
                   {
                     label = lrow_offset[w_l];
                     votes[static_cast<unsigned int>(label)]++;
@@ -396,3 +397,5 @@ namespace pcl
     } // end namespace people
   } // end namespace gpu
 } // end namespace pcl
+
+#endif //#ifndef LABELSKEL_SEGMENT_H

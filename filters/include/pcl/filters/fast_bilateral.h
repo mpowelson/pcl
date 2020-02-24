@@ -38,7 +38,9 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_FILTERS_FAST_BILATERAL_H_
+#define PCL_FILTERS_FAST_BILATERAL_H_
 
 #include <pcl/filters/filter.h>
 
@@ -46,7 +48,7 @@ namespace pcl
 {
   /** \brief Implementation of a fast bilateral filter for smoothing depth information in organized point clouds
    *  Based on the following paper:
-   *    * Sylvain Paris and Fredo Durand
+   *    * Sylvain Paris and Frédo Durand
    *      "A Fast Approximation of the Bilateral Filter using a Signal Processing Approach"
    *       European Conference on Computer Vision (ECCV'06)
    *
@@ -57,12 +59,12 @@ namespace pcl
   {
     protected:
       using Filter<PointT>::input_;
-      using PointCloud = typename Filter<PointT>::PointCloud;
+      typedef typename Filter<PointT>::PointCloud PointCloud;
 
     public:
     
-      using Ptr = shared_ptr<FastBilateralFilter<PointT> >;
-      using ConstPtr = shared_ptr<const FastBilateralFilter<PointT> >;
+      typedef boost::shared_ptr< FastBilateralFilter<PointT> > Ptr;
+      typedef boost::shared_ptr< const FastBilateralFilter<PointT> > ConstPtr;
 
       /** \brief Empty constructor. */
       FastBilateralFilter ()
@@ -72,7 +74,7 @@ namespace pcl
       { }
       
       /** \brief Empty destructor */
-      ~FastBilateralFilter () {}
+      virtual ~FastBilateralFilter () {}
 
       /** \brief Set the standard deviation of the Gaussian used by the bilateral filter for
         * the spatial neighborhood/window.
@@ -104,8 +106,8 @@ namespace pcl
       /** \brief Filter the input data and store the results into output.
         * \param[out] output the resultant point cloud
         */
-      void
-      applyFilter (PointCloud &output) override;
+      virtual void
+      applyFilter (PointCloud &output);
 
     protected:
       float sigma_s_;
@@ -115,7 +117,7 @@ namespace pcl
       class Array3D
       {
         public:
-          Array3D (const std::size_t width, const std::size_t height, const std::size_t depth)
+          Array3D (const size_t width, const size_t height, const size_t depth)
           {
             x_dim_ = width;
             y_dim_ = height;
@@ -124,15 +126,15 @@ namespace pcl
           }
 
           inline Eigen::Vector2f&
-          operator () (const std::size_t x, const std::size_t y, const std::size_t z)
+          operator () (const size_t x, const size_t y, const size_t z)
           { return v_[(x * y_dim_ + y) * z_dim_ + z]; }
 
           inline const Eigen::Vector2f&
-          operator () (const std::size_t x, const std::size_t y, const std::size_t z) const
+          operator () (const size_t x, const size_t y, const size_t z) const
           { return v_[(x * y_dim_ + y) * z_dim_ + z]; }
 
           inline void
-          resize (const std::size_t width, const std::size_t height, const std::size_t depth)
+          resize (const size_t width, const size_t height, const size_t depth)
           {
             x_dim_ = width;
             y_dim_ = height;
@@ -145,20 +147,20 @@ namespace pcl
                                    const float y,
                                    const float z);
 
-          static inline std::size_t
-          clamp (const std::size_t min_value,
-                 const std::size_t max_value,
-                 const std::size_t x);
+          static inline size_t
+          clamp (const size_t min_value,
+                 const size_t max_value,
+                 const size_t x);
 
-          inline std::size_t
+          inline size_t
           x_size () const
           { return x_dim_; }
 
-          inline std::size_t
+          inline size_t
           y_size () const
           { return y_dim_; }
 
-          inline std::size_t
+          inline size_t
           z_size () const
           { return z_dim_; }
 
@@ -180,7 +182,7 @@ namespace pcl
 
         private:
           std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> > v_;
-          std::size_t x_dim_, y_dim_, z_dim_;
+          size_t x_dim_, y_dim_, z_dim_;
       };
 
 
@@ -192,3 +194,6 @@ namespace pcl
 #else
 #define PCL_INSTANTIATE_FastBilateralFilter(T) template class PCL_EXPORTS pcl::FastBilateralFilter<T>;
 #endif
+
+
+#endif /* PCL_FILTERS_FAST_BILATERAL_H_ */

@@ -5,14 +5,13 @@
  *      Author: aitor
  */
 
-#pragma once
-
-#include <pcl/common/common.h>
+#ifndef RENDER_VIEWS_TESSELATED_SPHERE_H_
+#define RENDER_VIEWS_TESSELATED_SPHERE_H_
 
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
-
-#include <functional>
+#include <pcl/common/common.h>
+#include <boost/function.hpp>
 
 namespace pcl
 {
@@ -39,7 +38,7 @@ namespace pcl
       bool compute_entropy_;
       vtkSmartPointer<vtkPolyData> polydata_;
       bool gen_organized_;
-      std::function<bool
+      boost::function<bool
       (const Eigen::Vector3f &)> campos_constraints_func_;
 
       struct camPosConstraintsAllTrue
@@ -66,7 +65,7 @@ namespace pcl
       }
 
       void
-      setCamPosConstraints (std::function<bool (const Eigen::Vector3f &)> & bb)
+      setCamPosConstraints (boost::function<bool (const Eigen::Vector3f &)> & bb)
       {
         campos_constraints_func_ = bb;
       }
@@ -179,3 +178,5 @@ namespace pcl
 
   }
 }
+
+#endif /* RENDER_VIEWS_TESSELATED_SPHERE_H_ */

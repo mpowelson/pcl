@@ -38,7 +38,8 @@
  * Author: Matteo Munaro
  */
 
-#pragma once
+#ifndef PCL_PEOPLE_HEIGHT_MAP_2D_H_
+#define PCL_PEOPLE_HEIGHT_MAP_2D_H_
 
 #include <pcl/people/person_cluster.h>
 #include <pcl/point_types.h>
@@ -58,9 +59,9 @@ namespace pcl
     {
     public:
 
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef boost::shared_ptr<PointCloud> PointCloudPtr;
+      typedef boost::shared_ptr<const PointCloud> PointCloudConstPtr;
 
       /** \brief Constructor. */
       HeightMap2D();
@@ -205,3 +206,4 @@ namespace pcl
   } /* namespace people */
 } /* namespace pcl */
 #include <pcl/people/impl/height_map_2d.hpp>
+#endif /* PCL_PEOPLE_HEIGHT_MAP_2D_H_ */

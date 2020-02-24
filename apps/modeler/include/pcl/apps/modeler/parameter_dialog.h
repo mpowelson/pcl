@@ -33,12 +33,10 @@
 *
 *
 */
+#ifndef PCL_MODELER_PARAMETER_DIALOG_H_
+#define PCL_MODELER_PARAMETER_DIALOG_H_
 
-#pragma once
-
-#include <QDialog>
-#include <QStandardItemModel>
-#include <QStyledItemDelegate>
+#include <pcl/apps/modeler/qt.h>
 
 namespace pcl
 {
@@ -49,12 +47,12 @@ namespace pcl
     class ParameterModel: public QStandardItemModel
     {
       public: 
-        ParameterModel(QObject * parent = nullptr) : QStandardItemModel(parent){}
-        ParameterModel(int rows, int columns, QObject * parent = nullptr) : QStandardItemModel(rows, columns, parent){}
+        ParameterModel(QObject * parent = 0) : QStandardItemModel(parent){}
+        ParameterModel(int rows, int columns, QObject * parent = 0) : QStandardItemModel(rows, columns, parent){}
         ~ParameterModel() {}
 
         Qt::ItemFlags
-        flags ( const QModelIndex & index ) const override
+        flags ( const QModelIndex & index ) const
         {
           return (index.column() == 0)?(Qt::ItemIsEnabled | Qt::ItemIsSelectable):QStandardItemModel::flags(index);
         }
@@ -64,14 +62,14 @@ namespace pcl
     {
       Q_OBJECT
       public:
-        ParameterDialog(const std::string& title, QWidget* parent=nullptr);
-        ~ParameterDialog(){}
+        ParameterDialog(const std::string& title, QWidget* parent=0);
+        ~ParameterDialog(void){}
 
         void
         addParameter(Parameter* parameter);
 
-        int
-        exec() override;
+        virtual int
+        exec();
 
       protected:
         std::map<std::string, Parameter*>       name_parameter_map_;
@@ -86,23 +84,23 @@ namespace pcl
     {
       Q_OBJECT
       public:
-        ParameterDelegate(std::map<std::string, Parameter*>& parameterMap, QObject *parent = nullptr);
+        ParameterDelegate(std::map<std::string, Parameter*>& parameterMap, QObject *parent = 0);
 
         QWidget *
-        createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+        createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
         void
-        setEditorData(QWidget *editor, const QModelIndex &index) const override;
+        setEditorData(QWidget *editor, const QModelIndex &index) const;
 
         void
-        setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
+        setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 
         void
-        updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+        updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
       protected:
         void
-        initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
+        initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const;
 
       private:
         Parameter*
@@ -113,3 +111,5 @@ namespace pcl
 
   }
 }
+
+#endif // PCL_MODELER_PARAMETER_DIALOG_H_

@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_FITTING_CURVE_2D_TDM_H
+#define NURBS_FITTING_CURVE_2D_TDM_H
 
 #include <pcl/pcl_exports.h>
 #include <pcl/surface/on_nurbs/nurbs_tools.h>
@@ -74,19 +75,19 @@ namespace pcl
           * - should be done once before refinement to initialize the starting points for point inversion. 
           */
         void
-        assemble (const FittingCurve2dPDM::Parameter &parameter) override;
+        assemble (const FittingCurve2dPDM::Parameter &parameter);
 
         /** \brief Solve system of equations using Eigen or UmfPack (can be defined in on_nurbs.cmake),
           *  and updates B-Spline curve if a solution can be obtained. 
           */
-        double
-        solve (double damp = 1.0) override;
+        virtual double
+        solve (double damp = 1.0);
 
         /** \brief Update curve according to the current system of equations.
           * \param[in] damp damping factor from one iteration to the other.
           */
-        double
-        updateCurve (double damp) override;
+        virtual double
+        updateCurve (double damp);
 
       protected:
         /** \brief Add minimization constraint: point-to-surface distance (tangent-distance-minimization). */
@@ -95,12 +96,14 @@ namespace pcl
                             double weight, unsigned &row);
 
         /** \brief Add minimization constraint: smoothness by control point regularisation. */
-        void
-        addCageRegularisation (double weight, unsigned &row) override;
+        virtual void
+        addCageRegularisation (double weight, unsigned &row);
 
         /** \brief Assemble point-to-surface constraints. */
-        void
-        assembleInterior (double wInt, double rScale, unsigned &row) override;
+        virtual void
+        assembleInterior (double wInt, double rScale, unsigned &row);
     };
   }
 }
+
+#endif

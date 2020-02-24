@@ -133,7 +133,8 @@ namespace mets {
     /// An exception mets::no_moves_error can be risen when no move is
     /// possible.
     virtual void
-    search() = 0;
+    search() 
+      throw(no_moves_error) = 0;
 
     /// @brief The solution recorder instance.
     const solution_recorder&
@@ -239,7 +240,7 @@ namespace mets {
   class search_listener : public observer<abstract_search<move_manager_type> >
   {
   public:
-    using search_type = abstract_search<move_manager_type>;
+    typedef abstract_search<move_manager_type> search_type;
     /// @brief A new observer (listener) of a search process, remember
     /// to attach the created object to the search process to be
     /// observed (mets::search_type::attach())

@@ -36,10 +36,8 @@
  * $Id$
  *
  */
-
-#pragma once
-
-#include <algorithm>
+#ifndef PCL_POINT_REPRESENTATION_H_
+#define PCL_POINT_REPRESENTATION_H_
 
 #include <pcl/point_types.h>
 #include <pcl/pcl_macros.h>
@@ -58,7 +56,7 @@ namespace pcl
   {
     protected:
       /** \brief The number of dimensions in this point's vector (i.e. the "k" in "k-D") */
-      int nr_dimensions_ = 0;
+      int nr_dimensions_;
       /** \brief A vector containing the rescale factor to apply to each dimension. */
       std::vector<float> alpha_;
       /** \brief Indicates whether this point representation is trivial. It is trivial if and only if the following
@@ -70,15 +68,17 @@ namespace pcl
        *  the point was reinterpret_casted to a float array of length nr_dimensions_ . This value says that this
        *  representation can be trivial; it is only trivial if setRescaleValues() has not been set.
        */
-      bool trivial_ = false;
+      bool trivial_;
 
     public:
-      using Ptr = shared_ptr<PointRepresentation<PointT> >;
-      using ConstPtr = shared_ptr<const PointRepresentation<PointT> >;
+      typedef boost::shared_ptr<PointRepresentation<PointT> > Ptr;
+      typedef boost::shared_ptr<const PointRepresentation<PointT> > ConstPtr;
+
+      /** \brief Empty constructor */
+      PointRepresentation () : nr_dimensions_ (0), alpha_ (0), trivial_ (false) {}
 
       /** \brief Empty destructor */
-      virtual ~PointRepresentation () = default;
-      //TODO: check if copy and move constructors / assignment operators are needed
+      virtual ~PointRepresentation () {}
 
       /** \brief Copy point data from input point to a float array. This method must be overridden in all subclasses.
        *  \param[in] p The input point
@@ -109,7 +109,7 @@ namespace pcl
 
           for (int i = 0; i < nr_dimensions_; ++i)
           {
-            if (!std::isfinite (temp[i]))
+            if (!pcl_isfinite (temp[i]))
             {
               is_valid = false;
               break;
@@ -123,7 +123,7 @@ namespace pcl
 
           for (int i = 0; i < nr_dimensions_; ++i)
           {
-            if (!std::isfinite (temp[i]))
+            if (!pcl_isfinite (temp[i]))
             {
               is_valid = false;
               break;
@@ -163,7 +163,8 @@ namespace pcl
       setRescaleValues (const float *rescale_array)
       {
         alpha_.resize (nr_dimensions_);
-        std::copy_n(rescale_array, nr_dimensions_, alpha_.begin());
+        for (int i = 0; i < nr_dimensions_; ++i)
+          alpha_[i] = rescale_array[i];
       }
 
       /** \brief Return the number of dimensions in the point's vector representation. */
@@ -181,8 +182,8 @@ namespace pcl
 
     public:
       // Boost shared pointers
-      using Ptr = shared_ptr<DefaultPointRepresentation<PointDefault> >;
-      using ConstPtr = shared_ptr<const DefaultPointRepresentation<PointDefault> >;
+      typedef boost::shared_ptr<DefaultPointRepresentation<PointDefault> > Ptr;
+      typedef boost::shared_ptr<const DefaultPointRepresentation<PointDefault> > ConstPtr;
 
       DefaultPointRepresentation ()
       {
@@ -194,7 +195,7 @@ namespace pcl
         trivial_ = true;
       }
 
-      ~DefaultPointRepresentation () {}
+      virtual ~DefaultPointRepresentation () {}
 
       inline Ptr
       makeShared () const
@@ -202,12 +203,13 @@ namespace pcl
         return (Ptr (new DefaultPointRepresentation<PointDefault> (*this)));
       }
 
-      void
-      copyToFloatArray (const PointDefault &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PointDefault &p, float * out) const
       {
         // If point type is unknown, treat it as a struct/array of floats
         const float* ptr = reinterpret_cast<const float*> (&p);
-        std::copy_n(ptr, nr_dimensions_, out);
+        for (int i = 0; i < nr_dimensions_; ++i)
+          out[i] = ptr[i];
       }
   };
 
@@ -240,14 +242,14 @@ namespace pcl
 
     struct NdCopyPointFunctor
     {
-      using Pod = typename traits::POD<PointDefault>::type;
+      typedef typename traits::POD<PointDefault>::type Pod;
 
       NdCopyPointFunctor (const PointDefault &p1, float * p2)
         : p1_ (reinterpret_cast<const Pod&>(p1)), p2_ (p2), f_idx_ (0) { }
 
       template<typename Key> inline void operator() ()
       {
-        using FieldT = typename pcl::traits::datatype<PointDefault, Key>::type;
+        typedef typename pcl::traits::datatype<PointDefault, Key>::type FieldT;
         const int NrDims = pcl::traits::datatype<PointDefault, Key>::size;
         Helper<Key, FieldT, NrDims>::copyPoint (p1_, p2_, f_idx_);
       }
@@ -258,7 +260,7 @@ namespace pcl
       {
         static void copyPoint (const Pod &p1, float * p2, int &f_idx)
         {
-          const std::uint8_t * data_ptr = reinterpret_cast<const std::uint8_t *> (&p1) +
+          const uint8_t * data_ptr = reinterpret_cast<const uint8_t *> (&p1) +
             pcl::traits::offset<PointDefault, Key>::value;
           p2[f_idx++] = *reinterpret_cast<const FieldT*> (data_ptr);
         }
@@ -269,7 +271,7 @@ namespace pcl
       {
         static void copyPoint (const Pod &p1, float * p2, int &f_idx)
         {
-          const std::uint8_t * data_ptr = reinterpret_cast<const std::uint8_t *> (&p1) +
+          const uint8_t * data_ptr = reinterpret_cast<const uint8_t *> (&p1) +
             pcl::traits::offset<PointDefault, Key>::value;
           int nr_dims = NrDims;
           const FieldT * array = reinterpret_cast<const FieldT *> (data_ptr);
@@ -288,9 +290,9 @@ namespace pcl
 
     public:
       // Boost shared pointers
-      using Ptr = shared_ptr<DefaultFeatureRepresentation<PointDefault>>;
-      using ConstPtr = shared_ptr<const DefaultFeatureRepresentation<PointDefault>>;
-      using FieldList = typename pcl::traits::fieldList<PointDefault>::type;
+      typedef typename boost::shared_ptr<DefaultFeatureRepresentation<PointDefault> > Ptr;
+      typedef typename boost::shared_ptr<const DefaultFeatureRepresentation<PointDefault> > ConstPtr;
+      typedef typename pcl::traits::fieldList<PointDefault>::type FieldList;
 
       DefaultFeatureRepresentation ()
       {
@@ -304,8 +306,8 @@ namespace pcl
         return (Ptr (new DefaultFeatureRepresentation<PointDefault> (*this)));
       }
 
-      void
-      copyToFloatArray (const PointDefault &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PointDefault &p, float * out) const
       {
         pcl::for_each_type <FieldList> (NdCopyPointFunctor (p, out));
       }
@@ -322,8 +324,8 @@ namespace pcl
         trivial_ = true;
       }
 
-      void
-      copyToFloatArray (const PointXYZ &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PointXYZ &p, float * out) const
       {
         out[0] = p.x;
         out[1] = p.y;
@@ -342,8 +344,8 @@ namespace pcl
         trivial_ = true;
       }
 
-      void
-      copyToFloatArray (const PointXYZI &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PointXYZI &p, float * out) const
       {
         out[0] = p.x;
         out[1] = p.y;
@@ -363,8 +365,8 @@ namespace pcl
         trivial_ = true;
       }
 
-      void
-      copyToFloatArray (const PointNormal &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PointNormal &p, float * out) const
       {
         out[0] = p.x;
         out[1] = p.y;
@@ -393,8 +395,8 @@ namespace pcl
         trivial_ = true;
       }
 
-      void
-      copyToFloatArray (const PPFSignature &p, float * out) const override
+      virtual void
+      copyToFloatArray (const PPFSignature &p, float * out) const
       {
         out[0] = p.f1;
         out[1] = p.f2;
@@ -439,8 +441,8 @@ namespace pcl
         trivial_=false;
       }
 
-      void
-      copyToFloatArray (const Narf36 &p, float * out) const override
+      virtual void
+      copyToFloatArray (const Narf36 &p, float * out) const
       {
         for (int i = 0; i < nr_dimensions_; ++i)
           out[i] = p.descriptor[i];
@@ -461,8 +463,8 @@ namespace pcl
         nr_dimensions_ = 1980;
       }
 
-      void
-      copyToFloatArray (const ShapeContext1980 &p, float * out) const override
+      virtual void
+      copyToFloatArray (const ShapeContext1980 &p, float * out) const
       {
         for (int i = 0; i < nr_dimensions_; ++i)
           out[i] = p.descriptor[i];
@@ -479,8 +481,8 @@ namespace pcl
         nr_dimensions_ = 1960;
       }
 
-      void
-      copyToFloatArray (const UniqueShapeContext1960 &p, float * out) const override
+      virtual void
+      copyToFloatArray (const UniqueShapeContext1960 &p, float * out) const
       {
         for (int i = 0; i < nr_dimensions_; ++i)
           out[i] = p.descriptor[i];
@@ -497,8 +499,8 @@ namespace pcl
         nr_dimensions_ = 352;
       }
 
-      void
-      copyToFloatArray (const SHOT352 &p, float * out) const override
+      virtual void
+      copyToFloatArray (const SHOT352 &p, float * out) const
       {
         for (int i = 0; i < nr_dimensions_; ++i)
           out[i] = p.descriptor[i];
@@ -515,8 +517,8 @@ namespace pcl
         nr_dimensions_ = 1344;
       }
 
-      void
-      copyToFloatArray (const SHOT1344 &p, float * out) const override
+      virtual void
+      copyToFloatArray (const SHOT1344 &p, float * out) const
       {
         for (int i = 0; i < nr_dimensions_; ++i)
           out[i] = p.descriptor[i];
@@ -534,8 +536,8 @@ namespace pcl
 
     public:
       // Boost shared pointers
-      using Ptr = shared_ptr<CustomPointRepresentation<PointDefault> >;
-      using ConstPtr = shared_ptr<const CustomPointRepresentation<PointDefault> >;
+      typedef boost::shared_ptr<CustomPointRepresentation<PointDefault> > Ptr;
+      typedef boost::shared_ptr<const CustomPointRepresentation<PointDefault> > ConstPtr;
 
       /** \brief Constructor
         * \param[in] max_dim the maximum number of dimensions to use
@@ -566,7 +568,8 @@ namespace pcl
       {
         // If point type is unknown, treat it as a struct/array of floats
         const float *ptr = (reinterpret_cast<const float*> (&p)) + start_dim_;
-        std::copy_n(ptr, nr_dimensions_, out);
+        for (int i = 0; i < nr_dimensions_; ++i)
+          out[i] = ptr[i];
       }
 
     protected:
@@ -576,3 +579,5 @@ namespace pcl
       int start_dim_;
   };
 }
+
+#endif // #ifndef PCL_POINT_REPRESENTATION_H_

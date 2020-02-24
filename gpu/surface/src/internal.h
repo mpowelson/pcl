@@ -35,22 +35,23 @@
  *
  */
 
-#pragma once
-
-#include <cstdint>
-#include <cuda_runtime.h>
+#ifndef PCL_GPU_SURFACE_INTERNAL_H_
+#define PCL_GPU_SURFACE_INTERNAL_H_
 
 #include <pcl/gpu/containers/device_array.h>
+#include <cuda_runtime.h>
 
 namespace pcl
 {
   namespace device
   {
-	  using PointType = float4;
-	  using Cloud = pcl::gpu::DeviceArray<PointType>;
+	  typedef unsigned long long uint64_type;
 
-	  using FacetsDists = DeviceArray<std::uint64_t>;
-	  using Perm = DeviceArray<int>;
+	  typedef float4 PointType;
+	  typedef pcl::gpu::DeviceArray<PointType> Cloud;
+
+	  typedef DeviceArray<uint64_type> FacetsDists;
+	  typedef DeviceArray<int> Perm;
 
 	  struct InitalSimplex
 	  {
@@ -63,13 +64,13 @@ namespace pcl
 	  struct FacetStream
 	  {	
 	  public:
-		  FacetStream(std::size_t buffer_size);
+		  FacetStream(size_t buffer_size);
 
           // indeces: in each col indeces of vertexes for single facet
 		  DeviceArray2D<int>  verts_inds;		  
 
 		  DeviceArray<int> head_points;		  
-		  std::size_t facet_count;
+		  size_t facet_count;
 
 		  DeviceArray2D<int>  empty_facets;
 		  DeviceArray<int> empty_count;
@@ -99,7 +100,7 @@ namespace pcl
 		  FacetsDists facets_dists;
 		  Perm perm;
 
-		  std::size_t cloud_size;
+		  size_t cloud_size;
 
 		  InitalSimplex simplex;
 		  float cloud_diag;
@@ -109,13 +110,15 @@ namespace pcl
 		  void initalClassify();
 		  
 
-		  int searchFacetHeads(std::size_t facet_count, DeviceArray<int>& head_points);
+		  int searchFacetHeads(size_t facet_count, DeviceArray<int>& head_points);
 
 		  void classify(FacetStream& fs);	  		  
 	  };	 	  	
 
 
-	  std::size_t remove_duplicates(DeviceArray<int>& indeces);
+	  size_t remove_duplicates(DeviceArray<int>& indeces);
 	  void pack_hull(const DeviceArray<PointType>& points, const DeviceArray<int>& indeces, DeviceArray<PointType>& output);
   }
 }
+
+#endif /* PCL_GPU_SURFACE_INTERNAL_H_ */ 

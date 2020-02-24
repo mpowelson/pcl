@@ -38,7 +38,6 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <cstdint>
 
 #include <pcl/io/buffers.h>
 
@@ -59,19 +58,18 @@ class BuffersTest : public ::testing::Test
     }
 
     template <typename Buffer> void
-    checkBuffer (Buffer& buffer, const T* data, const T* expected, std::size_t size)
+    checkBuffer (Buffer& buffer, const T* data, const T* expected, size_t size)
     {
       const T* dptr = data;
       const T* eptr = expected;
-      for (std::size_t i = 0; i < size; ++i)
+      for (size_t i = 0; i < size; ++i)
       {
         std::vector<T> d (buffer.size ());
         memcpy (d.data (), dptr, buffer.size () * sizeof (T));
         buffer.push (d);
-        for (std::size_t j = 0; j < buffer.size (); ++j)
-          //MSVC is missing bool std::isnan(IntegralType arg); variant, so we need to cast ourself to double
-          if (std::isnan (static_cast<double>(eptr[j])))
-            EXPECT_TRUE (std::isnan (static_cast<double>(buffer[j])));
+        for (size_t j = 0; j < buffer.size (); ++j)
+          if (pcl_isnan (eptr[j]))
+            EXPECT_TRUE (pcl_isnan (buffer[j]));
           else
             EXPECT_EQ (eptr[j], buffer[j]);
         dptr += buffer.size ();
@@ -83,7 +81,7 @@ class BuffersTest : public ::testing::Test
 
 };
 
-using DataTypes = ::testing::Types<std::int8_t, std::int32_t, float>;
+typedef ::testing::Types<char, int, float> DataTypes;
 TYPED_TEST_CASE (BuffersTest, DataTypes);
 
 TYPED_TEST (BuffersTest, SingleBuffer)

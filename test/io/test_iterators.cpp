@@ -43,8 +43,8 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-using Point = pcl::PointXYZ;
-using PointCloud = pcl::PointCloud<Point>;
+typedef pcl::PointXYZ Point;
+typedef pcl::PointCloud<Point> PointCloud;
 
 PointCloud cloud;
 

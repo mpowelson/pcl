@@ -34,7 +34,8 @@
  * Author: Julius Kammerl (julius@kammerl.de)
  */
 
-#pragma once
+#ifndef OCTREE_COMPRESSION_PROFILES_H
+#define OCTREE_COMPRESSION_PROFILES_H
 
 namespace pcl
 {
@@ -178,3 +179,7 @@ namespace pcl
 
   }
 }
+
+
+#endif
+

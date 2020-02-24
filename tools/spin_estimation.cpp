@@ -162,7 +162,7 @@ main (int argc, char** argv)
 
   print_highlight (stderr, "Computing ");
 
-  using SpinImage = Histogram<153>;
+  typedef Histogram<153> SpinImage;
   SpinImageEstimation<PointNormal, PointNormal, SpinImage> spin_est (image_width, support_angle, min_neigh); 
   //spin_est.setInputWithNormals (xyznormals, xyznormals);
   spin_est.setInputCloud (xyznormals);

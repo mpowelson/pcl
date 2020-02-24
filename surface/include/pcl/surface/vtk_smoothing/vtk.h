@@ -36,8 +36,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_SURFACE_VTK_H_
+#define PCL_SURFACE_VTK_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -45,3 +45,6 @@
 
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+
+#endif    // PCL_SURFACE_VTK_H_
+

@@ -38,7 +38,9 @@
 /// points in a cloud object as well as undo.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
+
+#ifndef PASTE_COMMAND_H_
+#define PASTE_COMMAND_H_
 
 #include <pcl/apps/point_cloud_editor/command.h>
 #include <pcl/apps/point_cloud_editor/localTypes.h>
@@ -54,12 +56,10 @@ class PasteCommand : public Command
                   SelectionPtr selection_ptr, CloudPtr cloud_ptr);
     // comment that the selection is updated (also resets the matrix in cloud)
 
-    /// @brief Copy constructor - commands are non-copyable
-    PasteCommand (const PasteCommand&) = delete;
-
-    /// @brief Equal operator - commands are non-copyable
-    PasteCommand&
-    operator= (const PasteCommand&) = delete;
+    /// @brief Destructor
+    ~PasteCommand ()
+    {
+    }
   
   protected:
     /// @brief Appends the points in the copy buffer into the cloud.
@@ -67,13 +67,31 @@ class PasteCommand : public Command
     /// updates the selection object to point to the newly pasted points.  This
     /// also updates the selection object to point to the newly pasted points.
     void
-    execute () override;
+    execute ();
 
     /// @brief Removes the points that were pasted to the cloud.
     void
-    undo () override;
+    undo ();
 
   private:
+    /// @brief Default constructor - object is not default constructable
+    PasteCommand ()
+    {
+    }
+    
+    /// @brief Copy constructor - commands are non-copyable
+    PasteCommand (const PasteCommand&)
+    {
+      assert(false);
+    }
+
+    /// @brief Equal operator - commands are non-copyable
+    PasteCommand&
+    operator= (const PasteCommand&)
+    {
+      assert(false); return (*this);
+    }
+
     /// a pointer pointing to the copy buffer.
     ConstCopyBufferPtr copy_buffer_ptr_;
 
@@ -88,3 +106,4 @@ class PasteCommand : public Command
     /// support undo, one only has to resize the cloud using this value.
     unsigned int prev_cloud_size_;
 };
+#endif // PASTE_COMMAND_H_

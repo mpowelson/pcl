@@ -138,13 +138,22 @@ namespace pcl
         int x = threadIdx.x + blockIdx.x * CTA_SIZE_X;
         int y = threadIdx.y + blockIdx.y * CTA_SIZE_Y;
 
-#if CUDART_VERSION >= 9000
+#if __CUDA_ARCH__ < 200
+        __shared__ int cta_buffer[CTA_SIZE];
+#endif
+
+
+#if CUDA_VERSION >= 9000
         if (__all_sync (__activemask (), x >= VOLUME_X)
             || __all_sync (__activemask (), y >= VOLUME_Y))
           return;
-#else
+#elif __CUDA_ARCH__ >= 200
         if (__all (x >= VOLUME_X) || __all (y >= VOLUME_Y))
           return;
+#else        
+        if (Emulation::All(x >= VOLUME_X, cta_buffer) || 
+            Emulation::All(y >= VOLUME_Y, cta_buffer))
+            return;
 #endif
 
         int ftid = Block::flattenedThreadId ();
@@ -164,10 +173,12 @@ namespace pcl
             // read number of vertices from texture
             numVerts = (cubeindex == 0 || cubeindex == 255) ? 0 : tex1Dfetch (numVertsTex, cubeindex);
           }
-#if CUDART_VERSION >= 9000
+#if CUDA_VERSION >= 9000
           int total = __popc (__ballot_sync (__activemask (), numVerts > 0));
-#else
+#elif __CUDA_ARCH__ >= 200
           int total = __popc (__ballot (numVerts > 0));
+#else
+          int total = __popc (Emulation::Ballot(numVerts > 0, cta_buffer));
 #endif
 		  if (total == 0)
 			continue;
@@ -179,10 +190,12 @@ namespace pcl
           }
           int old_global_voxels_count = warps_buffer[warp_id];
 
-#if CUDART_VERSION >= 9000
+#if CUDA_VERSION >= 9000
           int offs = Warp::binaryExclScan (__ballot_sync (__activemask (), numVerts > 0));
-#else
+#elif __CUDA_ARCH__ >= 200
           int offs = Warp::binaryExclScan (__ballot (numVerts > 0));
+#else          
+          int offs = Warp::binaryExclScan(Emulation::Ballot(numVerts > 0, cta_buffer));
 #endif
 
           if (old_global_voxels_count + offs < max_size && numVerts > 0)
@@ -272,7 +285,11 @@ namespace pcl
   {
     struct TrianglesGenerator : public CubeIndexEstimator
     {
+#if __CUDA_ARCH__ >= 200
       enum { CTA_SIZE = 256, MAX_GRID_SIZE_X = 65536 };
+#else
+      enum { CTA_SIZE = 96, MAX_GRID_SIZE_X = 65536 };
+#endif
 
       const int* occupied_voxels;
       const int* vertex_ofssets;
@@ -391,7 +408,7 @@ pcl::device::generateTriangles (const PtrStep<short2>& volume, const DeviceArray
   
   int block_size = prop.major < 2 ? 96 : 256; // please see TrianglesGenerator::CTA_SIZE
 
-  using Tg = TrianglesGenerator;
+  typedef TrianglesGenerator Tg;
   Tg tg;
 
   tg.volume = volume;

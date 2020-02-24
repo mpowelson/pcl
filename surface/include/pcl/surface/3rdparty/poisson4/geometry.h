@@ -36,7 +36,7 @@ DAMAGE.
 #include <pcl/pcl_macros.h>
 #include <math.h>
 #include <vector>
-#include <unordered_map>
+#include "hash.h"
 
 namespace pcl
 {
@@ -180,7 +180,7 @@ namespace pcl
         int addTriangle( int p1 , int p2 , int p3 );
 
       protected:
-        std::unordered_map<long long,int> edgeMap;
+        hash_map<long long,int> edgeMap;
         static long long EdgeIndex( int p1 , int p2 );
         double area(const Triangle& t);
     };

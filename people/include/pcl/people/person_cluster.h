@@ -38,7 +38,8 @@
  * Author: Matteo Munaro
  */
 
-#pragma once
+#ifndef PCL_PEOPLE_PERSON_CLUSTER_H_
+#define PCL_PEOPLE_PERSON_CLUSTER_H_
 
 #include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
@@ -134,9 +135,9 @@ namespace pcl
 
     public:
 
-      using PointCloud = pcl::PointCloud<PointT>;
-      using PointCloudPtr = typename PointCloud::Ptr;
-      using PointCloudConstPtr = typename PointCloud::ConstPtr;
+      typedef pcl::PointCloud<PointT> PointCloud;
+      typedef boost::shared_ptr<PointCloud> PointCloudPtr;
+      typedef boost::shared_ptr<const PointCloud> PointCloudConstPtr;
 
       /** \brief Constructor. */
       PersonCluster (
@@ -155,7 +156,7 @@ namespace pcl
        * \return the height of the cluster.
        */
       float
-      getHeight () const;
+      getHeight ();
 
       /**
        * \brief Update the height of the cluster.
@@ -181,28 +182,28 @@ namespace pcl
        * y dimension.
        */
       float
-      getDistance () const;
+      getDistance ();
 
       /**
        * \brief Returns the angle formed by the cluster's centroid with respect to the sensor (in radians).
        * \return the angle formed by the cluster's centroid with respect to the sensor (in radians).
        */
       float
-      getAngle () const;
+      getAngle ();
 
       /**
        * \brief Returns the minimum angle formed by the cluster with respect to the sensor (in radians).
        * \return the minimum angle formed by the cluster with respect to the sensor (in radians).
        */
       float
-      getAngleMin () const;
+      getAngleMin ();
 
       /**
        * \brief Returns the maximum angle formed by the cluster with respect to the sensor (in radians).
        * \return the maximum angle formed by the cluster with respect to the sensor (in radians).
        */
       float
-      getAngleMax () const;
+      getAngleMax ();
 
       /**
        * \brief Returns the indices of the point cloud points corresponding to the cluster.
@@ -274,14 +275,14 @@ namespace pcl
        * \return the HOG confidence.
        */
       float
-      getPersonConfidence () const;
+      getPersonConfidence ();
 
       /**
        * \brief Returns the number of points of the cluster.
        * \return the number of points of the cluster.
        */
       int
-      getNumberPoints () const;
+      getNumberPoints ();
 
       /**
        * \brief Sets the cluster height.
@@ -327,3 +328,4 @@ namespace pcl
   } /* namespace people */
 } /* namespace pcl */
 #include <pcl/people/impl/person_cluster.hpp>
+#endif /* PCL_PEOPLE_PERSON_CLUSTER_H_ */

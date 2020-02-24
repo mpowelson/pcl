@@ -38,9 +38,8 @@
  *
  */
 
-#pragma once
-
-#include <array>
+#ifndef PCL_FEATURES_VFH_H_
+#define PCL_FEATURES_VFH_H_
 
 #include <pcl/point_types.h>
 #include <pcl/features/feature.h>
@@ -81,23 +80,24 @@ namespace pcl
       using Feature<PointInT, PointOutT>::surface_;
       using FeatureFromNormals<PointInT, PointNT, PointOutT>::normals_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
-      using Ptr = shared_ptr<VFHEstimation<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const VFHEstimation<PointInT, PointNT, PointOutT> >;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename boost::shared_ptr<VFHEstimation<PointInT, PointNT, PointOutT> > Ptr;
+      typedef typename boost::shared_ptr<const VFHEstimation<PointInT, PointNT, PointOutT> > ConstPtr;
 
 
       /** \brief Empty constructor. */
       VFHEstimation () :
-        nr_bins_f_ ({45, 45, 45, 45}), nr_bins_vp_ (128),
+        nr_bins_f1_ (45), nr_bins_f2_ (45), nr_bins_f3_ (45), nr_bins_f4_ (45), nr_bins_vp_ (128),
         vpx_ (0), vpy_ (0), vpz_ (0),
-        use_given_normal_ (false), use_given_centroid_ (false),
+        hist_f1_ (), hist_f2_ (), hist_f3_ (), hist_f4_ (), hist_vp_ (),
+        normal_to_use_ (), centroid_to_use_ (), use_given_normal_ (false), use_given_centroid_ (false),
         normalize_bins_ (true), normalize_distances_ (false), size_component_ (false),
         d_pi_ (1.0f / (2.0f * static_cast<float> (M_PI)))
       {
-        for (int i = 0; i < 4; ++i)
-        {
-          hist_f_[i].setZero (nr_bins_f_[i]);
-        }
+        hist_f1_.setZero (nr_bins_f1_);
+        hist_f2_.setZero (nr_bins_f2_);
+        hist_f3_.setZero (nr_bins_f3_);
+        hist_f4_.setZero (nr_bins_f4_);
         search_radius_ = 0;
         k_ = 0;
         feature_name_ = "VFHEstimation";
@@ -214,8 +214,7 @@ namespace pcl
     private:
 
       /** \brief The number of subdivisions for each feature interval. */
-      std::array<int, 4> nr_bins_f_;
-      int nr_bins_vp_;
+      int nr_bins_f1_, nr_bins_f2_, nr_bins_f3_, nr_bins_f4_, nr_bins_vp_;
 
       /** \brief Values describing the viewpoint ("pinhole" camera model assumed). For per point viewpoints, inherit
         * from VFHEstimation and provide your own computeFeature (). By default, the viewpoint is set to 0,0,0.
@@ -228,15 +227,21 @@ namespace pcl
         * \param[out] output the resultant point cloud model dataset that contains the VFH feature estimates
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
     protected:
       /** \brief This method should get called before starting the actual computation. */
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief Placeholder for the f1 histogram. */
-      std::array<Eigen::VectorXf, 4> hist_f_;
+      Eigen::VectorXf hist_f1_;
+      /** \brief Placeholder for the f2 histogram. */
+      Eigen::VectorXf hist_f2_;
+      /** \brief Placeholder for the f3 histogram. */
+      Eigen::VectorXf hist_f3_;
+      /** \brief Placeholder for the f4 histogram. */
+      Eigen::VectorXf hist_f4_;
       /** \brief Placeholder for the vp histogram. */
       Eigen::VectorXf hist_vp_;
 
@@ -267,3 +272,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/vfh.hpp>
 #endif
+
+#endif  //#ifndef PCL_FEATURES_VFH_H_

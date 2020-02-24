@@ -41,16 +41,14 @@
 #include <pcl/io/openni_grabber.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-#include <mutex>
-
-using PointT = pcl::PointXYZRGBA;
+typedef pcl::PointXYZRGBA PointT;
 
 class OpenNIOrganizedEdgeDetection
 {
   private:
-    pcl::visualization::PCLVisualizer::Ptr viewer;
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
     pcl::PointCloud<PointT> cloud_;
-    std::mutex cloud_mutex;
+    boost::mutex cloud_mutex;
 
   public:
     OpenNIOrganizedEdgeDetection ()
@@ -62,8 +60,8 @@ class OpenNIOrganizedEdgeDetection
     {
     }
 
-    pcl::visualization::PCLVisualizer::Ptr
-    initCloudViewer (const pcl::PointCloud<PointT>::ConstPtr& cloud)
+    boost::shared_ptr<pcl::visualization::PCLVisualizer>
+    initCloudViewer (pcl::PointCloud<PointT>::ConstPtr cloud)
     {
       viewer->setSize (640, 480);
       viewer->addPointCloud<PointT> (cloud, "cloud");
@@ -100,9 +98,9 @@ class OpenNIOrganizedEdgeDetection
     void
     keyboard_callback (const pcl::visualization::KeyboardEvent& event, void*)
     {
+      double opacity;
       if (event.keyUp())
       {
-        double opacity;
         switch (event.getKeyCode())
         {
         case '1':
@@ -143,16 +141,16 @@ class OpenNIOrganizedEdgeDetection
     void
     run ()
     {
-      pcl::OpenNIGrabber interface {};
+      pcl::Grabber* interface = new pcl::OpenNIGrabber ();
 
-      std::function<void(const pcl::PointCloud<PointT>::ConstPtr&)> f = [this] (const pcl::PointCloud<PointT>::ConstPtr& cloud) { cloud_cb_ (cloud); };
+      boost::function<void(const pcl::PointCloud<PointT>::ConstPtr&)> f = boost::bind (&OpenNIOrganizedEdgeDetection::cloud_cb_, this, _1);
 
       // Make and initialize a cloud viewer
       pcl::PointCloud<PointT>::Ptr init_cloud_ptr (new pcl::PointCloud<PointT>);
       viewer = initCloudViewer (init_cloud_ptr);
-      boost::signals2::connection c = interface.registerCallback (f);
+      boost::signals2::connection c = interface->registerCallback (f);
 
-      interface.start ();
+      interface->start ();
 
       pcl::IntegralImageNormalEstimation<PointT, pcl::Normal> ne;
       ne.setNormalEstimationMethod (ne.COVARIANCE_MATRIX);
@@ -203,10 +201,10 @@ class OpenNIOrganizedEdgeDetection
           std::cout << "Frame took " << double (oed_end - normal_start) << std::endl;
 
           // Make gray point cloud
-          for (auto &point : cloud_.points)
+          for (size_t idx = 0; idx < cloud_.points.size (); idx++)
           {
-            std::uint8_t gray = std::uint8_t((point.r + point.g + point.b)/3);
-            point.r = point.g = point.b = gray;
+            pcl::uint8_t gray = pcl::uint8_t((cloud_.points[idx].r + cloud_.points[idx].g + cloud_.points[idx].b)/3);
+            cloud_.points[idx].r = cloud_.points[idx].g = cloud_.points[idx].b = gray;
           }
 
           // Show the gray point cloud
@@ -245,7 +243,7 @@ class OpenNIOrganizedEdgeDetection
         }
       }
 
-      interface.stop ();
+      interface->stop ();
     }
 };
 
@@ -259,15 +257,15 @@ usage (char ** argv)
   {
     for (unsigned deviceIdx = 0; deviceIdx < driver.getNumberDevices (); ++deviceIdx)
     {
-      std::cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx) << ", product: " << driver.getProductName (deviceIdx)
-              << ", connected: " << driver.getBus (deviceIdx) << " @ " << driver.getAddress (deviceIdx) << ", serial number: \'" << driver.getSerialNumber (deviceIdx) << "\'" << std::endl;
-      std::cout << "device_id may be #1, #2, ... for the first second etc device in the list or" << std::endl
-           << "                 bus@address for the device connected to a specific usb-bus / address combination (works only in Linux) or" << std::endl
-           << "                 <serial-number> (only in Linux and for devices which provide serial numbers)"  << std::endl;
+      cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx) << ", product: " << driver.getProductName (deviceIdx)
+              << ", connected: " << driver.getBus (deviceIdx) << " @ " << driver.getAddress (deviceIdx) << ", serial number: \'" << driver.getSerialNumber (deviceIdx) << "\'" << endl;
+      cout << "device_id may be #1, #2, ... for the first second etc device in the list or" << endl
+           << "                 bus@address for the device connected to a specific usb-bus / address combination (works only in Linux) or" << endl
+           << "                 <serial-number> (only in Linux and for devices which provide serial numbers)"  << endl;
     }
   }
   else
-    std::cout << "No devices connected." << std::endl;
+    cout << "No devices connected." << endl;
 }
 
 int

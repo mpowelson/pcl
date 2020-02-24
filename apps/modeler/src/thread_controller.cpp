@@ -40,8 +40,6 @@
 #include <pcl/apps/modeler/cloud_mesh_item.h>
 #include <pcl/apps/modeler/main_window.h>
 
-#include <QDialog>
-#include <QThread>
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 pcl::modeler::ThreadController::ThreadController()
@@ -50,7 +48,7 @@ pcl::modeler::ThreadController::ThreadController()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-pcl::modeler::ThreadController::~ThreadController()
+pcl::modeler::ThreadController::~ThreadController(void)
 {
   MainWindow::getInstance().slotOnWorkerFinished();
 }

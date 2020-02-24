@@ -37,13 +37,13 @@
  * $Id$
  *
  */
+#ifndef PCL_REGISTRATION_TRANSFORMATION_VALIDATION_EUCLIDEAN_H_
+#define PCL_REGISTRATION_TRANSFORMATION_VALIDATION_EUCLIDEAN_H_
 
-#pragma once
-
-#include <pcl/pcl_macros.h>
 #include <pcl/point_representation.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/kdtree/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/registration/transformation_validation.h>
 
 namespace pcl
@@ -74,18 +74,18 @@ namespace pcl
     class TransformationValidationEuclidean
     {
       public:
-        using Matrix4 = typename TransformationValidation<PointSource, PointTarget, Scalar>::Matrix4;
+        typedef typename TransformationValidation<PointSource, PointTarget, Scalar>::Matrix4 Matrix4;
         
-        using Ptr = shared_ptr<TransformationValidation<PointSource, PointTarget, Scalar> >;
-        using ConstPtr = shared_ptr<const TransformationValidation<PointSource, PointTarget, Scalar> >;
+        typedef boost::shared_ptr<TransformationValidation<PointSource, PointTarget, Scalar> > Ptr;
+        typedef boost::shared_ptr<const TransformationValidation<PointSource, PointTarget, Scalar> > ConstPtr;
 
-        using KdTree = pcl::search::KdTree<PointTarget>;
-        using KdTreePtr = typename KdTree::Ptr;
+        typedef typename pcl::search::KdTree<PointTarget> KdTree;
+        typedef typename pcl::search::KdTree<PointTarget>::Ptr KdTreePtr;
 
-        using PointRepresentationConstPtr = typename KdTree::PointRepresentationConstPtr;
+        typedef typename KdTree::PointRepresentationConstPtr PointRepresentationConstPtr;
 
-        using PointCloudSourceConstPtr = typename TransformationValidation<PointSource, PointTarget>::PointCloudSourceConstPtr;
-        using PointCloudTargetConstPtr = typename TransformationValidation<PointSource, PointTarget>::PointCloudTargetConstPtr;
+        typedef typename TransformationValidation<PointSource, PointTarget>::PointCloudSourceConstPtr PointCloudSourceConstPtr;
+        typedef typename TransformationValidation<PointSource, PointTarget>::PointCloudTargetConstPtr PointCloudTargetConstPtr;
 
         /** \brief Constructor.
           * Sets the \a max_range parameter to double::max, \a threshold_ to NaN
@@ -203,7 +203,7 @@ namespace pcl
             const PointCloudTargetConstPtr &cloud_tgt,
             const Matrix4 &transformation_matrix) const
         {
-          if (std::isnan (threshold_))
+          if (pcl_isnan (threshold_))
           {
             PCL_ERROR ("[pcl::TransformationValidationEuclidean::isValid] Threshold not set! Please use setThreshold () before continuing.");
             return (false);
@@ -237,8 +237,8 @@ namespace pcl
           using pcl::PointRepresentation<PointTarget>::nr_dimensions_;
           using pcl::PointRepresentation<PointTarget>::trivial_;
           public:
-            using Ptr = shared_ptr<MyPointRepresentation>;
-            using ConstPtr = shared_ptr<const MyPointRepresentation>;
+            typedef boost::shared_ptr<MyPointRepresentation> Ptr;
+            typedef boost::shared_ptr<const MyPointRepresentation> ConstPtr;
             
             MyPointRepresentation ()
             {
@@ -259,9 +259,12 @@ namespace pcl
         };
 
       public:
-        PCL_MAKE_ALIGNED_OPERATOR_NEW
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
   }
 }
 
 #include <pcl/registration/impl/transformation_validation_euclidean.hpp>
+
+#endif    // PCL_REGISTRATION_TRANSFORMATION_VALIDATION_EUCLIDEAN_H_
+

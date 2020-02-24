@@ -36,10 +36,9 @@
  */
 
 // Stdlib
-#include <cstdlib>
+#include <stdlib.h>
 #include <cmath>
-#include <climits>
-#include <thread>
+#include <limits.h>
 
 #include <boost/format.hpp>
 
@@ -64,12 +63,10 @@
 #include <vtkImageFlip.h>
 #include <vtkPolyLine.h>
 
-using namespace std::chrono_literals;
-
 /// *****  Type Definitions ***** ///
 
-using PointT = pcl::PointXYZRGBA;  // The point type used for input
-using SuperVoxelAdjacencyList = pcl::LCCPSegmentation<PointT>::SupervoxelAdjacencyList;
+typedef pcl::PointXYZRGBA PointT;  // The point type used for input
+typedef pcl::LCCPSegmentation<PointT>::SupervoxelAdjacencyList SuperVoxelAdjacencyList;
 
 /// Callback and variables
 
@@ -122,12 +119,12 @@ keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event_arg,
 /** \brief Displays info text in the specified PCLVisualizer
  *  \param[in] viewer_arg The PCLVisualizer to modify  */
 void
-printText (pcl::visualization::PCLVisualizer::Ptr viewer_arg);
+printText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_arg);
 
 /** \brief Removes info text in the specified PCLVisualizer
  *  \param[in] viewer_arg The PCLVisualizer to modify  */
 void
-removeText (pcl::visualization::PCLVisualizer::Ptr viewer_arg);
+removeText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_arg);
 
 
 /// ---- main ---- ///
@@ -185,7 +182,7 @@ LCCPSegmentation Parameters: \n\
   bool save_binary_pcd = pcl::console::find_switch (argc, argv, "-bin");
   
   /// Create variables needed for preparations
-  std::string outputname;
+  std::string outputname ("");
   pcl::PointCloud<PointT>::Ptr input_cloud_ptr (new pcl::PointCloud<PointT>);
   pcl::PointCloud<pcl::Normal>::Ptr input_normals_ptr (new pcl::PointCloud<pcl::Normal>);
   bool has_normals = false;
@@ -233,11 +230,11 @@ LCCPSegmentation Parameters: \n\
     if (outputname.empty () || (outputname.at (0) == '-'))
     {
       outputname = pcd_filename;
-      std::size_t sep = outputname.find_last_of ('/');
+      size_t sep = outputname.find_last_of ('/');
       if (sep != std::string::npos)
         outputname = outputname.substr (sep + 1, outputname.size () - sep - 1);
 
-      std::size_t dot = outputname.find_last_of ('.');
+      size_t dot = outputname.find_last_of ('.');
       if (dot != std::string::npos)
         outputname = outputname.substr (0, dot);
     }
@@ -258,7 +255,7 @@ LCCPSegmentation Parameters: \n\
   // LCCPSegmentation Stuff
   float concavity_tolerance_threshold = 10;
   float smoothness_threshold = 0.1;
-  std::uint32_t min_segment_size = 0;
+  uint32_t min_segment_size = 0;
   bool use_extended_convexity = false;
   bool use_sanity_criterion = false;
   
@@ -295,7 +292,7 @@ LCCPSegmentation Parameters: \n\
   super.setColorImportance (color_importance);
   super.setSpatialImportance (spatial_importance);
   super.setNormalImportance (normal_importance);
-  std::map<std::uint32_t, pcl::Supervoxel<PointT>::Ptr> supervoxel_clusters;
+  std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr> supervoxel_clusters;
 
   PCL_INFO ("Extracting supervoxels\n");
   super.extract (supervoxel_clusters);
@@ -310,7 +307,7 @@ LCCPSegmentation Parameters: \n\
   PCL_INFO (temp.str ().c_str ());
 
   PCL_INFO ("Getting supervoxel adjacency\n");
-  std::multimap<std::uint32_t, std::uint32_t> supervoxel_adjacency;
+  std::multimap<uint32_t, uint32_t> supervoxel_adjacency;
   super.getSupervoxelAdjacency (supervoxel_adjacency);
 
   /// Get the cloud of supervoxel centroid with normals and the colored cloud with supervoxel coloring (this is used for visulization)
@@ -373,9 +370,11 @@ LCCPSegmentation Parameters: \n\
     // Currently this is a work-around creating a polygon mesh consisting of two triangles for each edge
     using namespace pcl;
 
-    using VertexIterator = LCCPSegmentation<PointT>::VertexIterator;
-    using AdjacencyIterator = LCCPSegmentation<PointT>::AdjacencyIterator;
-    using EdgeID = LCCPSegmentation<PointT>::EdgeID;
+    typedef LCCPSegmentation<PointT>::VertexIterator VertexIterator;
+    typedef LCCPSegmentation<PointT>::AdjacencyIterator AdjacencyIterator;
+    typedef LCCPSegmentation<PointT>::EdgeID EdgeID;
+
+    std::set<EdgeID> edge_drawn;
 
     const unsigned char convex_color [3] = {255, 255, 255};
     const unsigned char concave_color [3] = {255, 0, 0};
@@ -398,7 +397,7 @@ LCCPSegmentation Parameters: \n\
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New ();
     for (VertexIterator itr = vertex_iterator_range.first; itr != vertex_iterator_range.second; ++itr)
     {
-      const std::uint32_t sv_label = sv_adjacency_list[*itr];
+      const uint32_t sv_label = sv_adjacency_list[*itr];
       std::pair<AdjacencyIterator, AdjacencyIterator> neighbors = boost::adjacent_vertices (*itr, sv_adjacency_list);
 
       for (AdjacencyIterator itr_neighbor = neighbors.first; itr_neighbor != neighbors.second; ++itr_neighbor)
@@ -422,7 +421,7 @@ LCCPSegmentation Parameters: \n\
         pcl::PointXYZRGBA vert_curr = supervoxel->centroid_;
         
         
-        const std::uint32_t sv_neighbor_label = sv_adjacency_list[*itr_neighbor];
+        const uint32_t sv_neighbor_label = sv_adjacency_list[*itr_neighbor];
         pcl::Supervoxel<PointT>::Ptr supervoxel_neigh = supervoxel_clusters.at (sv_neighbor_label);
         pcl::PointXYZRGBA vert_neigh = supervoxel_neigh->centroid_;
         
@@ -448,7 +447,7 @@ LCCPSegmentation Parameters: \n\
     /// Configure Visualizer
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     viewer->setBackgroundColor (0, 0, 0);
-    viewer->registerKeyboardCallback (keyboardEventOccurred, nullptr);
+    viewer->registerKeyboardCallback (keyboardEventOccurred, 0);
     viewer->addPointCloud (lccp_labeled_cloud, "maincloud");
 
     /// Visualization Loop
@@ -493,7 +492,7 @@ LCCPSegmentation Parameters: \n\
           viewer->addText ("Press d to show help", 5, 10, 12, 1.0, 1.0, 1.0, "help_text");
       }
 
-      std::this_thread::sleep_for(100ms);
+      boost::this_thread::sleep (boost::posix_time::microseconds (100000));
     }
   }  /// END if (show_visualization)
 
@@ -504,7 +503,7 @@ LCCPSegmentation Parameters: \n\
 /// -------------------------| Definitions of helper functions|-------------------------
 
 void
-printText (pcl::visualization::PCLVisualizer::Ptr viewer_arg)
+printText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_arg)
 {
   std::string on_str = "ON";
   std::string off_str = "OFF";
@@ -529,7 +528,7 @@ printText (pcl::visualization::PCLVisualizer::Ptr viewer_arg)
 }
 
 void
-removeText (pcl::visualization::PCLVisualizer::Ptr viewer_arg)
+removeText (boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_arg)
 {
   viewer_arg->removeShape ("hud_text");
   viewer_arg->removeShape ("normals_text");

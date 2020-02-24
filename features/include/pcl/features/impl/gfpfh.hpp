@@ -89,11 +89,11 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeFeature (PointCloudOu
   // Determine the voxels crosses along the line segments
   // formed by every pair of occupied cells.
   std::vector< std::vector<int> > line_histograms;
-  for (std::size_t i = 0; i < occupied_cells.size (); ++i)
+  for (size_t i = 0; i < occupied_cells.size (); ++i)
   {
     Eigen::Vector3f origin = occupied_cells[i].getVector3fMap ();
 
-    for (std::size_t j = i+1; j < occupied_cells.size (); ++j)
+    for (size_t j = i+1; j < occupied_cells.size (); ++j)
     {
       typename pcl::PointCloud<PointInT>::VectorType intersected_cells;
       Eigen::Vector3f end = occupied_cells[j].getVector3fMap ();
@@ -101,12 +101,12 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeFeature (PointCloudOu
 
       // Intersected cells are ordered from closest to furthest w.r.t. the origin.
       std::vector<int> histogram;
-      for (std::size_t k = 0; k < intersected_cells.size (); ++k)
+      for (size_t k = 0; k < intersected_cells.size (); ++k)
       {
         std::vector<int> indices;
         octree.voxelSearch (intersected_cells[k], indices);
         int label = emptyLabel ();
-        if (!indices.empty ())
+        if (indices.size () != 0)
         {
           label = getDominantLabel (indices);
         }
@@ -130,7 +130,7 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeFeature (PointCloudOu
   output.width = 1;
   output.height = 1;
   output.points.resize (1);
-  std::copy (gfpfh_histogram.cbegin (), gfpfh_histogram.cend (), output.points[0].histogram);
+  std::copy (gfpfh_histogram.begin (), gfpfh_histogram.end (), output.points[0].histogram);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,20 +140,20 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeTransitionHistograms 
 {
   transition_histograms.resize (label_histograms.size ());
 
-  for (std::size_t i = 0; i < label_histograms.size (); ++i)
+  for (size_t i = 0; i < label_histograms.size (); ++i)
   {
     transition_histograms[i].resize ((getNumberOfClasses () + 2) * (getNumberOfClasses () + 1) / 2, 0);
 
     std::vector< std::vector <int> > transitions (getNumberOfClasses () + 1);
-    for (auto &transition : transitions)
+    for (size_t k = 0; k < transitions.size (); ++k)
     {
-      transition.resize (getNumberOfClasses () + 1, 0);
+      transitions[k].resize (getNumberOfClasses () + 1, 0);
     }
 
-    for (std::size_t k = 1; k < label_histograms[i].size (); ++k)
+    for (size_t k = 1; k < label_histograms[i].size (); ++k)
     {
-      std::uint32_t first_class = label_histograms[i][k-1];
-      std::uint32_t second_class = label_histograms[i][k];
+      uint32_t first_class = label_histograms[i][k-1];
+      uint32_t second_class = label_histograms[i][k];
       // Order has no influence.
       if (second_class < first_class)
         std::swap (first_class, second_class);
@@ -162,15 +162,15 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeTransitionHistograms 
     }
 
     // Build a one-dimension histogram out of it.
-    std::size_t flat_index = 0;
-    for (std::size_t m = 0; m < transitions.size (); ++m)
-      for (std::size_t n = m; n < transitions[m].size (); ++n)
+    int flat_index = 0;
+    for (int m = 0; m < static_cast<int> (transitions.size ()); ++m)
+      for (int n = m; n < static_cast<int> (transitions[m].size ()); ++n)
       {
         transition_histograms[i][flat_index] = transitions[m][n];
         ++flat_index;
       }
 
-    assert (flat_index == transition_histograms[i].size ());
+    assert (flat_index == static_cast<int> (transition_histograms[i].size ()));
   }
 }
 
@@ -184,7 +184,7 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeDistancesToMean (cons
   std::vector<float> mean_histogram;
   computeMeanHistogram (transition_histograms, mean_histogram);
 
-  for (std::size_t i = 0; i < transition_histograms.size (); ++i)
+  for (size_t i = 0; i < transition_histograms.size (); ++i)
   {
     float d = computeHIKDistance (transition_histograms[i], mean_histogram);
     distances[i] = d;
@@ -196,24 +196,22 @@ template <typename PointInT, typename PointNT, typename PointOutT> void
 pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeDistanceHistogram (const std::vector<float>& distances,
                                                                               std::vector<float>& histogram)
 {
-  std::vector<float>::const_iterator min_it, max_it;
-  std::tie (min_it, max_it) = std::minmax_element (distances.cbegin (), distances.cend ());
-  assert (min_it != distances.cend ());
-  assert (max_it != distances.cend ());
-
+  std::vector<float>::const_iterator min_it = std::min_element (distances.begin (), distances.end ());
+  assert (min_it != distances.end ());
   const float min_value = *min_it;
+
+  std::vector<float>::const_iterator max_it = std::max_element (distances.begin (), distances.end ());
+  assert (max_it != distances.end());
   const float max_value = *max_it;
 
   histogram.resize (descriptorSize (), 0);
 
   const float range = max_value - min_value;
-
-  using binSizeT = decltype(descriptorSize());
-  const binSizeT max_bin = descriptorSize () - 1;
-  for (const float &distance : distances)
+  const int max_bin = descriptorSize () - 1;
+  for (size_t i = 0; i < distances.size (); ++i)
   {
-    const auto raw_bin = descriptorSize () * (distance - min_value) / range;
-    const auto bin = std::min<binSizeT> (max_bin, static_cast<binSizeT> (std::floor (raw_bin)));
+    const float raw_bin = static_cast<float> (descriptorSize ()) * (distances[i] - min_value) / range;
+    int bin = std::min (max_bin, static_cast<int> (floor (raw_bin)));
     histogram[bin] += 1;
   }
 }
@@ -226,12 +224,12 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeMeanHistogram (const 
   assert (histograms.size () > 0);
 
   mean_histogram.resize (histograms[0].size (), 0);
-  for (const auto &histogram : histograms)
-    for (std::size_t j = 0; j < histogram.size (); ++j)
-      mean_histogram[j] += static_cast<float> (histogram[j]);
+  for (size_t i = 0; i < histograms.size (); ++i)
+    for (size_t j = 0; j < histograms[i].size (); ++j)
+      mean_histogram[j] += static_cast<float> (histograms[i][j]);
 
-  for (float &i : mean_histogram)
-    i /= static_cast<float> (histograms.size ());
+  for (size_t i = 0; i < mean_histogram.size (); ++i)
+    mean_histogram[i] /= static_cast<float> (histograms.size ());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +240,7 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeHIKDistance (const st
   assert (histogram.size () == mean_histogram.size ());
 
   float norm = 0.f;
-  for (std::size_t i = 0; i < histogram.size (); ++i)
+  for (size_t i = 0; i < histogram.size (); ++i)
     norm += std::min (static_cast<float> (histogram[i]), mean_histogram[i]);
 
   norm /= static_cast<float> (histogram.size ());
@@ -250,21 +248,22 @@ pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::computeHIKDistance (const st
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <typename PointInT, typename PointNT, typename PointOutT> std::uint32_t
+template <typename PointInT, typename PointNT, typename PointOutT> boost::uint32_t
 pcl::GFPFHEstimation<PointInT, PointNT, PointOutT>::getDominantLabel (const std::vector<int>& indices)
 {
-  std::vector<std::uint32_t> counts (getNumberOfClasses () + 1, 0);
-  for (const int &nn_index : indices)
+  std::vector<uint32_t> counts (getNumberOfClasses () + 1, 0);
+  for (size_t i = 0; i < indices.size (); ++i)
   {
-    std::uint32_t label = labels_->points[nn_index].label;
+    uint32_t label = labels_->points[indices[i]].label;
     counts[label] += 1;
   }
 
-  const auto max_it = std::max_element (counts.cbegin (), counts.cend ());
+  std::vector<uint32_t>::const_iterator max_it;
+  max_it = std::max_element (counts.begin (), counts.end ());
   if (max_it == counts.end ())
     return (emptyLabel ());
 
-  return std::distance(counts.cbegin (), max_it);
+  return (static_cast<uint32_t> (max_it - counts.begin ()));
 }
 
 #define PCL_INSTANTIATE_GFPFHEstimation(T,NT,OutT) template class PCL_EXPORTS pcl::GFPFHEstimation<T,NT,OutT>;

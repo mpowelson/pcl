@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef NURBS_TOOLS_H
+#define NURBS_TOOLS_H
 
 #include <pcl/surface/on_nurbs/nurbs_data.h>
 
@@ -146,3 +147,5 @@ namespace pcl
 
   }
 }
+
+#endif /* NTOOLS_H_ */

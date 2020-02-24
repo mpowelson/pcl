@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_DOT_MODALITY
+#define PCL_FEATURES_DOT_MODALITY
 
 #include <vector>
 #include <pcl/pcl_macros.h>
@@ -63,3 +64,5 @@ namespace pcl
 
   };
 }
+
+#endif    // PCL_FEATURES_DOT_MODALITY

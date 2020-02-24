@@ -35,10 +35,8 @@
  *	
  */
 
-#include <thread>
-
 #include <pcl/apps/openni_passthrough.h>
-// QT
+// QT4
 #include <QApplication>
 #include <QMutexLocker>
 #include <QEvent>
@@ -48,11 +46,14 @@
 
 #include <vtkRenderWindow.h>
 
-using namespace std::chrono_literals;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OpenNIPassthrough::OpenNIPassthrough (pcl::OpenNIGrabber& grabber) 
-  : grabber_(grabber)
+  : vis_ ()
+  , grabber_(grabber)
+  , device_id_ ()
+  , cloud_pass_()
+  , pass_ ()
+  , mtx_ ()
   , ui_ (new Ui::MainWindow)
   , vis_timer_ (new QTimer (this))
 {
@@ -71,7 +72,7 @@ OpenNIPassthrough::OpenNIPassthrough (pcl::OpenNIGrabber& grabber)
   ui_->qvtk_widget->update (); 
 
   // Start the OpenNI data acquision
-  std::function<void (const CloudConstPtr&)> f = [this] (const CloudConstPtr& cloud) { cloud_cb (cloud); };
+  boost::function<void (const CloudConstPtr&)> f = boost::bind (&OpenNIPassthrough::cloud_cb, this, _1);
   boost::signals2::connection c = grabber_.registerCallback (f);
 
   grabber_.start ();
@@ -104,7 +105,7 @@ OpenNIPassthrough::timeoutSlot ()
 {
   if (!cloud_pass_)
   {
-    std::this_thread::sleep_for(1ms);
+    boost::this_thread::sleep (boost::posix_time::milliseconds (1));
     return;
   }
 
@@ -140,5 +141,5 @@ main (int argc, char ** argv)
 
   OpenNIPassthrough v (grabber);
   v.show ();
-  return (QApplication::exec ());
+  return (app.exec ());
 }

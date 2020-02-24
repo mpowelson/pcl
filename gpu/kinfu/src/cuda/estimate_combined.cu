@@ -43,7 +43,7 @@ namespace pcl
 {
   namespace device
   {
-    using float_type = double;
+    typedef double float_type;
 
     template<int CTA_SIZE_, typename T>
     static __device__ __forceinline__ void reduce(volatile T* buffer)

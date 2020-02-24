@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_POINT_CLOUD_SPRING_H_
+#define PCL_POINT_CLOUD_SPRING_H_
 
 #include <pcl/point_cloud.h>
 
@@ -55,7 +56,7 @@ namespace pcl
      */
     template <typename PointT> void
     expandRows (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                const PointT& val, const std::size_t& amount);
+                const PointT& val, const size_t& amount);
 
     /** expand point cloud inserting \a amount columns at 
       * the right and the left of a point cloud and filling them with 
@@ -67,7 +68,7 @@ namespace pcl
       */
     template <typename PointT> void
     expandColumns (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                   const PointT& val, const std::size_t& amount);
+                   const PointT& val, const size_t& amount);
 
     /** expand point cloud duplicating the \a amount top and bottom rows times.
       * \param[in] input the input point cloud
@@ -76,7 +77,7 @@ namespace pcl
       */
     template <typename PointT> void
     duplicateRows (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                   const std::size_t& amount);
+                   const size_t& amount);
 
     /** expand point cloud duplicating the \a amount right and left columns
       * times.
@@ -86,7 +87,7 @@ namespace pcl
       */
     template <typename PointT> void
     duplicateColumns (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                      const std::size_t& amount);
+                      const size_t& amount);
 
     /** expand point cloud mirroring \a amount top and bottom rows. 
       * \param[in] input the input point cloud
@@ -95,7 +96,7 @@ namespace pcl
       */
     template <typename PointT> void
     mirrorRows (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                const std::size_t& amount);
+                const size_t& amount);
 
     /** expand point cloud mirroring \a amount right and left columns.
       * \param[in] input the input point cloud
@@ -104,7 +105,7 @@ namespace pcl
       */
     template <typename PointT> void
     mirrorColumns (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                   const std::size_t& amount);
+                   const size_t& amount);
 
     /** delete \a amount rows in top and bottom of point cloud 
       * \param[in] input the input point cloud
@@ -113,7 +114,7 @@ namespace pcl
       */
     template <typename PointT> void
     deleteRows (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                const std::size_t& amount);
+                const size_t& amount);
 
     /** delete \a amount columns in top and bottom of point cloud
       * \param[in] input the input point cloud
@@ -122,8 +123,10 @@ namespace pcl
       */
     template <typename PointT> void
     deleteCols (const PointCloud<PointT>& input, PointCloud<PointT>& output, 
-                const std::size_t& amount);
+                const size_t& amount);
   };
 }
 
 #include <pcl/common/impl/spring.hpp>
+
+#endif

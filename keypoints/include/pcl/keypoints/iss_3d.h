@@ -33,7 +33,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_ISS_3D_H_
+#define PCL_ISS_3D_H_
 
 #include <pcl/keypoints/keypoint.h>
 
@@ -84,18 +85,18 @@ namespace pcl
   class ISSKeypoint3D : public Keypoint<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<ISSKeypoint3D<PointInT, PointOutT, NormalT> >;
-      using ConstPtr = shared_ptr<const ISSKeypoint3D<PointInT, PointOutT, NormalT> >;
+      typedef boost::shared_ptr<ISSKeypoint3D<PointInT, PointOutT, NormalT> > Ptr;
+      typedef boost::shared_ptr<const ISSKeypoint3D<PointInT, PointOutT, NormalT> > ConstPtr;
 
-      using PointCloudIn = typename Keypoint<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Keypoint<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
-      using PointCloudN = pcl::PointCloud<NormalT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<NormalT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-      using OctreeSearchIn = pcl::octree::OctreePointCloudSearch<PointInT>;
-      using OctreeSearchInPtr = typename OctreeSearchIn::Ptr;
+      typedef typename pcl::octree::OctreePointCloudSearch<PointInT> OctreeSearchIn;
+      typedef typename OctreeSearchIn::Ptr OctreeSearchInPtr;
 
       using Keypoint<PointInT, PointOutT>::name_;
       using Keypoint<PointInT, PointOutT>::input_;
@@ -115,8 +116,8 @@ namespace pcl
       , border_radius_ (0.0)
       , gamma_21_ (0.975)
       , gamma_32_ (0.975)
-      , third_eigen_value_ (nullptr)
-      , edge_points_ (nullptr)
+      , third_eigen_value_ (0)
+      , edge_points_ (0)
       , min_neighbors_ (5)
       , normals_ (new pcl::PointCloud<NormalT>)
       , angle_threshold_ (static_cast<float> (M_PI) / 2.0f)
@@ -221,13 +222,13 @@ namespace pcl
        *  \return true if all the checks are passed, false otherwise
         */
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief Detect the keypoints by performing the EVD of the scatter matrix.
         * \param[out] output the resultant cloud of keypoints
         */
       void
-      detectKeypoints (PointCloudOut &output) override;
+      detectKeypoints (PointCloudOut &output);
 
 
       /** \brief The radius of the spherical neighborhood used to compute the scatter matrix.*/
@@ -271,3 +272,5 @@ namespace pcl
 }
 
 #include <pcl/keypoints/impl/iss_3d.hpp>
+
+#endif /* PCL_ISS_3D_H_ */

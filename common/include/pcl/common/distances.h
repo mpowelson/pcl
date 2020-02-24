@@ -34,10 +34,8 @@
  * $Id$
  *
  */
-
-#pragma once
-
-#include <limits>
+#ifndef PCL_DISTANCES_H_
+#define PCL_DISTANCES_H_
 
 #include <pcl/common/common.h>
 
@@ -103,12 +101,11 @@ namespace pcl
                  PointT &pmin, PointT &pmax)
   {
     double max_dist = std::numeric_limits<double>::min ();
-    const auto token = std::numeric_limits<std::size_t>::max();
-    std::size_t i_min = token, i_max = token;
+    int i_min = -1, i_max = -1;
 
-    for (std::size_t i = 0; i < cloud.points.size (); ++i)
+    for (size_t i = 0; i < cloud.points.size (); ++i)
     {
-      for (std::size_t j = i; j < cloud.points.size (); ++j)
+      for (size_t j = i; j < cloud.points.size (); ++j)
       {
         // Compute the distance 
         double dist = (cloud.points[i].getVector4fMap () - 
@@ -122,7 +119,7 @@ namespace pcl
       }
     }
 
-    if (i_min == token || i_max == token)
+    if (i_min == -1 || i_max == -1)
       return (max_dist = std::numeric_limits<double>::min ());
 
     pmin = cloud.points[i_min];
@@ -143,12 +140,11 @@ namespace pcl
                  PointT &pmin, PointT &pmax)
   {
     double max_dist = std::numeric_limits<double>::min ();
-    const auto token = std::numeric_limits<std::size_t>::max();
-    std::size_t i_min = token, i_max = token;
+    int i_min = -1, i_max = -1;
 
-    for (std::size_t i = 0; i < indices.size (); ++i)
+    for (size_t i = 0; i < indices.size (); ++i)
     {
-      for (std::size_t j = i; j < indices.size (); ++j)
+      for (size_t j = i; j < indices.size (); ++j)
       {
         // Compute the distance 
         double dist = (cloud.points[indices[i]].getVector4fMap () - 
@@ -162,7 +158,7 @@ namespace pcl
       }
     }
 
-    if (i_min == token || i_max == token)
+    if (i_min == -1 || i_max == -1)
       return (max_dist = std::numeric_limits<double>::min ());
 
     pmin = cloud.points[indices[i_min]];
@@ -202,3 +198,6 @@ namespace pcl
     return (std::sqrt (squaredEuclideanDistance (p1, p2)));
   }
 }
+/*@*/
+#endif  //#ifndef PCL_DISTANCES_H_
+

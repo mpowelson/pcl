@@ -42,13 +42,13 @@
 #include <pcl/apps/point_cloud_editor/selection.h>
 #include <pcl/apps/point_cloud_editor/common.h>
 
-TransformCommand::TransformCommand(const ConstSelectionPtr& selection_ptr,
+TransformCommand::TransformCommand(ConstSelectionPtr selection_ptr,
                                    CloudPtr cloud_ptr,
                                    const float *matrix,
                                    float translate_x,
                                    float translate_y,
                                    float translate_z)
-  : selection_ptr_(selection_ptr), cloud_ptr_(std::move(cloud_ptr)),
+  : selection_ptr_(selection_ptr), cloud_ptr_(cloud_ptr),
     translate_x_(translate_x), translate_y_(translate_y),
     translate_z_(translate_z)
 {
@@ -76,14 +76,18 @@ TransformCommand::undo()
     return;
   float transform_matrix_inv[MATRIX_SIZE];
   invertMatrix(transform_matrix_, transform_matrix_inv);
-  for(const unsigned int &index : *internal_selection_ptr_)
+  float x,y,z;
+  unsigned int index = 0;
+  Selection::const_iterator it;
+  for(it = internal_selection_ptr_ -> begin();
+      it != internal_selection_ptr_-> end(); ++it)
   {
     Point3D pt;
+    index = *it;
     pt.x = (*cloud_ptr_)[index].x - cloud_center_[X];
     pt.y = (*cloud_ptr_)[index].y - cloud_center_[Y];
     pt.z = (*cloud_ptr_)[index].z - cloud_center_[Z];
 
-    float x,y,z;
     x = pt.x * cloud_matrix_[0] +
         pt.y * cloud_matrix_[4] +
         pt.z * cloud_matrix_[8] + cloud_matrix_[12];
@@ -125,14 +129,16 @@ TransformCommand::undo()
 }
 
 void
-TransformCommand::applyTransform(const ConstSelectionPtr& sel_ptr)
+TransformCommand::applyTransform(ConstSelectionPtr sel_ptr)
 {
+  float x,y,z;
+  unsigned int index = 0;
   // now modify the selected points' coordinates
-  for(const unsigned int &index : *sel_ptr)
+  Selection::const_iterator it;
+  for(it = sel_ptr -> begin(); it != sel_ptr-> end(); ++it)
   {
+    index = *it;
     Point3D pt = cloud_ptr_->getObjectSpacePoint(index);
-
-    float x,y,z;
     x = pt.x * transform_matrix_[0] +
         pt.y * transform_matrix_[4] +
         pt.z * transform_matrix_[8] + transform_matrix_[12];

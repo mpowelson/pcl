@@ -35,10 +35,10 @@
  *
  */
 
-#pragma once
+#ifndef CLOUD_BROWSER_H_
+#define CLOUD_BROWSER_H_
 
-#include <QStyledItemDelegate>
-#include <QTreeView>
+#include <pcl/apps/cloud_composer/qt.h>
 
 class QItemSelectionModel;
 
@@ -55,10 +55,10 @@ namespace pcl
     {
       Q_OBJECT
       public:
-        CloudBrowser (QWidget* parent = nullptr);
+        CloudBrowser (QWidget* parent = 0);
         
-        void 
-        setModel (QAbstractItemModel* new_model) override;
+        virtual void 
+        setModel (QAbstractItemModel* new_model);
       
       private:  
         ProjectModel* current_project_model_;
@@ -69,13 +69,31 @@ namespace pcl
     {
       public:
         explicit 
-        BackgroundDelegate (QObject *parent = nullptr)
+        BackgroundDelegate (QObject *parent = 0)
           : QStyledItemDelegate(parent) {}
           
         void
-        paint (QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+        paint (QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
         
     };
     
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif

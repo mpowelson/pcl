@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SURFACE_H_
+#define SURFACE_H_
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/surface/mls.h>
@@ -125,3 +126,5 @@ marchingCubesTriangulation (const SurfaceElementsPtr & surfels, float leaf_size,
   
   return (output);
 }
+
+#endif

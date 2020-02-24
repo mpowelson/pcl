@@ -35,10 +35,14 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef _PCL_IO_EIGEN_H_
+#define _PCL_IO_EIGEN_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
 #endif
 
 #include <Eigen/Core>
+
+#endif    // _PCL_IO_EIGEN_H_
+

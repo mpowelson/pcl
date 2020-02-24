@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_VISUALIZATION_MOUSE_EVENT_H_
+#define	PCL_VISUALIZATION_MOUSE_EVENT_H_
 
 #include <pcl/visualization/keyboard_event.h>
 
@@ -47,7 +48,7 @@ namespace pcl
     class MouseEvent
     {
       public:
-        enum Type
+        typedef enum
         {
           MouseMove = 1,
           MouseButtonPress,
@@ -55,16 +56,16 @@ namespace pcl
           MouseScrollDown,
           MouseScrollUp,
           MouseDblClick
-        };
+        } Type;
 
-        enum MouseButton
+        typedef enum
         {
           NoButton      = 0,
           LeftButton,
           MiddleButton,
           RightButton,
           VScroll /*other buttons, scroll wheels etc. may follow*/
-        };
+        } MouseButton;
 
         /** Constructor.
           * \param[in] type   event type
@@ -207,3 +208,6 @@ namespace pcl
 
   } //namespace visualization
 } //namespace pcl
+
+#endif	/* PCL_VISUALIZATION_MOUSE_EVENT_H_ */
+

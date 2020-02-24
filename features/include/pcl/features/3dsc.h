@@ -38,9 +38,8 @@
  *
  */
 
-#pragma once
-
-#include <random>
+#ifndef PCL_FEATURES_3DSC_H_
+#define PCL_FEATURES_3DSC_H_
 
 #include <pcl/point_types.h>
 #include <pcl/features/boost.h>
@@ -73,8 +72,8 @@ namespace pcl
   class ShapeContext3DEstimation : public FeatureFromNormals<PointInT, PointNT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<ShapeContext3DEstimation<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const ShapeContext3DEstimation<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr<ShapeContext3DEstimation<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const ShapeContext3DEstimation<PointInT, PointNT, PointOutT> > ConstPtr;
 
       using Feature<PointInT, PointOutT>::feature_name_;
       using Feature<PointInT, PointOutT>::getClassName;
@@ -86,8 +85,8 @@ namespace pcl
       using Feature<PointInT, PointOutT>::searchForNeighbors;
       using FeatureFromNormals<PointInT, PointNT, PointOutT>::normals_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
-      using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudIn PointCloudIn;
 
       /** \brief Constructor.
         * \param[in] random If true the random seed is set to current time, else it is
@@ -104,42 +103,40 @@ namespace pcl
         min_radius_(0.1),
         point_density_radius_(0.2),
         descriptor_length_ (),
-        rng_dist_ (0.0f, 1.0f)
+        rng_alg_ (),
+        rng_ (new boost::uniform_01<boost::mt19937> (rng_alg_))
       {
         feature_name_ = "ShapeContext3DEstimation";
         search_radius_ = 2.5;
 
         // Create a random number generator object
         if (random)
-        {
-          std::random_device rd;
-          rng_.seed (rd());
-        }
+          rng_->base ().seed (static_cast<unsigned> (std::time(0)));
         else
-          rng_.seed (12345u);
+          rng_->base ().seed (12345u);
       }
 
-      ~ShapeContext3DEstimation() {}
+      virtual ~ShapeContext3DEstimation() {}
 
       //inline void
-      //setAzimuthBins (std::size_t bins) { azimuth_bins_ = bins; }
+      //setAzimuthBins (size_t bins) { azimuth_bins_ = bins; }
 
       /** \return the number of bins along the azimuth */
-      inline std::size_t
+      inline size_t
       getAzimuthBins () { return (azimuth_bins_); }
 
       //inline void
-      //setElevationBins (std::size_t bins) { elevation_bins_ = bins; }
+      //setElevationBins (size_t bins) { elevation_bins_ = bins; }
 
       /** \return The number of bins along the elevation */
-      inline std::size_t
+      inline size_t
       getElevationBins () { return (elevation_bins_); }
 
       //inline void
-      //setRadiusBins (std::size_t bins) { radius_bins_ = bins; }
+      //setRadiusBins (size_t bins) { radius_bins_ = bins; }
 
       /** \return The number of bins along the radii direction */
-      inline std::size_t
+      inline size_t
       getRadiusBins () { return (radius_bins_); }
 
       /** \brief The minimal radius value for the search sphere (rmin) in the original paper
@@ -166,7 +163,7 @@ namespace pcl
     protected:
       /** \brief Initialize computation by allocating all the intervals and the volume lookup table. */
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief Estimate a descriptor for a given point.
         * \param[in] index the index of the point to estimate a descriptor for
@@ -177,13 +174,13 @@ namespace pcl
         * (e.g. the nearest neighbor didn't return any neighbors)
         */
       bool
-      computePoint (std::size_t index, const pcl::PointCloud<PointNT> &normals, float rf[9], std::vector<float> &desc);
+      computePoint (size_t index, const pcl::PointCloud<PointNT> &normals, float rf[9], std::vector<float> &desc);
 
       /** \brief Estimate the actual feature.
         * \param[out] output the resultant feature
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
       /** \brief Values of the radii interval */
       std::vector<float> radii_interval_;
@@ -198,13 +195,13 @@ namespace pcl
       std::vector<float> volume_lut_;
 
       /** \brief Bins along the azimuth dimension */
-      std::size_t azimuth_bins_;
+      size_t azimuth_bins_;
 
       /** \brief Bins along the elevation dimension */
-      std::size_t elevation_bins_;
+      size_t elevation_bins_;
 
       /** \brief Bins along the radius dimension */
-      std::size_t radius_bins_;
+      size_t radius_bins_;
 
       /** \brief Minimal radius value */
       double min_radius_;
@@ -213,13 +210,13 @@ namespace pcl
       double point_density_radius_;
 
       /** \brief Descriptor length */
-      std::size_t descriptor_length_;
+      size_t descriptor_length_;
 
-      /** \brief Random number generator algorithm. */
-      std::mt19937 rng_;
+      /** \brief Boost-based random number generator algorithm. */
+      boost::mt19937 rng_alg_;
 
-      /** \brief Random number generator distribution. */
-      std::uniform_real_distribution<float> rng_dist_;
+      /** \brief Boost-based random number generator distribution. */
+      boost::shared_ptr<boost::uniform_01<boost::mt19937> > rng_;
 
      /*  \brief Shift computed descriptor "L" times along the azimuthal direction
        * \param[in] block_size the size of each azimuthal block
@@ -227,13 +224,13 @@ namespace pcl
        *  shifted descriptor resized descriptor_length_ * azimuth_bins_
        */
       //void
-      //shiftAlongAzimuth (std::size_t block_size, std::vector<float>& desc);
+      //shiftAlongAzimuth (size_t block_size, std::vector<float>& desc);
 
       /** \brief Boost-based random number generator. */
-      inline float
+      inline double
       rnd ()
       {
-        return (rng_dist_ (rng_));
+        return ((*rng_) ());
       }
   };
 }
@@ -241,3 +238,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/3dsc.hpp>
 #endif
+
+#endif  //#ifndef PCL_3DSC_H_

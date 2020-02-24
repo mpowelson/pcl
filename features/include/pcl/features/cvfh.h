@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURES_CVFH_H_
+#define PCL_FEATURES_CVFH_H_
 
 #include <pcl/features/feature.h>
 #include <pcl/features/vfh.h>
@@ -63,8 +64,8 @@ namespace pcl
   class CVFHEstimation : public FeatureFromNormals<PointInT, PointNT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<CVFHEstimation<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const CVFHEstimation<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr<CVFHEstimation<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const CVFHEstimation<PointInT, PointNT, PointOutT> > ConstPtr;
 
       using Feature<PointInT, PointOutT>::feature_name_;
       using Feature<PointInT, PointOutT>::getClassName;
@@ -74,9 +75,9 @@ namespace pcl
       using Feature<PointInT, PointOutT>::surface_;
       using FeatureFromNormals<PointInT, PointNT, PointOutT>::normals_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
-      using KdTreePtr = typename pcl::search::Search<PointNormal>::Ptr;
-      using VFHEstimator = pcl::VFHEstimation<PointInT, PointNT, pcl::VFHSignature308>;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename pcl::search::Search<PointNormal>::Ptr KdTreePtr;
+      typedef typename pcl::VFHEstimation<PointInT, PointNT, pcl::VFHSignature308> VFHEstimator;
 
       /** \brief Empty constructor. */
       CVFHEstimation () :
@@ -87,7 +88,9 @@ namespace pcl
         cluster_tolerance_ (leaf_size_ * 3), 
         eps_angle_threshold_ (0.125f), 
         min_points_ (50),
-        radius_normals_ (leaf_size_ * 3)
+        radius_normals_ (leaf_size_ * 3),
+        centroids_dominant_orientations_ (),
+        dominant_normals_ ()
       {
         search_radius_ = 0;
         k_ = 1;
@@ -147,8 +150,8 @@ namespace pcl
       inline void
       getCentroidClusters (std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
       {
-        centroids.insert (centroids.cend (), centroids_dominant_orientations_.cbegin (),
-                          centroids_dominant_orientations_.cend ());
+        for (size_t i = 0; i < centroids_dominant_orientations_.size (); ++i)
+          centroids.push_back (centroids_dominant_orientations_[i]);
       }
 
       /** \brief Get the normal centroids used to compute different CVFH descriptors
@@ -157,8 +160,8 @@ namespace pcl
       inline void
       getCentroidNormalClusters (std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
       {
-        for (const auto& normal: dominant_normals_)
-          centroids.push_back (normal);
+        for (size_t i = 0; i < dominant_normals_.size (); ++i)
+          centroids.push_back (dominant_normals_[i]);
       }
 
       /** \brief Sets max. Euclidean distance between points to be added to the cluster 
@@ -193,7 +196,7 @@ namespace pcl
         * \param[in] min the minimum amount of points to be set 
         */
       inline void
-      setMinPoints (std::size_t min)
+      setMinPoints (size_t min)
       {
         min_points_ = min;
       }
@@ -239,7 +242,7 @@ namespace pcl
       /** \brief Minimum amount of points in a clustered region to be considered stable for CVFH
         * computation.
         */
-      std::size_t min_points_;
+      size_t min_points_;
 
       /** \brief Radius for the normals computation. */
       float radius_normals_;
@@ -252,7 +255,7 @@ namespace pcl
         * feature estimates
         */
       void
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
       /** \brief Region growing method using Euclidean distances and neighbors normals to 
         * add points to a region.
@@ -286,3 +289,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/cvfh.hpp>
 #endif
+
+#endif  //#ifndef PCL_FEATURES_CVFH_H_

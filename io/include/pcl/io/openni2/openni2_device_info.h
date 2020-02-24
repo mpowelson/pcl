@@ -29,11 +29,12 @@
  *      Author: Julius Kammerl (jkammerl@willowgarage.com)
  */
 
-#pragma once
+#ifndef PCL_IO_OPENNI2_DEVICE_INFO_H_
+#define PCL_IO_OPENNI2_DEVICE_INFO_H_
 
 #include <ostream>
 
-#include <cstdint>
+#include <boost/cstdint.hpp>
 
 namespace pcl
 {
@@ -47,8 +48,8 @@ namespace pcl
         std::string uri_;
         std::string vendor_;
         std::string name_;
-        std::uint16_t vendor_id_;
-        std::uint16_t product_id_;
+        uint16_t vendor_id_;
+        uint16_t product_id_;
       };
 
       std::ostream&
@@ -57,3 +58,5 @@ namespace pcl
     } // namespace
   }
 }
+
+#endif // PCL_IO_OPENNI2_DEVICE_INFO_H_

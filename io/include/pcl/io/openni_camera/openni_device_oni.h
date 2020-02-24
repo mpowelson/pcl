@@ -34,19 +34,14 @@
  *
  */
 
-#pragma once
-
 #include <pcl/pcl_config.h>
-#include <pcl/make_shared.h>
 #ifdef HAVE_OPENNI
+
+#ifndef __OPENNI_DEVICE_ONI__
+#define __OPENNI_DEVICE_ONI__
 
 #include "openni_device.h"
 #include "openni_driver.h"
-
-#include <pcl/io/openni_camera/openni_image.h>
-
-#include <condition_variable>
-#include <mutex>
 
 namespace openni_wrapper
 {
@@ -61,27 +56,23 @@ namespace openni_wrapper
   {
     friend class OpenNIDriver;
   public:
-
-    using Ptr = pcl::shared_ptr<DeviceONI>;
-    using ConstPtr = pcl::shared_ptr<const DeviceONI>;
-
     DeviceONI (xn::Context& context, const std::string& file_name, bool repeat = false, bool streaming = true);
-    ~DeviceONI () noexcept;
+    virtual ~DeviceONI () throw ();
 
-    void startImageStream () override;
-    void stopImageStream () override;
+    virtual void startImageStream ();
+    virtual void stopImageStream ();
 
-    void startDepthStream () override;
-    void stopDepthStream () override;
+    virtual void startDepthStream ();
+    virtual void stopDepthStream ();
 
-    void startIRStream () override;
-    void stopIRStream () override;
+    virtual void startIRStream ();
+    virtual void stopIRStream ();
 
-    bool isImageStreamRunning () const throw () override;
-    bool isDepthStreamRunning () const throw () override;
-    bool isIRStreamRunning () const throw () override;
+    virtual bool isImageStreamRunning () const throw ();
+    virtual bool isDepthStreamRunning () const throw ();
+    virtual bool isIRStreamRunning () const throw ();
 
-    bool isImageResizeSupported (unsigned input_width, unsigned input_height, unsigned output_width, unsigned output_height) const throw () override;
+    virtual bool isImageResizeSupported (unsigned input_width, unsigned input_height, unsigned output_width, unsigned output_height) const throw ();
 
     /** \brief Trigger a new frame in the ONI stream.
       * \param[in] relative_offset the relative offset in case we want to seek in the file
@@ -99,21 +90,23 @@ namespace openni_wrapper
     }
 
   protected:
-    Image::Ptr getCurrentImage (pcl::shared_ptr<xn::ImageMetaData> image_meta_data) const throw () override;
+    virtual boost::shared_ptr<Image> getCurrentImage (boost::shared_ptr<xn::ImageMetaData> image_meta_data) const throw ();
 
     void PlayerThreadFunction ();
-    static void __stdcall NewONIDepthDataAvailable (xn::ProductionNode& node, void* cookie) noexcept;
-    static void __stdcall NewONIImageDataAvailable (xn::ProductionNode& node, void* cookie) noexcept;
-    static void __stdcall NewONIIRDataAvailable (xn::ProductionNode& node, void* cookie) noexcept;
+    static void __stdcall NewONIDepthDataAvailable (xn::ProductionNode& node, void* cookie) throw ();
+    static void __stdcall NewONIImageDataAvailable (xn::ProductionNode& node, void* cookie) throw ();
+    static void __stdcall NewONIIRDataAvailable (xn::ProductionNode& node, void* cookie) throw ();
 
     xn::Player player_;
-    std::thread player_thread_;
-    mutable std::mutex player_mutex_;
-    std::condition_variable player_condition_;
+    boost::thread player_thread_;
+    mutable boost::mutex player_mutex_;
+    boost::condition_variable player_condition_;
     bool streaming_;
     bool depth_stream_running_;
     bool image_stream_running_;
     bool ir_stream_running_;
   };
 } //namespace openni_wrapper
+#endif //__OPENNI_DEVICE_ONI__
 #endif //HAVE_OPENNI
+

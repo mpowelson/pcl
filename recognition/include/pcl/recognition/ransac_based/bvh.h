@@ -43,7 +43,8 @@
  *      Author: papazov
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_BVH_H_
+#define PCL_RECOGNITION_BVH_H_
 
 #include <pcl/pcl_exports.h>
 #include <cstring>
@@ -81,7 +82,7 @@ namespace pcl
             inline static bool
             compareCentroidsXCoordinates (const BoundedObject* a, const BoundedObject* b)
             {
-              return a->getCentroid ()[0] < b->getCentroid ()[0];
+              return static_cast<bool> (a->getCentroid ()[0] < b->getCentroid ()[0]);
             }
 
             float*
@@ -145,7 +146,7 @@ namespace pcl
               {
                 // We reached a leaf
                 object_ = sorted_objects[first_id];
-                children_[0] = children_[1] = nullptr;
+                children_[0] = children_[1] = 0;
               }
             }
 
@@ -192,8 +193,11 @@ namespace pcl
             inline bool
             intersect(const float box[6]) const
             {
-              return !(box[1] < bounds_[0] || box[3] < bounds_[2] || box[5] < bounds_[4] ||
-                   box[0] > bounds_[1] || box[2] > bounds_[3] || box[4] > bounds_[5]);
+              if ( box[1] < bounds_[0] || box[3] < bounds_[2] || box[5] < bounds_[4] ||
+                   box[0] > bounds_[1] || box[2] > bounds_[3] || box[4] > bounds_[5] )
+                return false;
+
+              return true;
             }
 
             /** \brief Computes and returns the volume of the bounding box of this node. */
@@ -213,8 +217,8 @@ namespace pcl
 
       public:
         BVH()
-        : root_ (nullptr),
-          sorted_objects_ (nullptr)
+        : root_ (0),
+          sorted_objects_ (0)
         {
         }
 
@@ -234,7 +238,7 @@ namespace pcl
         {
           this->clear();
 
-          if ( objects.empty () )
+          if ( objects.size () == 0 )
             return;
 
           sorted_objects_ = &objects;
@@ -253,7 +257,7 @@ namespace pcl
           if ( root_ )
           {
             delete root_;
-            root_ = nullptr;
+            root_ = 0;
           }
         }
 
@@ -308,3 +312,5 @@ namespace pcl
     };
   } // namespace recognition
 } // namespace pcl
+
+#endif /* PCL_RECOGNITION_BVH_H_ */

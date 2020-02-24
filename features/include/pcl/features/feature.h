@@ -38,18 +38,18 @@
  *
  */
 
-#pragma once
+#ifndef PCL_FEATURE_H_
+#define PCL_FEATURE_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header 
 #endif
 
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 // PCL includes
 #include <pcl/pcl_base.h>
-#include <pcl/pcl_macros.h>
 #include <pcl/search/search.h>
-
-#include <functional>
 
 namespace pcl
 {
@@ -108,22 +108,22 @@ namespace pcl
       using PCLBase<PointInT>::indices_;
       using PCLBase<PointInT>::input_;
 
-      using BaseClass = PCLBase<PointInT>;
+      typedef PCLBase<PointInT> BaseClass;
 
-      using Ptr = shared_ptr< Feature<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr< const Feature<PointInT, PointOutT> >;
+      typedef boost::shared_ptr< Feature<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr< const Feature<PointInT, PointOutT> > ConstPtr;
 
-      using KdTree = pcl::search::Search<PointInT>;
-      using KdTreePtr = typename KdTree::Ptr;
+      typedef typename pcl::search::Search<PointInT> KdTree;
+      typedef typename pcl::search::Search<PointInT>::Ptr KdTreePtr;
 
-      using PointCloudIn = pcl::PointCloud<PointInT>;
-      using PointCloudInPtr = typename PointCloudIn::Ptr;
-      using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+      typedef pcl::PointCloud<PointInT> PointCloudIn;
+      typedef typename PointCloudIn::Ptr PointCloudInPtr;
+      typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
-      using PointCloudOut = pcl::PointCloud<PointOutT>;
+      typedef pcl::PointCloud<PointOutT> PointCloudOut;
 
-      using SearchMethod = std::function<int (std::size_t, double, std::vector<int> &, std::vector<float> &)>;
-      using SearchMethodSurface = std::function<int (const PointCloudIn &cloud, std::size_t index, double, std::vector<int> &, std::vector<float> &)>;
+      typedef boost::function<int (size_t, double, std::vector<int> &, std::vector<float> &)> SearchMethod;
+      typedef boost::function<int (const PointCloudIn &cloud, size_t index, double, std::vector<int> &, std::vector<float> &)> SearchMethodSurface;
 
     public:
       /** \brief Empty constructor. */
@@ -267,7 +267,7 @@ namespace pcl
         * \return the number of neighbors found. If no neighbors are found or an error occurred, return 0.
         */
       inline int
-      searchForNeighbors (std::size_t index, double parameter,
+      searchForNeighbors (size_t index, double parameter,
                           std::vector<int> &indices, std::vector<float> &distances) const
       {
         return (search_method_surface_ (*input_, index, parameter, indices, distances));
@@ -285,7 +285,7 @@ namespace pcl
         * \return the number of neighbors found. If no neighbors are found or an error occurred, return 0.
         */
       inline int
-      searchForNeighbors (const PointCloudIn &cloud, std::size_t index, double parameter,
+      searchForNeighbors (const PointCloudIn &cloud, size_t index, double parameter,
                           std::vector<int> &indices, std::vector<float> &distances) const
       {
         return (search_method_surface_ (cloud, index, parameter, indices, distances));
@@ -299,7 +299,7 @@ namespace pcl
       computeFeature (PointCloudOut &output) = 0;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
 
@@ -309,18 +309,18 @@ namespace pcl
   template <typename PointInT, typename PointNT, typename PointOutT>
   class FeatureFromNormals : public Feature<PointInT, PointOutT>
   {
-    using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
-    using PointCloudInPtr = typename PointCloudIn::Ptr;
-    using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
-    using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+    typedef typename Feature<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+    typedef typename PointCloudIn::Ptr PointCloudInPtr;
+    typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
+    typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
     public:
-      using PointCloudN = pcl::PointCloud<PointNT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<PointNT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-      using Ptr = shared_ptr< FeatureFromNormals<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr< const FeatureFromNormals<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr< FeatureFromNormals<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr< const FeatureFromNormals<PointInT, PointNT, PointOutT> > ConstPtr;
 
       // Members derived from the base class
       using Feature<PointInT, PointOutT>::input_;
@@ -358,7 +358,7 @@ namespace pcl
       initCompute ();
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,19 +367,19 @@ namespace pcl
   template <typename PointInT, typename PointLT, typename PointOutT>
   class FeatureFromLabels : public Feature<PointInT, PointOutT>
   {
-    using PointCloudIn = typename Feature<PointInT, PointOutT>::PointCloudIn;
-    using PointCloudInPtr = typename PointCloudIn::Ptr;
-    using PointCloudInConstPtr = typename PointCloudIn::ConstPtr;
+    typedef typename Feature<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+    typedef typename PointCloudIn::Ptr PointCloudInPtr;
+    typedef typename PointCloudIn::ConstPtr PointCloudInConstPtr;
 
-    using PointCloudL = pcl::PointCloud<PointLT>;
-    using PointCloudNPtr = typename PointCloudL::Ptr;
-    using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+    typedef typename pcl::PointCloud<PointLT> PointCloudL;
+    typedef typename PointCloudL::Ptr PointCloudNPtr;
+    typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
-    using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+    typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
     public:
-      using Ptr = shared_ptr< FeatureFromLabels<PointInT, PointLT, PointOutT> >;
-      using ConstPtr = shared_ptr< const FeatureFromLabels<PointInT, PointLT, PointOutT> >;
+      typedef boost::shared_ptr< FeatureFromLabels<PointInT, PointLT, PointOutT> > Ptr;
+      typedef boost::shared_ptr< const FeatureFromLabels<PointInT, PointLT, PointOutT> > ConstPtr;
 
       // Members derived from the base class
       using Feature<PointInT, PointOutT>::input_;
@@ -426,7 +426,7 @@ namespace pcl
       initCompute ();
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -447,9 +447,9 @@ namespace pcl
   class FeatureWithLocalReferenceFrames
   {
     public:
-      using PointCloudLRF = pcl::PointCloud<PointRFT>;
-      using PointCloudLRFPtr = typename PointCloudLRF::Ptr;
-      using PointCloudLRFConstPtr = typename PointCloudLRF::ConstPtr;
+      typedef pcl::PointCloud<PointRFT> PointCloudLRF;
+      typedef typename PointCloudLRF::Ptr PointCloudLRFPtr;
+      typedef typename PointCloudLRF::ConstPtr PointCloudLRFConstPtr;
 
       /** \brief Empty constructor. */
       FeatureWithLocalReferenceFrames () : frames_ (), frames_never_defined_ (true) {}
@@ -488,11 +488,13 @@ namespace pcl
         * \param lrf_estimation a pointer to a local reference frame estimation class to be used as default.
         * \return true if frames_ has been correctly initialized.
         */
-      using LRFEstimationPtr = typename Feature<PointInT, PointRFT>::Ptr;
+      typedef typename Feature<PointInT, PointRFT>::Ptr LRFEstimationPtr;
       virtual bool
-      initLocalReferenceFrames (const std::size_t& indices_size,
+      initLocalReferenceFrames (const size_t& indices_size,
                                 const LRFEstimationPtr& lrf_estimation = LRFEstimationPtr());
   };
 }
 
 #include <pcl/features/impl/feature.hpp>
+
+#endif  //#ifndef PCL_FEATURE_H_

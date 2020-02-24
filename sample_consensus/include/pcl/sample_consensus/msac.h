@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_MSAC_H_
+#define PCL_SAMPLE_CONSENSUS_MSAC_H_
 
 #include <algorithm>
 #include <pcl/sample_consensus/sac.h>
@@ -55,11 +56,11 @@ namespace pcl
   template <typename PointT>
   class MEstimatorSampleConsensus : public SampleConsensus<PointT>
   {
-    using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+    typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
 
     public:
-      using Ptr = shared_ptr<MEstimatorSampleConsensus<PointT> >;
-      using ConstPtr = shared_ptr<const MEstimatorSampleConsensus<PointT> >;
+      typedef boost::shared_ptr<MEstimatorSampleConsensus> Ptr;
+      typedef boost::shared_ptr<const MEstimatorSampleConsensus> ConstPtr;
 
       using SampleConsensus<PointT>::max_iterations_;
       using SampleConsensus<PointT>::threshold_;
@@ -95,10 +96,12 @@ namespace pcl
         * \param[in] debug_verbosity_level enable/disable on-screen debug information and set the verbosity level
         */
       bool 
-      computeModel (int debug_verbosity_level = 0) override;
+      computeModel (int debug_verbosity_level = 0);
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/sample_consensus/impl/msac.hpp>
 #endif
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_MSAC_H_

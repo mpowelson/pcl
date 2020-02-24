@@ -40,11 +40,8 @@
 #ifndef PCL_SEARCH_IMPL_FLANN_SEARCH_H_
 #define PCL_SEARCH_IMPL_FLANN_SEARCH_H_
 
-#include <flann/algorithms/kdtree_index.h>
-#include <flann/algorithms/kdtree_single_index.h>
-#include <flann/algorithms/kmeans_index.h>
-
 #include <pcl/search/flann_search.h>
+#include <pcl/kdtree/flann.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT, typename FlannDistance>
@@ -73,8 +70,8 @@ pcl::search::FlannSearch<PointT, FlannDistance>::KdTreeMultiIndexCreator::create
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT, typename FlannDistance>
 pcl::search::FlannSearch<PointT, FlannDistance>::FlannSearch(bool sorted, FlannIndexCreatorPtr creator) : pcl::search::Search<PointT> ("FlannSearch",sorted),
-  index_(), creator_ (creator), eps_ (0), checks_ (32), input_copied_for_flann_ (false), point_representation_ (new DefaultPointRepresentation<PointT>),
-  dim_ (0), identity_mapping_()
+  index_(), creator_ (creator), input_flann_(), eps_ (0), checks_ (32), input_copied_for_flann_ (false), point_representation_ (new DefaultPointRepresentation<PointT>),
+  dim_ (0), index_mapping_(), identity_mapping_()
 {
   dim_ = point_representation_->getNumberOfDimensions ();
 }
@@ -105,7 +102,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (const PointT &p
   assert (point_representation_->isValid (point) && "Invalid (NaN, Inf) point coordinates given to nearestKSearch!"); // remove this check as soon as FLANN does NaN checks internally
   bool can_cast = point_representation_->isTrivial ();
 
-  float* data = nullptr;
+  float* data = 0;
   if (!can_cast)
   {
     data = new float [point_representation_->getNumberOfDimensions ()];
@@ -131,7 +128,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (const PointT &p
 
   if (!identity_mapping_)
   {
-    for (std::size_t i = 0; i < static_cast<unsigned int> (k); ++i)
+    for (size_t i = 0; i < static_cast<unsigned int> (k); ++i)
     {
       int& neighbor_index = indices[i];
       neighbor_index = index_mapping_[neighbor_index];
@@ -153,7 +150,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (
 
     if (! cloud.is_dense) // remove this check as soon as FLANN does NaN checks internally
     {
-      for (std::size_t i = 0; i < cloud.size(); i++)
+      for (size_t i = 0; i < cloud.size(); i++)
       {
         assert (point_representation_->isValid (cloud[i]) && "Invalid (NaN, Inf) point coordinates given to nearestKSearch!");
       }
@@ -162,11 +159,11 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (
     bool can_cast = point_representation_->isTrivial ();
 
     // full point cloud + trivial copy operation = no need to do any conversion/copying to the flann matrix!
-    float* data=nullptr;
+    float* data=0;
     if (!can_cast)
     {
       data = new float[dim_*cloud.size ()];
-      for (std::size_t i = 0; i < cloud.size (); ++i)
+      for (size_t i = 0; i < cloud.size (); ++i)
       {
         float* out = data+i*dim_;
         point_representation_->vectorize (cloud[i],out);
@@ -193,14 +190,14 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (
 
     if (! cloud.is_dense) // remove this check as soon as FLANN does NaN checks internally
     {
-      for (std::size_t i = 0; i < indices.size(); i++)
+      for (size_t i = 0; i < indices.size(); i++)
       {
         assert (point_representation_->isValid (cloud [indices[i]]) && "Invalid (NaN, Inf) point coordinates given to nearestKSearch!");
       }
     }
 
     float* data=new float [dim_*indices.size ()];
-    for (std::size_t i = 0; i < indices.size (); ++i)
+    for (size_t i = 0; i < indices.size (); ++i)
     {
       float* out = data+i*dim_;
       point_representation_->vectorize (cloud[indices[i]],out);
@@ -217,10 +214,11 @@ pcl::search::FlannSearch<PointT, FlannDistance>::nearestKSearch (
   }
   if (!identity_mapping_)
   {
-    for (auto &k_index : k_indices)
+    for (size_t j = 0; j < k_indices.size (); ++j)
     {
-      for (int &neighbor_index : k_index)
+      for (size_t i = 0; i < static_cast<unsigned int> (k); ++i)
       {
+        int& neighbor_index = k_indices[j][i];
         neighbor_index = index_mapping_[neighbor_index];
       }
     }
@@ -236,7 +234,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (const PointT& poi
   assert (point_representation_->isValid (point) && "Invalid (NaN, Inf) point coordinates given to radiusSearch!"); // remove this check as soon as FLANN does NaN checks internally
   bool can_cast = point_representation_->isTrivial ();
 
-  float* data = nullptr;
+  float* data = 0;
   if (!can_cast)
   {
     data = new float [point_representation_->getNumberOfDimensions ()];
@@ -261,8 +259,9 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (const PointT& poi
 
   if (!identity_mapping_)
   {
-    for (int &neighbor_index : indices)
+    for (size_t i = 0; i < indices.size (); ++i)
     {
+      int& neighbor_index = indices [i];
       neighbor_index = index_mapping_ [neighbor_index];
     }
   }
@@ -282,7 +281,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (
 
     if (! cloud.is_dense) // remove this check as soon as FLANN does NaN checks internally
     {
-      for (std::size_t i = 0; i < cloud.size(); i++)
+      for (size_t i = 0; i < cloud.size(); i++)
       {
         assert (point_representation_->isValid (cloud[i]) && "Invalid (NaN, Inf) point coordinates given to radiusSearch!");
       }
@@ -290,11 +289,11 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (
 
     bool can_cast = point_representation_->isTrivial ();
 
-    float* data = nullptr;
+    float* data = 0;
     if (!can_cast)
     {
       data = new float[dim_*cloud.size ()];
-      for (std::size_t i = 0; i < cloud.size (); ++i)
+      for (size_t i = 0; i < cloud.size (); ++i)
       {
         float* out = data+i*dim_;
         point_representation_->vectorize (cloud[i],out);
@@ -321,14 +320,14 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (
 
     if (! cloud.is_dense)  // remove this check as soon as FLANN does NaN checks internally
     {
-      for (std::size_t i = 0; i < indices.size(); i++)
+      for (size_t i = 0; i < indices.size(); i++)
       {
         assert (point_representation_->isValid (cloud [indices[i]]) && "Invalid (NaN, Inf) point coordinates given to radiusSearch!");
       }
     }
 
     float* data = new float [dim_ * indices.size ()];
-    for (std::size_t i = 0; i < indices.size (); ++i)
+    for (size_t i = 0; i < indices.size (); ++i)
     {
       float* out = data+i*dim_;
       point_representation_->vectorize (cloud[indices[i]], out);
@@ -347,10 +346,11 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (
   }
   if (!identity_mapping_)
   {
-    for (auto &k_index : k_indices)
+    for (size_t j = 0; j < k_indices.size (); ++j )
     {
-      for (int &neighbor_index : k_index)
+      for (size_t i = 0; i < k_indices[j].size (); ++i)
       {
+        int& neighbor_index = k_indices[j][i];
         neighbor_index = index_mapping_[neighbor_index];
       }
     }
@@ -361,7 +361,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::radiusSearch (
 template <typename PointT, typename FlannDistance> void
 pcl::search::FlannSearch<PointT, FlannDistance>::convertInputToFlannMatrix ()
 {
-  std::size_t original_no_of_points = indices_ && !indices_->empty () ? indices_->size () : input_->size ();
+  size_t original_no_of_points = indices_ && !indices_->empty () ? indices_->size () : input_->size ();
 
   if (input_copied_for_flann_)
     delete input_flann_->ptr();
@@ -386,7 +386,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::convertInputToFlannMatrix ()
     {
       input_flann_ = MatrixPtr (new flann::Matrix<float> (new float[original_no_of_points*point_representation_->getNumberOfDimensions ()], original_no_of_points, point_representation_->getNumberOfDimensions ()));
       float* cloud_ptr = input_flann_->ptr();
-      for (std::size_t i = 0; i < original_no_of_points; ++i)
+      for (size_t i = 0; i < original_no_of_points; ++i)
       {
         const PointT& point = (*input_)[i];
         // Check if the point is invalid
@@ -408,7 +408,7 @@ pcl::search::FlannSearch<PointT, FlannDistance>::convertInputToFlannMatrix ()
   {
     input_flann_ = MatrixPtr (new flann::Matrix<float> (new float[original_no_of_points*point_representation_->getNumberOfDimensions ()], original_no_of_points, point_representation_->getNumberOfDimensions ()));
     float* cloud_ptr = input_flann_->ptr();
-    for (std::size_t indices_index = 0; indices_index < original_no_of_points; ++indices_index)
+    for (size_t indices_index = 0; indices_index < original_no_of_points; ++indices_index)
     {
       int cloud_index = (*indices_)[indices_index];
       const PointT&  point = (*input_)[cloud_index];

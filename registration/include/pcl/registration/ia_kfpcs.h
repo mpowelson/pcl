@@ -34,7 +34,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_REGISTRATION_IA_KFPCS_H_
+#define PCL_REGISTRATION_IA_KFPCS_H_
 
 #include <pcl/registration/ia_fpcs.h>
 
@@ -55,19 +56,19 @@ namespace pcl
     {
     public:
       /** \cond */
-      using Ptr = shared_ptr <KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> >;
-      using ConstPtr = shared_ptr <const KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> >;
+      typedef boost::shared_ptr <KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> > Ptr;
+      typedef boost::shared_ptr <const KFPCSInitialAlignment <PointSource, PointTarget, NormalT, Scalar> > ConstPtr;
 
-      using PointCloudSource = pcl::PointCloud<PointSource>;
-      using PointCloudSourcePtr = typename PointCloudSource::Ptr;
-      using PointCloudSourceIterator = typename PointCloudSource::iterator;
+      typedef pcl::PointCloud <PointSource> PointCloudSource;
+      typedef typename PointCloudSource::Ptr PointCloudSourcePtr;
+      typedef typename PointCloudSource::iterator PointCloudSourceIterator;
 
-      using PointCloudTarget = pcl::PointCloud<PointTarget>;
-      using PointCloudTargetPtr = typename PointCloudTarget::Ptr;
-      using PointCloudTargetIterator = typename PointCloudTarget::iterator;
+      typedef pcl::PointCloud <PointTarget> PointCloudTarget;
+      typedef typename PointCloudTarget::Ptr PointCloudTargetPtr;
+      typedef typename PointCloudTarget::iterator PointCloudTargetIterator;
 
-      using MatchingCandidate = pcl::registration::MatchingCandidate;
-      using MatchingCandidates = pcl::registration::MatchingCandidates;
+      typedef pcl::registration::MatchingCandidate MatchingCandidate;
+      typedef pcl::registration::MatchingCandidates MatchingCandidates;
       /** \endcond */
 
 
@@ -75,7 +76,7 @@ namespace pcl
       KFPCSInitialAlignment ();
 
       /** \brief Destructor. */
-      ~KFPCSInitialAlignment ()
+      virtual ~KFPCSInitialAlignment ()
       {};
 
 
@@ -187,8 +188,8 @@ namespace pcl
       
 
       /** \brief Internal computation initialization. */
-      bool
-      initCompute () override;
+      virtual bool
+      initCompute ();
 
       /** \brief Method to handle current candidate matches. Here we validate and evaluate the matches w.r.t the
         * base and store the sorted matches (together with score values and estimated transformations).
@@ -198,11 +199,11 @@ namespace pcl
         * reordered during this step.
         * \param[out] candidates vector which contains the candidates matches M
         */
-      void
+      virtual void
       handleMatches (
         const std::vector <int> &base_indices,
         std::vector <std::vector <int> > &matches,
-        MatchingCandidates &candidates) override;
+        MatchingCandidates &candidates);
 
       /** \brief Validate the transformation by calculating the score value after transforming the input source cloud.
         * The resulting score is later used as the decision criteria of the best fitting match.
@@ -214,16 +215,16 @@ namespace pcl
         * * < 0 if previous result is better than the current one (score remains)
         * * = 0 current result is better than the previous one (score updated)
         */
-      int
-      validateTransformation (Eigen::Matrix4f &transformation, float &fitness_score) override;
+      virtual int
+      validateTransformation (Eigen::Matrix4f &transformation, float &fitness_score);
 
       /** \brief Final computation of best match out of vector of matches. To avoid cross thread dependencies
         *  during parallel running, a best match for each try was calculated.
         * \note For forwards compatibility the candidates are stored in vectors of 'vectors of size 1'.
         * \param[in] candidates vector of candidate matches
         */
-      void
-      finalCompute (const std::vector <MatchingCandidates > &candidates) override;
+      virtual void
+      finalCompute (const std::vector <MatchingCandidates > &candidates);
 
 
       /** \brief Lower boundary for translation costs calculation.
@@ -257,3 +258,5 @@ namespace pcl
 }; // namespace pcl 
 
 #include <pcl/registration/impl/ia_kfpcs.hpp>
+
+#endif // PCL_REGISTRATION_IA_KFPCS_H_

@@ -56,7 +56,7 @@ pcl::modeler::CloudMesh::CloudMesh()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 pcl::modeler::CloudMesh::CloudMesh(PointCloudPtr cloud)
-  :cloud_(std::move(cloud)),
+  :cloud_(cloud),
   vtk_points_(vtkSmartPointer<vtkPoints>::New()),
   vtk_polygons_(vtkSmartPointer<vtkCellArray>::New())
 {
@@ -115,20 +115,22 @@ pcl::modeler::CloudMesh::save(const std::vector<const CloudMesh*>& cloud_meshes,
     return (cloud_meshes[0]->save(filename));
 
   CloudMesh cloud_mesh;
-  for (const auto &mesh : cloud_meshes)
+  for (size_t i = 0, i_end = cloud_meshes.size(); i < i_end; ++ i)
   {
     if (filename.rfind(".obj") == (filename.length()-4))
     {
-      std::size_t delta = cloud_mesh.cloud_->size();
-      for (auto polygon : mesh->polygons_)
+      size_t delta = cloud_mesh.cloud_->size();
+      const std::vector<pcl::Vertices>& polygons = cloud_meshes[i]->polygons_;
+      for (size_t j = 0, j_end = polygons.size(); j < j_end; ++ j)
       {
-        for (unsigned int &vertice : polygon.vertices)
-          vertice += static_cast<unsigned int> (delta);
+        pcl::Vertices polygon = polygons[j];
+        for (size_t k = 0, k_end = polygon.vertices.size(); k < k_end; ++ k)
+          polygon.vertices[k] += static_cast<unsigned int> (delta);
         cloud_mesh.polygons_.push_back(polygon);
       }
     }
 
-    *cloud_mesh.cloud_ += *(mesh->cloud_);
+    *cloud_mesh.cloud_ += *(cloud_meshes[i]->cloud_);
   }
 
   return (cloud_mesh.save(filename));
@@ -141,19 +143,19 @@ pcl::modeler::CloudMesh::getColorScalarsFromField(vtkSmartPointer<vtkDataArray> 
   if (field == "rgb" || field == "rgba")
   {
     pcl::visualization::PointCloudColorHandlerRGBField<PointT> color_handler(cloud_);
-    scalars = color_handler.getColor();
+    color_handler.getColor(scalars);
     return;
   }
 
   if (field == "random")
   {
     pcl::visualization::PointCloudColorHandlerRandom<PointT> color_handler(cloud_);
-    scalars = color_handler.getColor();
+    color_handler.getColor(scalars);
     return;
   }
 
   pcl::visualization::PointCloudColorHandlerGenericField<PointT> color_handler(cloud_, field);
-  scalars = color_handler.getColor();
+  color_handler.getColor(scalars);
 
   return;
 }
@@ -162,7 +164,7 @@ pcl::modeler::CloudMesh::getColorScalarsFromField(vtkSmartPointer<vtkDataArray> 
 void
 pcl::modeler::CloudMesh::updateVtkPoints()
 {
-  if (vtk_points_->GetData() == nullptr)
+  if (vtk_points_->GetData() == NULL)
     vtk_points_->SetData(vtkSmartPointer<vtkFloatArray>::New ());
 
   vtkFloatArray* data = dynamic_cast<vtkFloatArray*>(vtk_points_->GetData());
@@ -210,11 +212,12 @@ pcl::modeler::CloudMesh::updateVtkPolygons()
 
   if (cloud_->is_dense)
   {
-    for (const auto &polygon : polygons_)
+    for (size_t i = 0, i_end = polygons_.size (); i < i_end; ++i)
     {
-      vtk_polygons_->InsertNextCell (polygon.vertices.size());
-      for (const unsigned int &vertex : polygon.vertices)
-        vtk_polygons_->InsertCellPoint (vertex);
+      size_t n_points = polygons_[i].vertices.size ();
+      vtk_polygons_->InsertNextCell (static_cast<unsigned int> (n_points));
+      for (size_t j = 0; j < n_points; j++)
+        vtk_polygons_->InsertCellPoint (polygons_[i].vertices[j]);
     }
   }
   else
@@ -222,11 +225,12 @@ pcl::modeler::CloudMesh::updateVtkPolygons()
     pcl::IndicesPtr indices(new std::vector<int>());
     pcl::removeNaNFromPointCloud(*cloud_, *indices);
 
-    for (const auto &polygon : polygons_)
+    for (size_t i = 0, i_end = polygons_.size(); i < i_end; ++i)
     {
-      vtk_polygons_->InsertNextCell (polygon.vertices.size());
-	  for (const unsigned int &vertex : polygon.vertices)
-        vtk_polygons_->InsertCellPoint ((*indices)[vertex]);
+      size_t n_points = polygons_[i].vertices.size ();
+      vtk_polygons_->InsertNextCell (static_cast<unsigned int> (n_points));
+      for (size_t j = 0; j < n_points; j++)
+        vtk_polygons_->InsertCellPoint ((*indices)[polygons_[i].vertices[j]]);
     }
   }
 

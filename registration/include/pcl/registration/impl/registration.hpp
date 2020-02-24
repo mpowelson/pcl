@@ -128,7 +128,7 @@ pcl::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (double max
 
   // For each point in the source dataset
   int nr = 0;
-  for (std::size_t i = 0; i < input_transformed.points.size (); ++i)
+  for (size_t i = 0; i < input_transformed.points.size (); ++i)
   {
     // Find its nearest neighbor in the target
     tree_->nearestKSearch (input_transformed.points[i], 1, nn_indices, nn_dists);
@@ -144,7 +144,8 @@ pcl::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (double max
 
   if (nr > 0)
     return (fitness_score / nr);
-  return (std::numeric_limits<double>::max ());
+  else
+    return (std::numeric_limits<double>::max ());
 
 }
 
@@ -170,18 +171,18 @@ pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &ou
   // Check if the output will be computed for all points or only a subset
   if (indices_->size () != input_->points.size ())
   {
-    output.width    = static_cast<std::uint32_t> (indices_->size ());
+    output.width    = static_cast<uint32_t> (indices_->size ());
     output.height   = 1;
   }
   else
   {
-    output.width    = static_cast<std::uint32_t> (input_->width);
+    output.width    = static_cast<uint32_t> (input_->width);
     output.height   = input_->height;
   }
   output.is_dense = input_->is_dense;
 
   // Copy the point data to output
-  for (std::size_t i = 0; i < indices_->size (); ++i)
+  for (size_t i = 0; i < indices_->size (); ++i)
     output.points[i] = input_->points[(*indices_)[i]];
 
   // Set the internal point representation of choice unless otherwise noted
@@ -194,7 +195,7 @@ pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &ou
 
   // Right before we estimate the transformation, we set all the point.data[3] values to 1 to aid the rigid 
   // transformation
-  for (std::size_t i = 0; i < indices_->size (); ++i)
+  for (size_t i = 0; i < indices_->size (); ++i)
     output.points[i].data[3] = 1.0;
 
   computeTransformation (output, guess);

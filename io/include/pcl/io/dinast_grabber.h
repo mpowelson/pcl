@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_DINAST_GRABBER_
+#define PCL_IO_DINAST_GRABBER_
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -46,9 +47,6 @@
 #include <pcl/console/print.h>
 #include <libusb-1.0/libusb.h>
 #include <boost/circular_buffer.hpp>
-
-#include <mutex>
-#include <thread>
 
 namespace pcl
 {
@@ -59,7 +57,7 @@ namespace pcl
   class PCL_EXPORTS DinastGrabber: public Grabber
   {
     // Define callback signature typedefs
-    using sig_cb_dinast_point_cloud = void (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &);
+    typedef void (sig_cb_dinast_point_cloud) (const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI> >&);
     
     public:
       /** \brief Constructor that sets up the grabber constants.
@@ -68,34 +66,34 @@ namespace pcl
       DinastGrabber (const int device_position=1);
 
       /** \brief Destructor. It never throws. */
-      ~DinastGrabber () noexcept;
+      virtual ~DinastGrabber () throw ();
 
       /** \brief Check if the grabber is running
         * \return true if grabber is running / streaming. False otherwise.
         */
-      bool 
-      isRunning () const override;
+      virtual bool 
+      isRunning () const;
       
       /** \brief Returns the name of the concrete subclass, DinastGrabber.
         * \return DinastGrabber.
         */
-      std::string
-      getName () const override
+      virtual std::string
+      getName () const
       { return (std::string ("DinastGrabber")); }
       
       /** \brief Start the data acquisition process.
         */
-      void
-      start () override;
+      virtual void
+      start ();
 
       /** \brief Stop the data acquisition process.
         */
-      void
-      stop () override;
+      virtual void
+      stop ();
       
       /** \brief Obtain the number of frames per second (FPS). */
-      float 
-      getFramesPerSecond () const override;
+      virtual float 
+      getFramesPerSecond () const;
 
       /** \brief Get the version number of the currently opened device
         */
@@ -209,9 +207,11 @@ namespace pcl
       
       bool running_;
       
-      std::thread capture_thread_;
+      boost::thread capture_thread_;
       
-      mutable std::mutex capture_mutex_;
+      mutable boost::mutex capture_mutex_;
       boost::signals2::signal<sig_cb_dinast_point_cloud>* point_cloud_signal_;
   };
 } //namespace pcl
+
+#endif // PCL_IO_DINAST_GRABBER_

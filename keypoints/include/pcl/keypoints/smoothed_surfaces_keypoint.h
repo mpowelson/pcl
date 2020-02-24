@@ -35,7 +35,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_SMOOTHEDSURFACESKEYPOINT_H_
+#define PCL_SMOOTHEDSURFACESKEYPOINT_H_
 
 #include <pcl/keypoints/keypoint.h>
 
@@ -54,8 +55,8 @@ namespace pcl
   class SmoothedSurfacesKeypoint : public Keypoint <PointT, PointT>
   {
     public:
-      using Ptr = shared_ptr<SmoothedSurfacesKeypoint<PointT, PointNT> >;
-      using ConstPtr = shared_ptr<const SmoothedSurfacesKeypoint<PointT, PointNT> >;
+      typedef boost::shared_ptr<SmoothedSurfacesKeypoint<PointT, PointNT> > Ptr;
+      typedef boost::shared_ptr<const SmoothedSurfacesKeypoint<PointT, PointNT> > ConstPtr;
 
       using PCLBase<PointT>::input_;
       using Keypoint<PointT, PointT>::name_;
@@ -63,12 +64,12 @@ namespace pcl
       using Keypoint<PointT, PointT>::keypoints_indices_;
       using Keypoint<PointT, PointT>::initCompute;
 
-      using PointCloudT = pcl::PointCloud<PointT>;
-      using PointCloudTConstPtr = typename PointCloudT::ConstPtr;
-      using PointCloudNT = pcl::PointCloud<PointNT>;
-      using PointCloudNTConstPtr = typename PointCloudNT::ConstPtr;
-      using PointCloudTPtr = typename PointCloudT::Ptr;
-      using KdTreePtr = typename Keypoint<PointT, PointT>::KdTreePtr;
+      typedef pcl::PointCloud<PointT> PointCloudT;
+      typedef typename PointCloudT::ConstPtr PointCloudTConstPtr;
+      typedef pcl::PointCloud<PointNT> PointCloudNT;
+      typedef typename PointCloudNT::ConstPtr PointCloudNTConstPtr;
+      typedef typename PointCloudT::Ptr PointCloudTPtr;
+      typedef typename Keypoint<PointT, PointT>::KdTreePtr KdTreePtr;
 
       SmoothedSurfacesKeypoint ()
         : Keypoint<PointT, PointT> (),
@@ -77,6 +78,7 @@ namespace pcl
           cloud_normals_ (),
           cloud_trees_ (),
           normals_ (),
+          scales_ (),
           input_scale_ (0.0f),
           input_index_ ()
       {
@@ -109,11 +111,11 @@ namespace pcl
       setInputScale (float input_scale) { input_scale_ = input_scale; }
 
       void
-      detectKeypoints (PointCloudT &output) override;
+      detectKeypoints (PointCloudT &output);
 
     protected:
       bool
-      initCompute () override;
+      initCompute ();
 
     private:
       float neighborhood_constant_;
@@ -121,12 +123,14 @@ namespace pcl
       std::vector<PointCloudNTConstPtr> cloud_normals_;
       std::vector<KdTreePtr> cloud_trees_;
       PointCloudNTConstPtr normals_;
-      std::vector<std::pair<float, std::size_t> > scales_;
+      std::vector<std::pair<float, size_t> > scales_;
       float input_scale_;
-      std::size_t input_index_;
+      size_t input_index_;
 
       static bool
-      compareScalesFunction (const std::pair<float, std::size_t> &a,
-                             const std::pair<float, std::size_t> &b) { return a.first < b.first; }
+      compareScalesFunction (const std::pair<float, size_t> &a,
+                             const std::pair<float, size_t> &b) { return a.first < b.first; }
   };
 }
+
+#endif /* PCL_SMOOTHEDSURFACESKEYPOINT_H_ */

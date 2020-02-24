@@ -34,9 +34,8 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
-#include <limits>
-
 #include "internal.hpp"
+#include "pcl/gpu/utils/device/limits.hpp"
 #include "pcl/gpu/utils/device/warp.hpp"
 
 #include "utils/copygen.hpp"
@@ -46,7 +45,7 @@
 
 namespace pcl { namespace device { namespace appnearest_search
 {   
-    using PointType = OctreeImpl::PointType;
+    typedef OctreeImpl::PointType PointType;
 	
 	struct Batch
 	{   
@@ -142,7 +141,7 @@ namespace pcl { namespace device { namespace appnearest_search
 		{   
             __shared__ volatile int  per_warp_buffer[KernelPolicy::WARPS_COUNT];
 
-			int mask = __ballot_sync(0xFFFFFFFF, node_idx != -1);                        
+			int mask = __ballot(node_idx != -1);                        
 
 			while(mask)
 			{                
@@ -194,7 +193,7 @@ namespace pcl { namespace device { namespace appnearest_search
             __shared__ volatile int   index[CTA_SIZE];
 			
             int tid = threadIdx.x;
-			dist2[tid] = std::numeric_limits<float>::max();
+			dist2[tid] = pcl::device::numeric_limits<float>::max();
 
 			//serial step
             for (int idx = Warp::laneId(); idx < length; idx += Warp::STRIDE)
@@ -276,7 +275,7 @@ namespace pcl { namespace device { namespace appnearest_search
 
 		bool active = query_index < batch.queries_num;
 
-		if (__all_sync(0xFFFFFFFF, active == false)) 
+		if (__all(active == false)) 
 			return;
 
 		Warp_appNearestSearch search(batch, query_index);
@@ -288,7 +287,7 @@ namespace pcl { namespace device { namespace appnearest_search
 
 void pcl::device::OctreeImpl::approxNearestSearch(const Queries& queries, NeighborIndices& results) const
 {
-    using BatchType = pcl::device::appnearest_search::Batch;
+    typedef pcl::device::appnearest_search::Batch BatchType;
 
     BatchType batch;
     batch.indices = indices;

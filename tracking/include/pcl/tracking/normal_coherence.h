@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_NORMAL_COHERENCE_H_
+#define PCL_TRACKING_NORMAL_COHERENCE_H_
 
 #include <pcl/tracking/coherence.h>
 namespace pcl
@@ -35,7 +36,7 @@ namespace pcl
         * \param source instance of source point.
         * \param target instance of target point.
         */
-      double computeCoherence (PointInT &source, PointInT &target) override;
+      double computeCoherence (PointInT &source, PointInT &target);
 
       /** \brief the weight of coherence */
       double weight_;
@@ -47,4 +48,6 @@ namespace pcl
 // #include <pcl/tracking/impl/normal_coherence.hpp>
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/normal_coherence.hpp>
+#endif
+
 #endif

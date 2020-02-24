@@ -7,7 +7,7 @@
 #include <pcl/surface/on_nurbs/fitting_curve_2d_asdm.h>
 #include <pcl/surface/on_nurbs/triangulation.h>
 
-using Point = pcl::PointXYZ;
+typedef pcl::PointXYZ Point;
 
 int
 main (int argc, char *argv[])
@@ -48,7 +48,7 @@ main (int argc, char *argv[])
   }
 
   const ON_Object* on_object = on_model.m_object_table[0].m_object;
-  if(on_object==nullptr)
+  if(on_object==NULL)
   {
     std::cout << "object[0] not valid." << std::endl;
     return -1;
@@ -68,7 +68,7 @@ main (int argc, char *argv[])
   else
   {
     on_object = on_model.m_object_table[1].m_object;
-    if(on_object==nullptr)
+    if(on_object==NULL)
     {
       std::cout << "object[1] not valid." << std::endl;
       return -1;

@@ -37,10 +37,11 @@
  *
  */
 
-#pragma once
-
 #include <pcl/pcl_config.h>
 #ifdef HAVE_QHULL
+
+#ifndef PCL_QHULL_H
+#define PCL_QHULL_H
 
 #if defined __GNUC__
 #  pragma GCC system_header 
@@ -69,4 +70,6 @@ extern "C"
 #endif
 }
 
+#endif      // PCL_QHULL_H
 #endif
+

@@ -36,7 +36,8 @@
 *
 */
 
-#pragma once
+#ifndef PCL_FLARE_H_
+#define PCL_FLARE_H_
 
 #include <pcl/point_types.h>
 #include <pcl/features/feature.h>
@@ -81,11 +82,11 @@ namespace pcl
 
       using typename Feature<PointInT, PointOutT>::KdTreePtr;
 
-      using PointCloudSignedDistance = pcl::PointCloud<SignedDistanceT>;
-      using PointCloudSignedDistancePtr = typename PointCloudSignedDistance::Ptr;
+      typedef typename pcl::PointCloud<SignedDistanceT> PointCloudSignedDistance;
+      typedef typename PointCloudSignedDistance::Ptr PointCloudSignedDistancePtr;
 
-      using Ptr = shared_ptr<FLARELocalReferenceFrameEstimation<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const FLARELocalReferenceFrameEstimation<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr<FLARELocalReferenceFrameEstimation<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const FLARELocalReferenceFrameEstimation<PointInT, PointNT, PointOutT> > ConstPtr;
 
     public:
       /** \brief Constructor. */
@@ -229,12 +230,12 @@ namespace pcl
 
     protected:
       /** \brief This method should get called before starting the actual computation. */
-      bool
-      initCompute () override;
+      virtual bool
+      initCompute ();
 
       /** \brief This method should get called after the actual computation is ended. */
-      bool
-      deinitCompute () override;
+      virtual bool
+      deinitCompute ();
 
       /** \brief Estimate the LRF descriptor for a given point based on its spatial neighborhood of 3D points with normals
         * \param[in] index the index of the point in input_
@@ -247,8 +248,8 @@ namespace pcl
       /** \brief Abstract feature estimation method.
       * \param[out] output the resultant features
       */
-      void
-      computeFeature (PointCloudOut &output) override;
+      virtual void
+      computeFeature (PointCloudOut &output);
 
 
     private:
@@ -288,3 +289,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/flare.hpp>
 #endif
+
+#endif  //#ifndef PCL_FLARE_H_

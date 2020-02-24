@@ -36,11 +36,12 @@
  *
  */
 
-#pragma once
+#ifndef PCL_KDTREE_FLANN_H_
+#define PCL_KDTREE_FLANN_H_
 
-#include <pcl/pcl_macros.h>
-
-PCL_PRAGMA_WARNING("This header is deprecated and will be removed in an upcoming release.")
+#if defined __GNUC__
+#  pragma GCC system_header 
+#endif
 
 #if defined _MSC_VER
 #  pragma warning(disable: 4267 4244)
@@ -51,3 +52,7 @@ PCL_PRAGMA_WARNING("This header is deprecated and will be removed in an upcoming
 #if defined _MSC_VER
 #  pragma warning(default: 4267)
 #endif
+
+#endif    // PCL_KDTREE_FLANN_H_
+
+

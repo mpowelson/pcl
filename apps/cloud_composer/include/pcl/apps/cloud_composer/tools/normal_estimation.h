@@ -35,10 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef NORMAL_ESTIMATION_H_
+#define NORMAL_ESTIMATION_H_
 
 #include <pcl/apps/cloud_composer/tool_interface/abstract_tool.h>
 #include <pcl/apps/cloud_composer/tool_interface/tool_factory.h>
+
 
 namespace pcl
 {
@@ -49,13 +51,13 @@ namespace pcl
       Q_OBJECT
       public:
         NormalEstimationTool (PropertiesModel* parameter_model, QObject* parent);
-        ~NormalEstimationTool ();
+        virtual ~NormalEstimationTool ();
         
-       QList <CloudComposerItem*>
-        performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE) override;
+       virtual QList <CloudComposerItem*>
+        performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE);
       
-        inline QString
-        getToolName () const override { return "Normal Estimation Tool";}
+        inline virtual QString
+        getToolName () const { return "Normal Estimation Tool";}
     };
 
     
@@ -63,34 +65,36 @@ namespace pcl
     {
       Q_OBJECT
       Q_INTERFACES (pcl::cloud_composer::ToolFactory)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
       Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#endif
       public:
         NewItemTool*
-        createTool (PropertiesModel* parameter_model, QObject* parent = nullptr) override 
+        createTool (PropertiesModel* parameter_model, QObject* parent = 0) 
         {
             return new NormalEstimationTool(parameter_model, parent);
         }
         
         PropertiesModel*
-        createToolParameterModel (QObject* parent) override;
+        createToolParameterModel (QObject* parent);
         
-        inline QString 
-        getPluginName () const override { return "Normal Estimation";}
+        inline virtual QString 
+        getPluginName () const { return "Normal Estimation";}
         
-        QString 
-        getToolGroupName () const override { return "Feature Estimation";}
+        virtual QString 
+        getToolGroupName () const { return "Feature Estimation";}
         
-        QString
-        getIconName () const override { return ":/normal_estimation.png"; }
+        virtual QString
+        getIconName () const { return ":/normal_estimation.png"; }
         
-        inline CloudComposerItem::ItemType
-        getInputItemType () const override
+        inline virtual CloudComposerItem::ItemType
+        getInputItemType () const
         {
           return CloudComposerItem::CLOUD_ITEM;
         }
         
-        inline QList <CloudComposerItem::ItemType>
-        getRequiredInputChildrenTypes () const override 
+        inline virtual QList <CloudComposerItem::ItemType>
+        getRequiredInputChildrenTypes () const 
         {
           return QList <CloudComposerItem::ItemType> ();
         }
@@ -100,3 +104,10 @@ namespace pcl
 
   }
 }
+
+
+
+
+
+
+#endif //NORMAL_ESTIMATION_H_

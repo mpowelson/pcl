@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_METRICS_H_
+#define REC_FRAMEWORK_METRICS_H_
 
 #include <cmath>
 #include <cstdlib>
@@ -17,45 +18,45 @@ namespace Metrics
   template<typename T>
     struct Accumulator
     {
-      using Type = T;
+      typedef T Type;
     };
 
   template<>
     struct Accumulator<unsigned char>
     {
-      using Type = float;
+      typedef float Type;
     };
   template<>
     struct Accumulator<unsigned short>
     {
-      using Type = float;
+      typedef float Type;
     };
   template<>
     struct Accumulator<unsigned int>
     {
-      using Type = float;
+      typedef float Type;
     };
   template<>
     struct Accumulator<char>
     {
-      using Type = float;
+      typedef float Type;
     };
   template<>
     struct Accumulator<short>
     {
-      using Type = float;
+      typedef float Type;
     };
   template<>
     struct Accumulator<int>
     {
-      using Type = float;
+      typedef float Type;
     };
 
   template<class T>
     struct HistIntersectionUnionDistance
     {
-      using ElementType = T;
-      using ResultType = typename Accumulator<T>::Type;
+      typedef T ElementType;
+      typedef typename Accumulator<T>::Type ResultType;
 
       /**
        *  Compute a distance between two vectors using (1 - (1 + sum(min(a_i,b_i))) / (1 + sum(max(a_i, b_i))) )
@@ -66,7 +67,7 @@ namespace Metrics
 
       template<typename Iterator1, typename Iterator2>
         ResultType
-        operator() (Iterator1 a, Iterator2 b, std::size_t size, ResultType worst_dist = -1) const
+        operator() (Iterator1 a, Iterator2 b, size_t size, ResultType worst_dist = -1) const
         {
           (void)worst_dist;
           ResultType result = ResultType ();
@@ -132,3 +133,5 @@ namespace Metrics
         }
     };
 }
+
+#endif /* REC_FRAMEWORK_METRICS_H_ */

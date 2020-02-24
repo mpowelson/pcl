@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_FPFH_LOCAL_ESTIMATOR_OMP_H_
+#define REC_FRAMEWORK_FPFH_LOCAL_ESTIMATOR_OMP_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/local/local_estimator.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/normal_estimator.h>
@@ -19,9 +20,9 @@ namespace pcl
       class FPFHLocalEstimationOMP : public LocalEstimator<PointInT, FeatureT>
       {
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
-        using FeatureTPtr = typename pcl::PointCloud<FeatureT>::Ptr;
-        using KeypointCloud = pcl::PointCloud<pcl::PointXYZ>;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
+        typedef typename pcl::PointCloud<FeatureT>::Ptr FeatureTPtr;
+        typedef pcl::PointCloud<pcl::PointXYZ> KeypointCloud;
 
         using LocalEstimator<PointInT, FeatureT>::support_radius_;
         using LocalEstimator<PointInT, FeatureT>::normal_estimator_;
@@ -61,7 +62,7 @@ namespace pcl
           assert (processed->points.size () == normals->points.size ());
 
           //compute signatures
-          using FPFHEstimator = pcl::FPFHEstimationOMP<PointInT, pcl::Normal, pcl::FPFHSignature33>;
+          typedef typename pcl::FPFHEstimationOMP<PointInT, pcl::Normal, pcl::FPFHSignature33> FPFHEstimator;
           typename pcl::search::KdTree<PointInT>::Ptr tree (new pcl::search::KdTree<PointInT>);
 
           pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs (new pcl::PointCloud<pcl::FPFHSignature33>);
@@ -79,7 +80,7 @@ namespace pcl
           signatures->height = 1;
 
           int size_feat = 33;
-          for (std::size_t k = 0; k < fpfhs->points.size (); k++)
+          for (size_t k = 0; k < fpfhs->points.size (); k++)
             for (int i = 0; i < size_feat; i++)
               signatures->points[k].histogram[i] = fpfhs->points[k].histogram[i];
 
@@ -90,3 +91,5 @@ namespace pcl
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_FPFH_LOCAL_ESTIMATOR_H_ */

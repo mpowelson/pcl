@@ -64,7 +64,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 pcl::ihs::detail::FaceVertexMesh::FaceVertexMesh ()
-  : transformation (Eigen::Isometry3d::Identity ())
+  : vertices       (),
+    triangles      (),
+    transformation (Eigen::Isometry3d::Identity ())
 {
 }
 
@@ -72,6 +74,7 @@ pcl::ihs::detail::FaceVertexMesh::FaceVertexMesh ()
 
 pcl::ihs::detail::FaceVertexMesh::FaceVertexMesh (const Mesh& mesh, const Eigen::Isometry3d& T)
   : vertices       (mesh.getVertexDataCloud ()),
+    triangles      (),
     transformation (T)
 {
   if (typeid (Mesh::MeshTag) != typeid (pcl::geometry::TriangleMeshTag))
@@ -80,15 +83,15 @@ pcl::ihs::detail::FaceVertexMesh::FaceVertexMesh (const Mesh& mesh, const Eigen:
     exit (EXIT_FAILURE);
   }
 
-  for (auto &vertex : vertices)
+  for (CloudIHS::iterator it=vertices.begin (); it!=vertices.end (); ++it)
   {
-    std::swap (vertex.r, vertex.b);
+    std::swap (it->r, it->b);
   }
 
   triangles.reserve (mesh.sizeFaces ());
   pcl::ihs::detail::FaceVertexMesh::Triangle triangle;
 
-  for (std::size_t i=0; i<mesh.sizeFaces (); ++i)
+  for (unsigned int i=0; i<mesh.sizeFaces (); ++i)
   {
     Mesh::VertexAroundFaceCirculator circ = mesh.getVertexAroundFaceCirculator (Mesh::FaceIndex (i));
     triangle.first  = (circ++).getTargetIndex ().get ();
@@ -105,12 +108,15 @@ pcl::ihs::detail::FaceVertexMesh::FaceVertexMesh (const Mesh& mesh, const Eigen:
 
 pcl::ihs::OpenGLViewer::OpenGLViewer (QWidget* parent)
   : QGLWidget            (parent),
+    mutex_vis_           (),
     timer_vis_           (new QTimer (this)),
     colormap_            (Colormap::Constant (255)),
     vis_conf_norm_       (1),
+    drawn_meshes_        (),
     mesh_representation_ (MR_POINTS),
     coloring_            (COL_RGB),
     draw_box_            (false),
+    box_coefficients_    (),
     scaling_factor_      (1.),
     R_cam_               (1., 0., 0., 0.),
     t_cam_               (0., 0., 0.),
@@ -453,7 +459,7 @@ pcl::ihs::OpenGLViewer::addMesh (const MeshConstPtr& mesh, const std::string& id
     return (false);
   }
 
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   if (this->getMeshIsAdded (id))
     drawn_meshes_ [id] = FaceVertexMeshPtr (new FaceVertexMesh (*mesh, T));
@@ -531,9 +537,9 @@ pcl::ihs::OpenGLViewer::addMesh (const CloudXYZRGBNormalConstPtr& cloud, const s
       const PointXYZRGBNormal& pt_2 = cloud->operator [] (ind_o_2);
       const PointXYZRGBNormal& pt_3 = cloud->operator [] (ind_o_3);
 
-      if (!std::isnan (pt_1.x) && !std::isnan (pt_3.x))
+      if (!boost::math::isnan (pt_1.x) && !boost::math::isnan (pt_3.x))
       {
-        if (!std::isnan (pt_2.x)) // 1-2-3 is valid
+        if (!boost::math::isnan (pt_2.x)) // 1-2-3 is valid
         {
           if (std::abs (pt_1.z - pt_2.z) < 1 &&
               std::abs (pt_1.z - pt_3.z) < 1 &&
@@ -543,10 +549,10 @@ pcl::ihs::OpenGLViewer::addMesh (const CloudXYZRGBNormalConstPtr& cloud, const s
             ind_v_2 = addVertex (pt_2, vertices, indices [ind_o_2]);
             ind_v_3 = addVertex (pt_3, vertices, indices [ind_o_3]);
 
-            triangles.emplace_back(ind_v_1, ind_v_2, ind_v_3);
+            triangles.push_back (FaceVertexMesh::Triangle (ind_v_1, ind_v_2, ind_v_3));
           }
         }
-        if (!std::isnan (pt_0.x)) // 0-1-3 is valid
+        if (!boost::math::isnan (pt_0.x)) // 0-1-3 is valid
         {
           if (std::abs (pt_0.z - pt_1.z) < 1 &&
               std::abs (pt_0.z - pt_3.z) < 1 &&
@@ -556,7 +562,7 @@ pcl::ihs::OpenGLViewer::addMesh (const CloudXYZRGBNormalConstPtr& cloud, const s
             ind_v_3 = addVertex (pt_3, vertices, indices [ind_o_3]);
             ind_v_0 = addVertex (pt_0, vertices, indices [ind_o_0]);
 
-            triangles.emplace_back(ind_v_1, ind_v_3, ind_v_0);
+            triangles.push_back (FaceVertexMesh::Triangle (ind_v_1, ind_v_3, ind_v_0));
           }
         }
       }
@@ -564,7 +570,7 @@ pcl::ihs::OpenGLViewer::addMesh (const CloudXYZRGBNormalConstPtr& cloud, const s
   }
 
   // Finally add the mesh.
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   if (this->getMeshIsAdded (id))
     drawn_meshes_ [id] = mesh;
@@ -579,7 +585,7 @@ pcl::ihs::OpenGLViewer::addMesh (const CloudXYZRGBNormalConstPtr& cloud, const s
 bool
 pcl::ihs::OpenGLViewer::removeMesh (const std::string& id)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   if (!this->getMeshIsAdded (id)) return (false);
 
   drawn_meshes_.erase (id);
@@ -592,7 +598,7 @@ pcl::ihs::OpenGLViewer::removeMesh (const std::string& id)
 void
 pcl::ihs::OpenGLViewer::removeAllMeshes ()
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   drawn_meshes_.clear ();
 }
 
@@ -601,7 +607,7 @@ pcl::ihs::OpenGLViewer::removeAllMeshes ()
 void
 pcl::ihs::OpenGLViewer::setBoxCoefficients (const BoxCoefficients& coeffs)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   box_coefficients_ = coeffs;
 }
 
@@ -610,7 +616,7 @@ pcl::ihs::OpenGLViewer::setBoxCoefficients (const BoxCoefficients& coeffs)
 void
 pcl::ihs::OpenGLViewer::setDrawBox (const bool enabled)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   draw_box_ = enabled;
 }
 
@@ -627,7 +633,7 @@ pcl::ihs::OpenGLViewer::getDrawBox () const
 void
 pcl::ihs::OpenGLViewer::setPivot (const Eigen::Vector3d& pivot)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   cam_pivot_ = pivot;
 }
 
@@ -636,7 +642,7 @@ pcl::ihs::OpenGLViewer::setPivot (const Eigen::Vector3d& pivot)
 void
 pcl::ihs::OpenGLViewer::setPivot (const std::string& id)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   cam_pivot_id_ = id;
 }
 
@@ -645,7 +651,7 @@ pcl::ihs::OpenGLViewer::setPivot (const std::string& id)
 void
 pcl::ihs::OpenGLViewer::stopTimer ()
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   if (timer_vis_)
   {
     timer_vis_->stop ();
@@ -657,7 +663,7 @@ pcl::ihs::OpenGLViewer::stopTimer ()
 void
 pcl::ihs::OpenGLViewer::setVisibilityConfidenceNormalization (const float vis_conf_norm)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   vis_conf_norm_ = vis_conf_norm < 1 ? 1 : vis_conf_norm;
 }
@@ -683,7 +689,7 @@ pcl::ihs::OpenGLViewer::sizeHint () const
 void
 pcl::ihs::OpenGLViewer::setScalingFactor (const double scale)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   scaling_factor_ = scale;
 }
 
@@ -700,7 +706,7 @@ pcl::ihs::OpenGLViewer::timerCallback ()
 void
 pcl::ihs::OpenGLViewer::resetCamera ()
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   R_cam_ = Eigen::Quaterniond (1., 0., 0., 0.);
   t_cam_ = Eigen::Vector3d    (0., 0., 0.);
@@ -725,7 +731,7 @@ pcl::ihs::OpenGLViewer::toggleMeshRepresentation ()
 void
 pcl::ihs::OpenGLViewer::setMeshRepresentation (const MeshRepresentation& representation)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   switch (mesh_representation_)
   {
@@ -757,7 +763,7 @@ pcl::ihs::OpenGLViewer::toggleColoring ()
 void
 pcl::ihs::OpenGLViewer::setColoring (const Coloring& coloring)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   switch (coloring)
   {
@@ -822,7 +828,7 @@ pcl::ihs::OpenGLViewer::paintEvent (QPaintEvent* /*event*/)
   Eigen::Quaterniond R_cam;
   Eigen::Vector3d    t_cam;
   {
-    std::lock_guard<std::mutex> lock (mutex_vis_);
+    boost::mutex::scoped_lock lock (mutex_vis_);
     R_cam = R_cam_;
     t_cam = t_cam_;
   }
@@ -852,7 +858,7 @@ pcl::ihs::OpenGLViewer::paintEvent (QPaintEvent* /*event*/)
 bool
 pcl::ihs::OpenGLViewer::getMeshIsAdded (const std::string& id)
 {
-  // std::lock_guard<std::mutex> lock (mutex_vis_);
+  // boost::mutex::scoped_lock lock (mutex_vis_);
   return (drawn_meshes_.find (id) != drawn_meshes_.end ());
 }
 
@@ -861,7 +867,7 @@ pcl::ihs::OpenGLViewer::getMeshIsAdded (const std::string& id)
 void
 pcl::ihs::OpenGLViewer::calcPivot ()
 {
-  std::unique_lock<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   if (this->getMeshIsAdded (cam_pivot_id_))
   {
     Eigen::Vector4f pivot;
@@ -882,7 +888,7 @@ pcl::ihs::OpenGLViewer::calcPivot ()
 void
 pcl::ihs::OpenGLViewer::drawMeshes ()
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   glEnableClientState (GL_VERTEX_ARRAY);
   glEnableClientState (GL_NORMAL_ARRAY);
@@ -926,7 +932,7 @@ pcl::ihs::OpenGLViewer::drawMeshes ()
         }
         case COL_VISCONF:
         {
-          for (std::size_t i=0; i<mesh.vertices.size (); ++i)
+          for (unsigned int i=0; i<mesh.vertices.size (); ++i)
           {
             const unsigned int n = pcl::ihs::countDirections (mesh.vertices [i].directions);
             const unsigned int index = static_cast <unsigned int> (
@@ -975,7 +981,7 @@ pcl::ihs::OpenGLViewer::drawBox ()
 {
   BoxCoefficients coeffs;
   {
-    std::lock_guard<std::mutex> lock (mutex_vis_);
+    boost::mutex::scoped_lock lock (mutex_vis_);
     if (draw_box_) coeffs = box_coefficients_;
     else           return;
   }
@@ -1076,7 +1082,7 @@ pcl::ihs::OpenGLViewer::resizeGL (int w, int h)
 void
 pcl::ihs::OpenGLViewer::mousePressEvent (QMouseEvent* /*event*/)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
   mouse_pressed_begin_ = true;
 }
 
@@ -1085,7 +1091,7 @@ pcl::ihs::OpenGLViewer::mousePressEvent (QMouseEvent* /*event*/)
 void
 pcl::ihs::OpenGLViewer::mouseMoveEvent (QMouseEvent* event)
 {
-  std::lock_guard<std::mutex> lock (mutex_vis_);
+  boost::mutex::scoped_lock lock (mutex_vis_);
 
   if (mouse_pressed_begin_)
   {
@@ -1140,7 +1146,7 @@ pcl::ihs::OpenGLViewer::wheelEvent (QWheelEvent* event)
 {
   if (QApplication::mouseButtons () == Qt::NoButton)
   {
-    std::lock_guard<std::mutex> lock (mutex_vis_);
+    boost::mutex::scoped_lock lock (mutex_vis_);
 
     // Scale with the distance between the pivot and camera eye.
     const Eigen::Vector3d o     = Eigen::Vector3d::Zero  ();

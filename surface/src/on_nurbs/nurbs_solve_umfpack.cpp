@@ -144,10 +144,13 @@ namespace pcl
       double* tempRhs = new double[noOfVerts];
       double* tempSol = new double[noOfVerts];
 
+      int i, k, status;
       double* null = (double*)NULL;
       void *Symbolic, *Numeric;
 
-      if (umfpack_di_symbolic (A->nrow, A->ncol, cols, rows, vals, &Symbolic, null, null) != 0)
+      status = umfpack_di_symbolic (A->nrow, A->ncol, cols, rows, vals, &Symbolic, null, null);
+
+      if (status != 0)
       {
         std::cout << "[NurbsSolve[UMFPACK]::solveSparseLinearSystem] Warning: something is wrong with input matrix!"
             << std::endl;
@@ -157,7 +160,9 @@ namespace pcl
 
       }
 
-      if (umfpack_di_numeric (cols, rows, vals, Symbolic, &Numeric, null, null) != 0)
+      status = umfpack_di_numeric (cols, rows, vals, Symbolic, &Numeric, null, null);
+
+      if (status != 0)
       {
         std::cout
             << "[NurbsSolve[UMFPACK]::solveSparseLinearSystem] Warning: ordering was ok but factorization failed!"
@@ -169,9 +174,9 @@ namespace pcl
 
       umfpack_di_free_symbolic (&Symbolic);
 
-      for (int i = 0; i < noOfCols; i++)
+      for (i = 0; i < noOfCols; i++)
       {
-        for (int k = 0; k < noOfVerts; k++)
+        for (k = 0; k < noOfVerts; k++)
           tempRhs[k] = rhs[i * noOfVerts + k];
 
         // At or A?
@@ -180,7 +185,7 @@ namespace pcl
         else
           umfpack_di_solve (UMFPACK_A, cols, rows, vals, tempSol, tempRhs, Numeric, null, null);
 
-        for (int k = 0; k < noOfVerts; k++)
+        for (k = 0; k < noOfVerts; k++)
           sol[i * noOfVerts + k] = tempSol[k];
       }
 

@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEGMENTATION_PLANAR_REFINEMENT_COMPARATOR_H_
+#define PCL_SEGMENTATION_PLANAR_REFINEMENT_COMPARATOR_H_
 
 #include <pcl/segmentation/boost.h>
 #include <pcl/segmentation/plane_coefficient_comparator.h>
@@ -54,19 +55,19 @@ namespace pcl
   class PlaneRefinementComparator: public PlaneCoefficientComparator<PointT, PointNT>
   {
     public:
-      using PointCloud = typename Comparator<PointT>::PointCloud;
-      using PointCloudConstPtr = typename Comparator<PointT>::PointCloudConstPtr;
+      typedef typename Comparator<PointT>::PointCloud PointCloud;
+      typedef typename Comparator<PointT>::PointCloudConstPtr PointCloudConstPtr;
       
-      using PointCloudN = pcl::PointCloud<PointNT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<PointNT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-      using PointCloudL = pcl::PointCloud<PointLT>;
-      using PointCloudLPtr = typename PointCloudL::Ptr;
-      using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+      typedef typename pcl::PointCloud<PointLT> PointCloudL;
+      typedef typename PointCloudL::Ptr PointCloudLPtr;
+      typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
-      using Ptr = shared_ptr<PlaneRefinementComparator<PointT, PointNT, PointLT> >;
-      using ConstPtr = shared_ptr<const PlaneRefinementComparator<PointT, PointNT, PointLT> >;
+      typedef boost::shared_ptr<PlaneRefinementComparator<PointT, PointNT, PointLT> > Ptr;
+      typedef boost::shared_ptr<const PlaneRefinementComparator<PointT, PointNT, PointLT> > ConstPtr;
 
       using pcl::PlaneCoefficientComparator<PointT, PointNT>::input_;
       using pcl::PlaneCoefficientComparator<PointT, PointNT>::normals_;
@@ -76,7 +77,10 @@ namespace pcl
 
       /** \brief Empty constructor for PlaneCoefficientComparator. */
      PlaneRefinementComparator ()
-        : labels_ ()
+        : models_ ()
+        , labels_ ()
+        , refine_labels_ ()
+        , label_to_model_ ()
         , depth_dependent_ (false)
       {
       }
@@ -85,17 +89,18 @@ namespace pcl
         * \param[in] models
         * \param[in] refine_labels
         */
-      PlaneRefinementComparator (shared_ptr<std::vector<pcl::ModelCoefficients> >& models,
-                                 shared_ptr<std::vector<bool> >& refine_labels)
+      PlaneRefinementComparator (boost::shared_ptr<std::vector<pcl::ModelCoefficients> >& models,
+                                 boost::shared_ptr<std::vector<bool> >& refine_labels)
         : models_ (models)
         , labels_ ()
         , refine_labels_ (refine_labels)
+        , label_to_model_ ()
         , depth_dependent_ (false)
       {
       }
 
       /** \brief Destructor for PlaneCoefficientComparator. */
-      
+      virtual
       ~PlaneRefinementComparator ()
       {
       }
@@ -104,7 +109,7 @@ namespace pcl
         * \param[in] models a vector of model coefficients produced by the initial segmentation step.
         */
       void
-      setModelCoefficients (shared_ptr<std::vector<pcl::ModelCoefficients> >& models)
+      setModelCoefficients (boost::shared_ptr<std::vector<pcl::ModelCoefficients> >& models)
       {
         models_ = models;
       }
@@ -122,7 +127,7 @@ namespace pcl
         * \param[in] refine_labels A vector of bools 0-max_label, true if the label should be refined.
         */
       void
-      setRefineLabels (shared_ptr<std::vector<bool> >& refine_labels)
+      setRefineLabels (boost::shared_ptr<std::vector<bool> >& refine_labels)
       {
         refine_labels_ = refine_labels;
       }
@@ -140,7 +145,7 @@ namespace pcl
         * \param[in] label_to_model A vector of size max_label, with the index of each corresponding model in models
         */
       inline void
-      setLabelToModel (shared_ptr<std::vector<int> >& label_to_model)
+      setLabelToModel (boost::shared_ptr<std::vector<int> >& label_to_model)
       {
         label_to_model_ = label_to_model;
       }
@@ -155,7 +160,7 @@ namespace pcl
       }
 
       /** \brief Get the vector of model coefficients to which we will compare. */
-      inline shared_ptr<std::vector<pcl::ModelCoefficients> >
+      inline boost::shared_ptr<std::vector<pcl::ModelCoefficients> >
       getModelCoefficients () const
       {
         return (models_);
@@ -174,8 +179,8 @@ namespace pcl
         * \param[in] idx1 The index of the first point.
         * \param[in] idx2 The index of the second point.
         */
-      bool
-      compare (int idx1, int idx2) const override
+      virtual bool
+      compare (int idx1, int idx2) const
       {
         int current_label = labels_->points[idx1].label;
         int next_label = labels_->points[idx2].label;
@@ -186,7 +191,7 @@ namespace pcl
         const pcl::ModelCoefficients& model_coeff = (*models_)[(*label_to_model_)[current_label]];
         
         PointT pt = input_->points[idx2];
-        double ptp_dist = std::fabs (model_coeff.values[0] * pt.x + 
+        double ptp_dist = fabs (model_coeff.values[0] * pt.x + 
                                 model_coeff.values[1] * pt.y + 
                                 model_coeff.values[2] * pt.z +
                                 model_coeff.values[3]);
@@ -206,11 +211,13 @@ namespace pcl
       }
 
     protected:
-      shared_ptr<std::vector<pcl::ModelCoefficients> > models_;
+      boost::shared_ptr<std::vector<pcl::ModelCoefficients> > models_;
       PointCloudLPtr labels_;
-      shared_ptr<std::vector<bool> > refine_labels_;
-      shared_ptr<std::vector<int> > label_to_model_;
+      boost::shared_ptr<std::vector<bool> > refine_labels_;
+      boost::shared_ptr<std::vector<int> > label_to_model_;
       bool depth_dependent_;
       using PlaneCoefficientComparator<PointT, PointNT>::z_axis_;
   };
 }
+
+#endif // PCL_SEGMENTATION_PLANE_COEFFICIENT_COMPARATOR_H_

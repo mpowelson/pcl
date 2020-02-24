@@ -72,8 +72,9 @@ Selection::addIndex (const IndexVector &indices)
 void
 Selection::removeIndex (const IndexVector &indices)
 {
-  for(const unsigned int &index : indices)
-    removeIndex(index);
+  IndexVector::const_iterator it;
+  for(it = indices.begin(); it != indices.end(); ++it)
+    removeIndex(*it);
 }
 
 void
@@ -117,7 +118,7 @@ Selection::invertSelect ()
 std::string
 Selection::getStat () const
 {
-  if (selected_indices_.empty ())
+  if (selected_indices_.size() == 0)
     return ("");
   std::string title = "Total number of selected points: ";
   std::string num_str;

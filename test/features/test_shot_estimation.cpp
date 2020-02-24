@@ -51,10 +51,10 @@ using namespace pcl;
 using namespace pcl::io;
 using namespace std;
 
-using KdTreePtr = search::KdTree<PointXYZ>::Ptr;
+typedef search::KdTree<PointXYZ>::Ptr KdTreePtr;
 
 PointCloud<PointXYZ> cloud;
-std::vector<int> indices;
+vector<int> indices;
 KdTreePtr tree;
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -70,8 +70,8 @@ template <typename PointT> void
 checkDesc(const pcl::PointCloud<PointT>& d0, const pcl::PointCloud<PointT>& d1)
 {
   ASSERT_EQ (d0.size (), d1.size ());
-  for (std::size_t i = 0; i < d1.size (); ++i)
-    for (std::size_t j = 0; j < d0.points[i].descriptor.size(); ++j)
+  for (size_t i = 0; i < d1.size (); ++i)
+    for (size_t j = 0; j < d0.points[i].descriptor.size(); ++j)
       ASSERT_EQ (d0.points[i].descriptor[j], d1.points[i].descriptor[j]);
 }
 
@@ -80,8 +80,8 @@ template <> void
 checkDesc<SHOT352>(const pcl::PointCloud<SHOT352>& d0, const pcl::PointCloud<SHOT352>& d1)
 {
   ASSERT_EQ (d0.size (), d1.size ());
-  for (std::size_t i = 0; i < d1.size (); ++i)
-    for (std::size_t j = 0; j < 352; ++j)
+  for (size_t i = 0; i < d1.size (); ++i)
+    for (size_t j = 0; j < 352; ++j)
       ASSERT_EQ (d0.points[i].descriptor[j], d1.points[i].descriptor[j]);
 }
 
@@ -90,8 +90,8 @@ template <> void
 checkDesc<SHOT1344>(const pcl::PointCloud<SHOT1344>& d0, const pcl::PointCloud<SHOT1344>& d1)
 {
   ASSERT_EQ (d0.size (), d1.size ());
-  for (std::size_t i = 0; i < d1.size (); ++i)
-    for (std::size_t j = 0; j < 1344; ++j)
+  for (size_t i = 0; i < d1.size (); ++i)
+    for (size_t j = 0; j < 1344; ++j)
       ASSERT_EQ (d0.points[i].descriptor[j], d1.points[i].descriptor[j]);
 }
 
@@ -100,8 +100,8 @@ template <> void
 checkDesc<ShapeContext1980>(const pcl::PointCloud<ShapeContext1980>& d0, const pcl::PointCloud<ShapeContext1980>& d1)
 {
   ASSERT_EQ (d0.size (), d1.size ());
-  for (std::size_t i = 0; i < d1.size (); ++i)
-    for (std::size_t j = 0; j < 1980; ++j)
+  for (size_t i = 0; i < d1.size (); ++i)
+    for (size_t j = 0; j < 1980; ++j)
       ASSERT_EQ (d0.points[i].descriptor[j], d1.points[i].descriptor[j]);
 }
 
@@ -110,8 +110,8 @@ template <> void
 checkDesc<UniqueShapeContext1960>(const pcl::PointCloud<UniqueShapeContext1960>& d0, const pcl::PointCloud<UniqueShapeContext1960>& d1)
 {
   ASSERT_EQ (d0.size (), d1.size ());
-  for (std::size_t i = 0; i < d1.size (); ++i)
-    for (std::size_t j = 0; j < 1960; ++j)
+  for (size_t i = 0; i < d1.size (); ++i)
+    for (size_t j = 0; j < 1960; ++j)
       ASSERT_EQ (d0.points[i].descriptor[j], d1.points[i].descriptor[j]);
 }
 
@@ -208,7 +208,7 @@ struct createSHOTDesc<UniqueShapeContext<PointT, OutputT>, PointT, NormalT, Outp
 template <typename FeatureEstimation, typename PointT, typename NormalT, typename OutputT> void
 testSHOTIndicesAndSearchSurface (const typename PointCloud<PointT>::Ptr & points,
                                  const typename PointCloud<NormalT>::Ptr & normals,
-                                 const pcl::IndicesPtr & indices,
+                                 const boost::shared_ptr<vector<int> > & indices,
                                  const int nr_shape_bins = 10,
                                  const int nr_color_bins = 30,
                                  const bool describe_shape = true,
@@ -256,8 +256,8 @@ testSHOTIndicesAndSearchSurface (const typename PointCloud<PointT>::Ptr & points
   //
   PointCloud<OutputT> output3, output4;
 
-  pcl::IndicesPtr indices2 (new pcl::Indices (0));
-  for (std::size_t i = 0; i < (indices->size ()/2); ++i)
+  boost::shared_ptr<vector<int> > indices2 (new vector<int> (0));
+  for (size_t i = 0; i < (indices->size ()/2); ++i)
     indices2->push_back (static_cast<int> (i));
 
   // Compute with all points as search surface + the specified sub-cloud as "input" but for only a subset of indices
@@ -280,7 +280,7 @@ testSHOTIndicesAndSearchSurface (const typename PointCloud<PointT>::Ptr & points
 template <typename FeatureEstimation, typename PointT, typename NormalT, typename OutputT> void
 testSHOTLocalReferenceFrame (const typename PointCloud<PointT>::Ptr & points,
                              const typename PointCloud<NormalT>::Ptr & normals,
-                             const pcl::IndicesPtr & indices,
+                             const boost::shared_ptr<vector<int> > & indices,
                              const int nr_shape_bins = 10,
                              const int nr_color_bins = 30,
                              const bool describe_shape = true,
@@ -291,8 +291,8 @@ testSHOTLocalReferenceFrame (const typename PointCloud<PointT>::Ptr & points,
   typename PointCloud<PointT>::Ptr subpoints (new PointCloud<PointT> ());
   copyPointCloud (*points, *indices, *subpoints);
 
-  pcl::IndicesPtr indices2 (new pcl::Indices (0));
-  for (std::size_t i = 0; i < (indices->size ()/2); ++i)
+  boost::shared_ptr<vector<int> > indices2 (new vector<int> (0));
+  for (size_t i = 0; i < (indices->size ()/2); ++i)
     indices2->push_back (static_cast<int> (i));
   //
   // Test an external computation for the local reference frames
@@ -368,9 +368,8 @@ struct SHOTShapeTest<SHOTEstimationOMP<PointXYZ, Normal, SHOT352> >
 };
 
 // Types which will be instantiated
-using SHOTEstimatorTypes = ::testing::Types
-        <SHOTEstimation<PointXYZ, Normal, SHOT352>,
-         SHOTEstimationOMP<PointXYZ, Normal, SHOT352> >;
+typedef ::testing::Types<SHOTEstimation<PointXYZ, Normal, SHOT352>,
+                         SHOTEstimationOMP<PointXYZ, Normal, SHOT352> > SHOTEstimatorTypes;
 TYPED_TEST_CASE (SHOTShapeTest, SHOTEstimatorTypes);
 
 // This is a copy of the old SHOTShapeEstimation test which will now
@@ -383,7 +382,7 @@ TYPED_TEST (SHOTShapeTest, Estimation)
   PointCloud<Normal>::Ptr normals (new PointCloud<Normal> ());
   // set parameters
   n.setInputCloud (cloud.makeShared ());
-  pcl::IndicesPtr indicesptr (new pcl::Indices (indices));
+  boost::shared_ptr<vector<int> > indicesptr (new vector<int> (indices));
   n.setIndices (indicesptr);
   n.setSearchMethod (tree);
   n.setRadiusSearch (20 * mr);
@@ -462,8 +461,8 @@ TYPED_TEST (SHOTShapeTest, Estimation)
 
   // Test results when setIndices and/or setSearchSurface are used
 
-  pcl::IndicesPtr test_indices (new pcl::Indices (0));
-  for (std::size_t i = 0; i < cloud.size (); i+=3)
+  boost::shared_ptr<vector<int> > test_indices (new vector<int> (0));
+  for (size_t i = 0; i < cloud.size (); i+=3)
     test_indices->push_back (static_cast<int> (i));
 
   //testSHOTIndicesAndSearchSurface<SHOTEstimation<PointXYZ, Normal, SHOT>, PointXYZ, Normal, SHOT> (cloud.makeShared (), normals, test_indices);
@@ -487,7 +486,7 @@ TEST (PCL, GenericSHOTShapeEstimation)
   PointCloud<Normal>::Ptr normals (new PointCloud<Normal> ());
   // set parameters
   n.setInputCloud (cloud.makeShared ());
-  pcl::IndicesPtr indicesptr (new pcl::Indices (indices));
+  boost::shared_ptr<vector<int> > indicesptr (new vector<int> (indices));
   n.setIndices (indicesptr);
   n.setSearchMethod (tree);
   n.setRadiusSearch (20 * mr);
@@ -522,8 +521,8 @@ TEST (PCL, GenericSHOTShapeEstimation)
   EXPECT_NEAR (shots->points[103].descriptor[123], 0.019105887, 1e-5);
 
   // Test results when setIndices and/or setSearchSurface are used
-  pcl::IndicesPtr test_indices (new pcl::Indices (0));
-  for (std::size_t i = 0; i < cloud.size (); i+=3)
+  boost::shared_ptr<vector<int> > test_indices (new vector<int> (0));
+  for (size_t i = 0; i < cloud.size (); i+=3)
     test_indices->push_back (static_cast<int> (i));
 
   testSHOTIndicesAndSearchSurface<SHOTEstimation<PointXYZ, Normal, SHOT>, PointXYZ, Normal, SHOT> (cloud.makeShared (), normals, test_indices, shapeStep_);
@@ -557,9 +556,8 @@ struct SHOTShapeAndColorTest<SHOTColorEstimationOMP<PointXYZRGBA, Normal, SHOT13
 };
 
 // Types which will be instantiated
-using SHOTColorEstimatorTypes= ::testing::Types
-        <SHOTColorEstimation<PointXYZRGBA, Normal, SHOT1344>,
-         SHOTColorEstimationOMP<PointXYZRGBA, Normal, SHOT1344> >;
+typedef ::testing::Types<SHOTColorEstimation<PointXYZRGBA, Normal, SHOT1344>,
+                         SHOTColorEstimationOMP<PointXYZRGBA, Normal, SHOT1344> > SHOTColorEstimatorTypes;
 TYPED_TEST_CASE (SHOTShapeAndColorTest, SHOTColorEstimatorTypes);
 
 // This is a copy of the old SHOTShapeAndColorEstimation test which will now
@@ -572,7 +570,7 @@ TYPED_TEST (SHOTShapeAndColorTest, Estimation)
   PointCloud<Normal>::Ptr normals (new PointCloud<Normal> ());
   // set parameters
   n.setInputCloud (cloud.makeShared ());
-  pcl::IndicesPtr indicesptr (new pcl::Indices (indices));
+  boost::shared_ptr<vector<int> > indicesptr (new vector<int> (indices));
   n.setIndices (indicesptr);
   n.setSearchMethod (tree);
   n.setRadiusSearch (20 * mr);
@@ -676,8 +674,8 @@ TYPED_TEST (SHOTShapeAndColorTest, Estimation)
   EXPECT_NEAR (shots1344->points[103].descriptor[512], 0.048375979, 1e-5);
 
   // Test results when setIndices and/or setSearchSurface are used
-  pcl::IndicesPtr test_indices (new pcl::Indices (0));
-  for (std::size_t i = 0; i < cloud.size (); i+=3)
+  boost::shared_ptr<vector<int> > test_indices (new vector<int> (0));
+  for (size_t i = 0; i < cloud.size (); i+=3)
     test_indices->push_back (static_cast<int> (i));
 
   //testSHOTIndicesAndSearchSurface<SHOTEstimation<PointXYZRGBA, Normal, SHOT>, PointXYZRGBA, Normal, SHOT> (cloudWithColors.makeShared (), normals, test_indices);
@@ -736,33 +734,33 @@ TEST (PCL,3DSCEstimation)
   //EXPECT_NEAR ((*sc3ds)[0].rf[7], -0.6074f, 1e-4f);
   //EXPECT_NEAR ((*sc3ds)[0].rf[8], -0.7843f, 1e-4f);
 
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[0], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[1], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[2], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[3], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[4], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[5], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[6], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[7], 0.0f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[0].rf[8], 0.0f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[0], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[1], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[2], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[3], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[4], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[5], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[6], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[7], 0.0f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[0].rf[8], 0.0f, 1e-4f);
 
   //EXPECT_EQ ((*sc3ds)[0].descriptor.size (), 64);
 
-  EXPECT_FLOAT_EQ ((*sc3ds)[94].descriptor[88], 55.271168f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[94].descriptor[584], 71.108765f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[94].descriptor[1106], 79.5896f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[94].descriptor[1560], 0.f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[94].descriptor[1929], 36.063553f);
+  EXPECT_NEAR ((*sc3ds)[94].descriptor[88], 55.2712f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[94].descriptor[584], 71.1088f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[94].descriptor[1106], 79.5896f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[94].descriptor[1560], 0.f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[94].descriptor[1929], 36.0636f, 1e-4f);
 
-  EXPECT_FLOAT_EQ ((*sc3ds)[108].descriptor[67], 0.f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[108].descriptor[548], 126.14106f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[108].descriptor[1091], 30.470392f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[108].descriptor[1421], 38.08799f);
-  EXPECT_FLOAT_EQ ((*sc3ds)[108].descriptor[1900], 43.799442f);
+  EXPECT_NEAR ((*sc3ds)[108].descriptor[67], 0.f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[108].descriptor[548], 126.141f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[108].descriptor[1091], 30.4704f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[108].descriptor[1421], 38.088f, 1e-4f);
+  EXPECT_NEAR ((*sc3ds)[108].descriptor[1900], 43.7994f, 1e-4f);
 
   // Test results when setIndices and/or setSearchSurface are used
-  pcl::IndicesPtr test_indices (new pcl::Indices (0));
-  for (std::size_t i = 0; i < cloud.size (); i++)
+  boost::shared_ptr<vector<int> > test_indices (new vector<int> (0));
+  for (size_t i = 0; i < cloud.size (); i++)
     test_indices->push_back (static_cast<int> (i));
 
   testSHOTIndicesAndSearchSurface<ShapeContext3DEstimation<PointXYZ, Normal, ShapeContext1980>, PointXYZ, Normal, ShapeContext1980> (cloudptr, normals, test_indices);
@@ -814,8 +812,8 @@ TEST (PCL, USCEstimation)
   EXPECT_NEAR ((*uscds)[168].descriptor[1756], 65.1737f, 1e-4f);
 
   // Test results when setIndices and/or setSearchSurface are used
-  pcl::IndicesPtr test_indices (new pcl::Indices (0));
-  for (std::size_t i = 0; i < cloud.size (); i+=3)
+  boost::shared_ptr<vector<int> > test_indices (new vector<int> (0));
+  for (size_t i = 0; i < cloud.size (); i+=3)
     test_indices->push_back (static_cast<int> (i));
 
   PointCloud<Normal>::Ptr normals (new PointCloud<Normal> ());
@@ -840,7 +838,7 @@ main (int argc, char** argv)
   }
 
   indices.resize (cloud.points.size ());
-  for (std::size_t i = 0; i < indices.size (); ++i)
+  for (size_t i = 0; i < indices.size (); ++i)
     indices[i] = static_cast<int> (i);
 
   tree.reset (new search::KdTree<PointXYZ> (false));

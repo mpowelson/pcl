@@ -2602,8 +2602,7 @@ int ON_4fPoint::MaximumCoordinateIndex() const
 {
   const float* a = &x;
   int i = ( fabs(y) > fabs(x) ) ? 1 : 0;
-  if (fabs(z) > fabs(a[i])) i = 2;
-  if (fabs(w) > fabs(a[i])) i = 3;
+  if (fabs(z) > fabs(a[i])) i = 2; if (fabs(w) > fabs(a[i])) i = 3;
   return i;
 }
 
@@ -4899,8 +4898,7 @@ int ON_4dPoint::MaximumCoordinateIndex() const
 {
   const double* a = &x;
   int i = ( fabs(y) > fabs(x) ) ? 1 : 0;
-  if (fabs(z) > fabs(a[i])) i = 2;
-  if (fabs(w) > fabs(a[i])) i = 3;
+  if (fabs(z) > fabs(a[i])) i = 2; if (fabs(w) > fabs(a[i])) i = 3;
   return i;
 }
 
@@ -4914,8 +4912,7 @@ int ON_4dPoint::MinimumCoordinateIndex() const
 {
   const double* a = &x;
   int i = ( fabs(y) < fabs(x) ) ? 1 : 0;
-  if (fabs(z) < fabs(a[i])) i = 2;
-  if (fabs(w) < fabs(a[i])) i = 3;
+  if (fabs(z) < fabs(a[i])) i = 2; if (fabs(w) < fabs(a[i])) i = 3;
   return i;
 }
 

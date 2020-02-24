@@ -36,8 +36,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef BIVARIATE_POLYNOMIAL_H
+#define BIVARIATE_POLYNOMIAL_H
 
 #include <fstream>
 #include <iostream>
@@ -133,9 +133,11 @@ namespace pcl
   std::ostream&
     operator<< (std::ostream& os, const BivariatePolynomialT<real>& p);
 
-  using BivariatePolynomiald = BivariatePolynomialT<double>;
-  using BivariatePolynomial = BivariatePolynomialT<float>;
+  typedef BivariatePolynomialT<double> BivariatePolynomiald;
+  typedef BivariatePolynomialT<float>  BivariatePolynomial;
 
 }  // end namespace
 
 #include <pcl/common/impl/bivariate_polynomial.hpp>
+
+#endif

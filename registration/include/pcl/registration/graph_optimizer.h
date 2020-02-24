@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GRAPH_OPTIMIZER_H_
+#define PCL_GRAPH_OPTIMIZER_H_
 
 #include <pcl/registration/graph_handler.h>
 
@@ -66,3 +67,5 @@ namespace pcl
     };
   }
 }
+
+#endif // PCL_GRAPH_OPTIMIZER_H_

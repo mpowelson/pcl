@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCL_TRACKING_NEAREST_PAIR_POINT_CLOUD_COHERENCE_H_
+#define PCL_TRACKING_NEAREST_PAIR_POINT_CLOUD_COHERENCE_H_
 
 #include <pcl/search/search.h>
 
@@ -21,15 +22,15 @@ namespace pcl
         using PointCloudCoherence<PointInT>::coherence_name_;
         using PointCloudCoherence<PointInT>::target_input_;
         
-        using PointCoherencePtr = typename PointCloudCoherence<PointInT>::PointCoherencePtr;
-        using PointCloudInConstPtr = typename PointCloudCoherence<PointInT>::PointCloudInConstPtr;
-        using BaseClass = PointCloudCoherence<PointInT>;
+        typedef typename PointCloudCoherence<PointInT>::PointCoherencePtr PointCoherencePtr;
+        typedef typename PointCloudCoherence<PointInT>::PointCloudInConstPtr PointCloudInConstPtr;
+        typedef PointCloudCoherence<PointInT> BaseClass;
         
-        using Ptr = shared_ptr<NearestPairPointCloudCoherence<PointInT> >;
-        using ConstPtr = shared_ptr<const NearestPairPointCloudCoherence<PointInT> >;
-        using SearchPtr = typename pcl::search::Search<PointInT>::Ptr;
-        using SearchConstPtr = typename pcl::search::Search<PointInT>::ConstPtr;
-
+        typedef boost::shared_ptr<NearestPairPointCloudCoherence<PointInT> > Ptr;
+        typedef boost::shared_ptr<const NearestPairPointCloudCoherence<PointInT> > ConstPtr;
+        typedef boost::shared_ptr<pcl::search::Search<PointInT> > SearchPtr;
+        typedef boost::shared_ptr<const pcl::search::Search<PointInT> > SearchConstPtr;
+        
         /** \brief empty constructor */
         NearestPairPointCloudCoherence ()
           : new_target_ (false)
@@ -56,8 +57,8 @@ namespace pcl
         /** \brief add a PointCoherence to the PointCloudCoherence.
           * \param[in] cloud coherence a pointer to PointCoherence.
           */
-        inline void
-        setTargetCloud (const PointCloudInConstPtr &cloud) override
+        virtual inline void
+        setTargetCloud (const PointCloudInConstPtr &cloud)
         {
           new_target_ = true;
           PointCloudCoherence<PointInT>::setTargetCloud (cloud);
@@ -72,7 +73,7 @@ namespace pcl
         using PointCloudCoherence<PointInT>::point_coherences_;
 
         /** \brief This method should get called before starting the actual computation. */
-        bool initCompute () override;
+        virtual bool initCompute ();
 
         /** \brief A flag which is true if target_input_ is updated */
         bool new_target_;
@@ -84,8 +85,8 @@ namespace pcl
         double maximum_distance_;
         
         /** \brief compute the nearest pairs and compute coherence using point_coherences_ */
-        void
-        computeCoherence (const PointCloudInConstPtr &cloud, const IndicesConstPtr &indices, float &w_j) override;
+        virtual void
+        computeCoherence (const PointCloudInConstPtr &cloud, const IndicesConstPtr &indices, float &w_j);
 
     };
   }
@@ -94,4 +95,6 @@ namespace pcl
 // #include <pcl/tracking/impl/nearest_pair_point_cloud_coherence.hpp>
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/tracking/impl/nearest_pair_point_cloud_coherence.hpp>
+#endif
+
 #endif

@@ -38,10 +38,12 @@
  */
 
 #pragma once
-
-#if defined(HAVE_OPENNI2)
+#ifndef PCL_IO_OPENNI2_METADATA_WRAPPER_H_
+#define PCL_IO_OPENNI2_METADATA_WRAPPER_H_
 
 #include <pcl/pcl_config.h>
+
+#if defined(HAVE_OPENNI2)
 
 #include <pcl/io/image_metadata_wrapper.h>
 #include <pcl/io/openni2/openni.h>
@@ -55,42 +57,42 @@ namespace pcl
       class Openni2FrameWrapper : public pcl::io::FrameWrapper
       {
         public:
-          Openni2FrameWrapper (const openni::VideoFrameRef& metadata)
+          Openni2FrameWrapper (openni::VideoFrameRef metadata)
             : metadata_(metadata)
           {}
 
-          inline const void*
-          getData () const override
+          virtual inline const void*
+          getData () const
           {
             return (metadata_.getData ());
           }
 
-          inline unsigned
-          getDataSize () const override
+          virtual inline unsigned
+          getDataSize () const
           {
             return (metadata_.getDataSize ());
           }
 
-          inline unsigned
-          getWidth () const override
+          virtual inline unsigned
+          getWidth () const
           {
             return (metadata_.getWidth ());
           }
 
-          inline unsigned
-          getHeight () const override
+          virtual inline unsigned
+          getHeight () const
           {
             return (metadata_.getHeight ());
           }
 
-          inline unsigned
-          getFrameID () const override
+          virtual inline unsigned
+          getFrameID () const
           {
             return (metadata_.getFrameIndex ());
           }
 
-          inline std::uint64_t
-          getTimestamp () const override
+          virtual inline uint64_t
+          getTimestamp () const
           {
             return (metadata_.getTimestamp ());
           }
@@ -110,3 +112,5 @@ namespace pcl
   }
 }
 #endif // HAVE_OPENNI2
+
+#endif // PCL_IO_OPENNI2_METADATA_WRAPPER_H_

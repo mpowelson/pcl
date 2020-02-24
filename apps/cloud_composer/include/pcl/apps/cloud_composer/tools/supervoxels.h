@@ -35,7 +35,8 @@
   *
   */
  
-#pragma once
+ #ifndef SUPERVOXELS_H_
+ #define SUPERVOXELS_H_
  
  #include <pcl/apps/cloud_composer/tool_interface/abstract_tool.h>
  #include <pcl/apps/cloud_composer/tool_interface/tool_factory.h>
@@ -50,16 +51,16 @@
        Q_OBJECT
      public:
        SupervoxelsTool (PropertiesModel* parameter_model, QObject* parent);
-       ~SupervoxelsTool ();
+       virtual ~SupervoxelsTool ();
        
-       QList <CloudComposerItem*>
-       performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE) override;
+       virtual QList <CloudComposerItem*>
+       performAction (QList <const CloudComposerItem*> input_data, PointTypeFlags::PointType type = PointTypeFlags::NONE);
        
        template <typename PointT> QList <CloudComposerItem*>
-       performTemplatedAction (const QList <const CloudComposerItem*>& input_data);
+       performTemplatedAction (QList <const CloudComposerItem*> input_data);
        
-       inline QString
-       getToolName () const override { return "Voxel Superpixels Tool";}
+       inline virtual QString
+       getToolName () const { return "Voxel Superpixels Tool";}
      
        
     };
@@ -69,34 +70,36 @@
      {
        Q_OBJECT
        Q_INTERFACES (pcl::cloud_composer::ToolFactory)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
        Q_PLUGIN_METADATA(IID "cloud_composer.ToolFactory/1.0")
+#endif
      public:
        SplitItemTool*
-       createTool (PropertiesModel* parameter_model, QObject* parent = nullptr) override 
+       createTool (PropertiesModel* parameter_model, QObject* parent = 0) 
        {
          return new SupervoxelsTool(parameter_model, parent);
        }
        
        PropertiesModel*
-       createToolParameterModel (QObject* parent) override;
+       createToolParameterModel (QObject* parent);
        
-       inline QString 
-       getPluginName () const override { return "Supervoxels";}
+       inline virtual QString 
+       getPluginName () const { return "Supervoxels";}
        
-       inline QString 
-       getToolGroupName () const override { return "Segmentation";}
+       inline virtual QString 
+       getToolGroupName () const { return "Segmentation";}
        
-       inline QString
-       getIconName () const override { return ":/supervoxels.png"; }
+       inline virtual QString
+       getIconName () const { return ":/supervoxels.png"; }
        
-       inline CloudComposerItem::ItemType
-       getInputItemType () const override
+       inline virtual CloudComposerItem::ItemType
+       getInputItemType () const
        {
          return CloudComposerItem::CLOUD_ITEM;
        }
        
-       inline QList <CloudComposerItem::ItemType>
-       getRequiredInputChildrenTypes () const override 
+       inline virtual QList <CloudComposerItem::ItemType>
+       getRequiredInputChildrenTypes () const 
        {
          QList <CloudComposerItem::ItemType> input_types;
          return input_types;
@@ -107,3 +110,10 @@
      
    }
  }
+ 
+ 
+ 
+ 
+ 
+ 
+ #endif //SUPERVOXELS_H_

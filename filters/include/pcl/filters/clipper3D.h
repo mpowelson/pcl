@@ -35,9 +35,8 @@
  *
  */
 
-#pragma once
-
-#include <pcl/pcl_macros.h>
+#ifndef PCL_CLIPPER3D_H_
+#define PCL_CLIPPER3D_H_
 #include <pcl/point_cloud.h>
 #include <vector>
 #include <Eigen/StdVector>
@@ -53,13 +52,13 @@ namespace pcl
   class Clipper3D
   {
     public:
-      using Ptr = shared_ptr<Clipper3D<PointT> >;
-      using ConstPtr = shared_ptr<const Clipper3D<PointT> >;
+      typedef boost::shared_ptr< Clipper3D<PointT> > Ptr;
+      typedef boost::shared_ptr< const Clipper3D<PointT> > ConstPtr;
  
       /**
         * \brief virtual destructor. Never throws an exception.
         */
-      virtual ~Clipper3D () noexcept {}
+      virtual ~Clipper3D () throw () {}
 
       /**
         * \brief interface to clip a single point
@@ -110,6 +109,8 @@ namespace pcl
         */
       virtual Clipper3D<PointT>*
       clone () const = 0;
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
+
+#endif // PCL_CLIPPER3D_H_

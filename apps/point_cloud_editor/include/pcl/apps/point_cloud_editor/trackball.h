@@ -38,7 +38,8 @@
 /// class has been based on 
 /// @author Matthew Hielsberg
 
-#pragma once
+#ifndef TRACKBALL_H_
+#define TRACKBALL_H_
 
 #include <boost/math/quaternion.hpp>
 #include <pcl/apps/point_cloud_editor/localTypes.h>
@@ -74,3 +75,5 @@ class TrackBall
     float radius_sqr_;
         
 }; // class TrackBall
+
+#endif // TRACKBALL_H_

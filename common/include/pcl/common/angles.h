@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_COMMON_ANGLES_H_
+#define PCL_COMMON_ANGLES_H_
 
 /**
   * \file pcl/common/angles.h
@@ -84,3 +85,5 @@ namespace pcl
 }
 /*@}*/
 #include <pcl/common/impl/angles.hpp>
+
+#endif  // PCL_COMMON_ANGLES_H_

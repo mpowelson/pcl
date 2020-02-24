@@ -37,15 +37,13 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_REJECTION_FEATURES_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_REJECTION_FEATURES_H_
 
 #include <pcl/registration/correspondence_rejection.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_representation.h>
 #include <pcl/registration/boost.h>
-
-#include <unordered_map>
 
 namespace pcl
 {
@@ -66,17 +64,17 @@ namespace pcl
       using CorrespondenceRejector::getClassName;
 
       public:
-        using Ptr = shared_ptr<CorrespondenceRejectorFeatures>;
-        using ConstPtr = shared_ptr<const CorrespondenceRejectorFeatures>;
+        typedef boost::shared_ptr<CorrespondenceRejectorFeatures> Ptr;
+        typedef boost::shared_ptr<const CorrespondenceRejectorFeatures> ConstPtr;
 
         /** \brief Empty constructor. */
-        CorrespondenceRejectorFeatures () : max_distance_ (std::numeric_limits<float>::max ())
+        CorrespondenceRejectorFeatures () : max_distance_ (std::numeric_limits<float>::max ()), features_map_ ()
         {
           rejection_name_ = "CorrespondenceRejectorFeatures";
         }
 
         /** \brief Empty destructor. */
-        ~CorrespondenceRejectorFeatures () {}
+        virtual ~CorrespondenceRejectorFeatures () {}
 
         /** \brief Get a list of valid correspondences after rejection from the original set of correspondences
           * \param[in] original_correspondences the set of initial correspondences given
@@ -84,7 +82,7 @@ namespace pcl
           */
         void 
         getRemainingCorrespondences (const pcl::Correspondences& original_correspondences, 
-                                     pcl::Correspondences& remaining_correspondences) override;
+                                     pcl::Correspondences& remaining_correspondences);
 
         /** \brief Provide a pointer to a cloud of feature descriptors associated with the source point cloud
           * \param[in] source_feature a cloud of feature descriptors associated with the source point cloud
@@ -143,7 +141,7 @@ namespace pcl
           * \param[out] correspondences the set of resultant correspondences.
           */
         inline void 
-        applyRejection (pcl::Correspondences &correspondences) override
+        applyRejection (pcl::Correspondences &correspondences)
         {
           getRemainingCorrespondences (*input_correspondences_, correspondences);
         }
@@ -157,15 +155,13 @@ namespace pcl
         {
           public:
             /** \brief Empty destructor */
-            virtual ~FeatureContainerInterface () = default;
+            virtual ~FeatureContainerInterface () {}
             virtual bool isValid () = 0;
             virtual double getCorrespondenceScore (int index) = 0;
             virtual bool isCorrespondenceValid (int index) = 0;
-
-            using Ptr = shared_ptr<FeatureContainerInterface>;
         };
 
-        using FeaturesMap = std::unordered_map<std::string, FeatureContainerInterface::Ptr>;
+        typedef boost::unordered_map<std::string, boost::shared_ptr<FeatureContainerInterface> > FeaturesMap;
 
         /** \brief An STL map containing features to use when performing the correspondence search.*/
         FeaturesMap features_map_;
@@ -180,17 +176,18 @@ namespace pcl
         class FeatureContainer : public pcl::registration::CorrespondenceRejectorFeatures::FeatureContainerInterface
         {
           public:
-            using FeatureCloudConstPtr = typename pcl::PointCloud<FeatureT>::ConstPtr;
-            using SearchMethod = std::function<int (const pcl::PointCloud<FeatureT> &, int, std::vector<int> &,  std::vector<float> &)>;
+            typedef typename pcl::PointCloud<FeatureT>::ConstPtr FeatureCloudConstPtr;
+            typedef boost::function<int (const pcl::PointCloud<FeatureT> &, int, std::vector<int> &, 
+                                          std::vector<float> &)> SearchMethod;
             
-            using PointRepresentationConstPtr = typename pcl::PointRepresentation<FeatureT>::ConstPtr;
+            typedef typename pcl::PointRepresentation<FeatureT>::ConstPtr PointRepresentationConstPtr;
 
             FeatureContainer () : thresh_(std::numeric_limits<double>::max ()), feature_representation_()
             {
             }
       
             /** \brief Empty destructor */
-            ~FeatureContainer () {}
+            virtual ~FeatureContainer () {}
 
             inline void 
             setSourceFeature (const FeatureCloudConstPtr &source_features)
@@ -222,13 +219,14 @@ namespace pcl
               thresh_ = thresh;
             }
 
-            inline bool 
-            isValid () override
+            virtual inline bool 
+            isValid ()
             {
               if (!source_features_ || !target_features_)
                 return (false);
-              return (source_features_->points.size () > 0 && 
-                      target_features_->points.size () > 0);
+              else
+                return (source_features_->points.size () > 0 && 
+                        target_features_->points.size () > 0);
             }
 
             /** \brief Provide a boost shared pointer to a PointRepresentation to be used when comparing features
@@ -244,8 +242,8 @@ namespace pcl
               * \param[in] index the index to check in the list of correspondences
               * \return score the resultant computed score
               */
-            inline double
-            getCorrespondenceScore (int index) override
+            virtual inline double
+            getCorrespondenceScore (int index)
             {
               // If no feature representation was given, reset to the default implementation for FeatureT
               if (!feature_representation_)
@@ -277,10 +275,13 @@ namespace pcl
               * \param[in] index the index to check in the list of correspondences
               * \return true if the correspondence is good, false otherwise
               */
-            inline bool
-            isCorrespondenceValid (int index) override
+            virtual inline bool
+            isCorrespondenceValid (int index)
             {
-              return (getCorrespondenceScore (index) < thresh_ * thresh_);
+              if (getCorrespondenceScore (index) < thresh_ * thresh_)
+                return (true);
+              else
+                return (false);
             }
              
           private:
@@ -298,3 +299,5 @@ namespace pcl
 }
 
 #include <pcl/registration/impl/correspondence_rejection_features.hpp>
+
+#endif /* PCL_REGISTRATION_CORRESPONDENCE_REJECTION_FEATURES_H_ */

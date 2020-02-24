@@ -34,7 +34,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MODELER_POISSON_WORKER_H_
+#define PCL_MODELER_POISSON_WORKER_H_
 
 #include <pcl/apps/modeler/abstract_worker.h>
 
@@ -48,21 +49,21 @@ namespace pcl
     class PoissonReconstructionWorker : public AbstractWorker 
     {
       public:
-        PoissonReconstructionWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=nullptr);
-        ~PoissonReconstructionWorker();
+        PoissonReconstructionWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent=0);
+        ~PoissonReconstructionWorker(void);
 
       protected:
-        std::string
-        getName () const override {return ("Poisson Reconstruction");}
+        virtual std::string
+        getName () const {return ("Poisson Reconstruction");}
 
-        void
-        initParameters (CloudMeshItem*) override {}
+        virtual void
+        initParameters (CloudMeshItem*) {}
 
-        void
-        setupParameters() override;
+        virtual void
+        setupParameters();
 
-        void
-        processImpl(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        processImpl(CloudMeshItem* cloud_mesh_item);
 
       private:
         IntParameter*     depth_;
@@ -75,3 +76,5 @@ namespace pcl
 
   }
 }
+
+#endif // PCL_MODELER_POISSON_WORKER_H_

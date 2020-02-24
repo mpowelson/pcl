@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef PCL_MESSAGE_VERTICES_H
+#define PCL_MESSAGE_VERTICES_H
 #include <string>
 #include <vector>
 #include <ostream>
@@ -13,24 +13,24 @@ namespace pcl
     */
   struct Vertices
   {
-    Vertices ()
+    Vertices () : vertices ()
     {}
 
-    std::vector<std::uint32_t> vertices;
+    std::vector<uint32_t> vertices;
 
   public:
-    using Ptr = shared_ptr<Vertices>;
-    using ConstPtr = shared_ptr<const Vertices>;
+    typedef boost::shared_ptr<Vertices> Ptr;
+    typedef boost::shared_ptr<Vertices const> ConstPtr;
   }; // struct Vertices
 
 
-  using VerticesPtr = Vertices::Ptr;
-  using VerticesConstPtr = Vertices::ConstPtr;
+  typedef boost::shared_ptr<Vertices> VerticesPtr;
+  typedef boost::shared_ptr<Vertices const> VerticesConstPtr;
 
   inline std::ostream& operator<<(std::ostream& s, const  ::pcl::Vertices & v)
   {
     s << "vertices[]" << std::endl;
-    for (std::size_t i = 0; i < v.vertices.size (); ++i)
+    for (size_t i = 0; i < v.vertices.size (); ++i)
     {
       s << "  vertices[" << i << "]: ";
       s << "  " << v.vertices[i] << std::endl;
@@ -38,3 +38,6 @@ namespace pcl
     return (s);
   }
 } // namespace pcl
+
+#endif // PCL_MESSAGE_VERTICES_H
+

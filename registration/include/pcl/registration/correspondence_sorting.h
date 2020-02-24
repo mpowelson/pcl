@@ -37,8 +37,8 @@
  * $Id$
  *
  */
-
-#pragma once
+#ifndef PCL_REGISTRATION_CORRESPONDENCE_SORTING_H_
+#define PCL_REGISTRATION_CORRESPONDENCE_SORTING_H_
 
 #if defined __GNUC__
 #  pragma GCC system_header
@@ -56,9 +56,9 @@ namespace pcl
       */
     struct sortCorrespondencesByQueryIndex
     {
-      using first_argument_type = pcl::Correspondence;
-      using second_argument_type = pcl::Correspondence;
-      using result_type = bool;
+      typedef pcl::Correspondence first_argument_type;
+      typedef pcl::Correspondence second_argument_type;
+      typedef bool result_type;
       bool
       operator()( pcl::Correspondence a, pcl::Correspondence b)
       {
@@ -72,9 +72,9 @@ namespace pcl
       */
     struct sortCorrespondencesByMatchIndex
     {
-      using first_argument_type = pcl::Correspondence;
-      using second_argument_type = pcl::Correspondence;
-      using result_type = bool;
+      typedef pcl::Correspondence first_argument_type;
+      typedef pcl::Correspondence second_argument_type;
+      typedef bool result_type;
       bool 
       operator()( pcl::Correspondence a, pcl::Correspondence b)
       {
@@ -88,9 +88,9 @@ namespace pcl
       */
     struct sortCorrespondencesByDistance
     {
-      using first_argument_type = pcl::Correspondence;
-      using second_argument_type = pcl::Correspondence;
-      using result_type = bool;
+      typedef pcl::Correspondence first_argument_type;
+      typedef pcl::Correspondence second_argument_type;
+      typedef bool result_type;
       bool 
       operator()( pcl::Correspondence a, pcl::Correspondence b)
       {
@@ -104,9 +104,9 @@ namespace pcl
       */
     struct sortCorrespondencesByQueryIndexAndDistance
     {
-      using first_argument_type = pcl::Correspondence;
-      using second_argument_type = pcl::Correspondence;
-      using result_type = bool;
+      typedef pcl::Correspondence first_argument_type;
+      typedef pcl::Correspondence second_argument_type;
+      typedef bool result_type;
       inline bool 
       operator()( pcl::Correspondence a, pcl::Correspondence b)
       {
@@ -124,9 +124,9 @@ namespace pcl
       */
     struct sortCorrespondencesByMatchIndexAndDistance
     {
-      using first_argument_type = pcl::Correspondence;
-      using second_argument_type = pcl::Correspondence;
-      using result_type = bool;
+      typedef pcl::Correspondence first_argument_type;
+      typedef pcl::Correspondence second_argument_type;
+      typedef bool result_type;
       inline bool 
       operator()( pcl::Correspondence a, pcl::Correspondence b)
       {
@@ -140,3 +140,5 @@ namespace pcl
 
   }
 }
+
+#endif /* PCL_REGISTRATION_CORRESPONDENCE_SORTING_H_ */

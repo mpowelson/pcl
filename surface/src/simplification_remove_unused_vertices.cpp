@@ -40,12 +40,12 @@
 #include <cstring>
 #include <vector>
 #include <iostream>
-#include <cstdio>
+#include <stdio.h>
 
 void
 pcl::surface::SimplificationRemoveUnusedVertices::simplify(const pcl::PolygonMesh& input, pcl::PolygonMesh& output, std::vector<int>& indices)
 {
-  if (input.polygons.empty ())
+  if (input.polygons.size () == 0)
     return;
 
   unsigned int nr_points = input.cloud.width * input.cloud.height;
@@ -55,12 +55,12 @@ pcl::surface::SimplificationRemoveUnusedVertices::simplify(const pcl::PolygonMes
   indices.reserve (nr_points);
 
   // mark all points in triangles as being used
-  for (const auto &polygon : input.polygons)
-    for (const auto &vertex : polygon.vertices)
-      if (new_indices[ vertex ] == -1 )
+  for (size_t polygon = 0; polygon < input.polygons.size (); ++polygon)
+    for (size_t point = 0; point < input.polygons[polygon].vertices.size (); ++point)
+      if (new_indices[ input.polygons[polygon].vertices[point] ] == -1 )
       {
-        new_indices[vertex] = static_cast<int> (indices.size ());
-        indices.push_back (vertex);
+        new_indices[input.polygons[polygon].vertices[point]] = static_cast<int> (indices.size ());
+        indices.push_back (input.polygons[polygon].vertices[point]);
       }
 
   // in case all points are used , do nothing and return input mesh
@@ -86,17 +86,17 @@ pcl::surface::SimplificationRemoveUnusedVertices::simplify(const pcl::PolygonMes
   output.polygons.clear ();
 
   // copy (only!) used points
-  for (std::size_t i = 0; i < indices.size (); ++i)
+  for (size_t i = 0; i < indices.size (); ++i)
     memcpy (&output.cloud.data[i * output.cloud.point_step], &input.cloud.data[indices[i] * output.cloud.point_step], output.cloud.point_step);
 
   // copy mesh information (and update indices)
   output.polygons.reserve (input.polygons.size ());
-  for (const auto &polygon : input.polygons)
+  for (size_t polygon = 0; polygon < input.polygons.size (); ++polygon)
   {
     pcl::Vertices corrected_polygon;
-    corrected_polygon.vertices.resize (polygon.vertices.size ());
-    for (std::size_t point = 0; point < polygon.vertices.size(); ++point)
-      corrected_polygon.vertices[point] = new_indices[polygon.vertices[point]];
+    corrected_polygon.vertices.resize (input.polygons[polygon].vertices.size ());
+    for (size_t point = 0; point < input.polygons[polygon].vertices.size(); ++point)
+      corrected_polygon.vertices[point] = new_indices[input.polygons[polygon].vertices[point]];
     output.polygons.push_back (corrected_polygon);
   }
 }

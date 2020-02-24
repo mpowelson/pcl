@@ -53,14 +53,14 @@ pcl::registration::CorrespondenceRejectorOneToOne::getRemainingCorrespondences (
   remaining_correspondences.resize (input.size ());
   int index_last = -1;
   unsigned int number_valid_correspondences = 0;
-  for (const auto &i : input)
+  for (size_t i = 0; i < input.size (); ++i)
   {
-    if (i.index_match < 0)
+    if (input[i].index_match < 0)
       continue;
-    if (i.index_match != index_last)
+    else if (input[i].index_match != index_last)
     {
-      remaining_correspondences[number_valid_correspondences] = i;
-      index_last = i.index_match;
+      remaining_correspondences[number_valid_correspondences] = input[i];
+      index_last = input[i].index_match;
       ++number_valid_correspondences;
     }
   }

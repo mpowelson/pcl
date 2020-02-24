@@ -34,10 +34,11 @@
  *
  */
 
-#pragma once
-
 #include <pcl/pcl_config.h>
 #ifdef HAVE_OPENNI
+
+#ifndef __OPENNI_EXCEPTION__
+#define __OPENNI_EXCEPTION__
 
 #include <cstdarg>
 #include <cstdio>
@@ -75,25 +76,25 @@ namespace openni_wrapper
      * @param[in] line_number the line number where this exception was created.
      * @param[in] message the message of the exception
      */
-    OpenNIException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message) noexcept;
+    OpenNIException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message) throw ();
 
     /**
      * @brief virtual Destructor that never throws an exception
      */
-    ~OpenNIException () noexcept;
+    virtual ~OpenNIException () throw ();
 
     /**
      * @brief Assignment operator to allow copying the message of another exception variable.
      * @param[in] exception left hand side
      * @return
      */
-    OpenNIException & operator= (const OpenNIException& exception) noexcept;
+    OpenNIException & operator= (const OpenNIException& exception) throw ();
 
     /**
      * @brief virtual method, derived from std::exception
      * @return the message of the exception.
      */
-    const char* what () const throw () override;
+    virtual const char* what () const throw ();
 
     /**
      * @return the function name in which the exception was created.
@@ -135,4 +136,5 @@ namespace openni_wrapper
     throw OpenNIException (function_name, file_name, line_number, msg);
   }
 } // namespace openni_camera
+#endif
 #endif

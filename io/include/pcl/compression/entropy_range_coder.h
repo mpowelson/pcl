@@ -38,7 +38,8 @@
  * Author: Julius Kammerl (julius@kammerl.de)
  */
 
-#pragma once
+#ifndef __PCL_IO_RANGECODING__
+#define __PCL_IO_RANGECODING__
 
 #include <map>
 #include <iostream>
@@ -46,15 +47,15 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <boost/cstdint.hpp>
 
 namespace pcl
 {
 
-  using std::uint8_t;
-  using std::uint32_t;
-  using std::uint64_t;
+  using boost::uint8_t;
+  using boost::uint32_t;
+  using boost::uint64_t;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /** \brief @b AdaptiveRangeCoder compression class
@@ -70,7 +71,7 @@ namespace pcl
   public:
 
     /** \brief Empty constructor. */
-    AdaptiveRangeCoder ()
+    AdaptiveRangeCoder () : outputCharVector_ ()
     {
     }
 
@@ -97,7 +98,7 @@ namespace pcl
     decodeStreamToCharVector (std::istream& inputByteStream_arg, std::vector<char>& outputByteVector_arg);
 
   protected:
-    using DWord = std::uint32_t; // 4 bytes
+    typedef boost::uint32_t DWord; // 4 bytes
 
   private:
     /** vector containing compressed data
@@ -119,7 +120,7 @@ namespace pcl
     public:
       /** \brief Constructor. */
       StaticRangeCoder () :
-        cFreqTable_ (65537)
+        cFreqTable_ (65537), outputCharVector_ ()
       {
       }
 
@@ -162,22 +163,21 @@ namespace pcl
       decodeStreamToCharVector (std::istream& inputByteStream_arg, std::vector<char>& outputByteVector_arg);
 
     protected:
-      using DWord = std::uint32_t; // 4 bytes
+      typedef boost::uint32_t DWord; // 4 bytes
 
       /** \brief Helper function to calculate the binary logarithm
        * \param n_arg: some value
        * \return binary logarithm (log2) of argument n_arg
        */
-      [[deprecated("use std::log2 instead")]]
       inline double
       Log2 (double n_arg)
       {
-        return std::log2 (n_arg);
+        return log (n_arg) / log (2.0);
       }
 
     private:
       /** \brief Vector containing cumulative symbol frequency table. */
-      std::vector<std::uint64_t> cFreqTable_;
+      std::vector<uint64_t> cFreqTable_;
 
       /** \brief Vector containing compressed data. */
       std::vector<char> outputCharVector_;
@@ -187,3 +187,6 @@ namespace pcl
 
 
 //#include "impl/entropy_range_coder.hpp"
+
+#endif
+

@@ -37,7 +37,6 @@
  */
 
 #include <list>
-#include <pcl/common/angles.h>
 #include <pcl/visualization/common/io.h>
 #include <pcl/visualization/interactor_style.h>
 #include <vtkVersion.h>
@@ -154,7 +153,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::saveCameraParameters (const st
   ofs_cam << clip[0]  << "," << clip[1]  << "/" << focal[0] << "," << focal[1] << "," << focal[2] << "/" <<
              pos[0]   << "," << pos[1]   << "," << pos[2]   << "/" << view[0]  << "," << view[1]  << "," << view[2] << "/" <<
              cam->GetViewAngle () / 180.0 * M_PI  << "/" << win_size[0] << "," << win_size[1] << "/" << win_pos[0] << "," << win_pos[1]
-          << std::endl;
+          << endl;
   ofs_cam.close ();
 
   return (true);
@@ -162,21 +161,22 @@ pcl::visualization::PCLVisualizerInteractorStyle::saveCameraParameters (const st
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::visualization::PCLVisualizerInteractorStyle::getCameraParameters (pcl::visualization::Camera &camera, int viewport) const
+pcl::visualization::PCLVisualizerInteractorStyle::getCameraParameters (pcl::visualization::Camera &camera)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = nullptr;
-  int i = 0;
-  while ((renderer = rens_->GetNextItem ()))
-  {
-    if (viewport++ == i)
-    {
-      auto window = Interactor->GetRenderWindow ();
-      auto cam = renderer->GetActiveCamera ();
-      camera = Camera (*cam, *window);
-      break;
-    }
-  }
+  FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
+
+  vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
+  cam->GetClippingRange (camera.clip);
+  cam->GetFocalPoint (camera.focal);
+  cam->GetPosition (camera.pos);
+  cam->GetViewUp (camera.view);
+  camera.fovy = cam->GetViewAngle () / 180.0 * M_PI;
+  int *win_pos = Interactor->GetRenderWindow ()->GetPosition ();
+  int *win_size = Interactor->GetRenderWindow ()->GetSize ();
+  camera.window_pos[0] = win_pos[0];
+  camera.window_pos[1] = win_pos[1];
+  camera.window_size[0] = win_size[0];
+  camera.window_size[1] = win_size[1];
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::loadCameraParameters (const st
   while (!fs.eof ())
   {
     getline (fs, line);
-    if (line.empty())
+    if (line == "")
       continue;
 
     boost::split (camera, line, boost::is_any_of ("/"), boost::token_compress_on);
@@ -237,13 +237,13 @@ pcl::visualization::PCLVisualizerInteractorStyle::setCameraParameters (const Eig
   window_size[1] = 2 * static_cast<int> (intrinsics (1, 2));
 
   // Compute the vertical field of view based on the focal length and image height
-  double fovy = 2 * std::atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
+  double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
 
 
   rens_->InitTraversal ();
-  vtkRenderer* renderer = nullptr;
+  vtkRenderer* renderer = NULL;
   int i = 0;
-  while ((renderer = rens_->GetNextItem ()))
+  while ((renderer = rens_->GetNextItem ()) != NULL)
   {
     // Modify all renderer's cameras
     if (viewport == 0 || viewport == i)
@@ -267,9 +267,9 @@ void
 pcl::visualization::PCLVisualizerInteractorStyle::setCameraParameters (const pcl::visualization::Camera &camera, int viewport)
 {
   rens_->InitTraversal ();
-  vtkRenderer* renderer = nullptr;
+  vtkRenderer* renderer = NULL;
   int i = 0;
-  while ((renderer = rens_->GetNextItem ()))
+  while ((renderer = rens_->GetNextItem ()) != NULL)
   {
     // Modify all renderer's cameras
     if (viewport == 0 || viewport == i)
@@ -483,28 +483,28 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnChar ()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerMouseCallback (std::function<void (const pcl::visualization::MouseEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)> callback)
 {
   return (mouse_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerKeyboardCallback (std::function<void (const pcl::visualization::KeyboardEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)> callback)
 {
   return (keyboard_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerPointPickingCallback (std::function<void (const pcl::visualization::PointPickingEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)> callback)
 {
   return (point_picking_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerAreaPickingCallback (std::function<void (const pcl::visualization::AreaPickingEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerAreaPickingCallback (boost::function<void (const pcl::visualization::AreaPickingEvent&)> callback)
 {
   return (area_picking_signal_.connect (callback));
 }
@@ -527,7 +527,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
 
   FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
 
-  if (!wif_->GetInput ())
+  if (wif_->GetInput () == NULL)
   {
     wif_->SetInput (Interactor->GetRenderWindow ());
     wif_->Modified ();
@@ -629,6 +629,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
   // Switch between point color/geometry handlers
   if (Interactor->GetKeySym () && Interactor->GetKeySym ()[0]  >= '0' && Interactor->GetKeySym ()[0] <= '9')
   {
+    CloudActorMap::iterator it;
     int index = Interactor->GetKeySym ()[0] - '0' - 1;
     if (index == -1) index = 9;
 
@@ -639,17 +640,17 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     // Geometry ?
     if (keymod)
     {
-      for (auto &actor : *cloud_actors_)
+      for (it = cloud_actors_->begin (); it != cloud_actors_->end (); ++it)
       {
-        CloudActor &act = actor.second;
-        if (index >= static_cast<int> (act.geometry_handlers.size ()))
+        CloudActor *act = &(*it).second;
+        if (index >= static_cast<int> (act->geometry_handlers.size ()))
           continue;
 
         // Save the geometry handler index for later usage
-        act.geometry_handler_index_ = index;
+        act->geometry_handler_index_ = index;
 
         // Create the new geometry
-        PointCloudGeometryHandler<pcl::PCLPointCloud2>::ConstPtr geometry_handler = act.geometry_handlers[index];
+        PointCloudGeometryHandler<pcl::PCLPointCloud2>::ConstPtr geometry_handler = act->geometry_handlers[index];
 
         // Use the handler to obtain the geometry
         vtkSmartPointer<vtkPoints> points;
@@ -668,65 +669,74 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
 #if VTK_RENDERING_BACKEND_OPENGL_VERSION < 2
         if (use_vbos_)
         {
-          vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act.actor->GetMapper ());
+          vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act->actor->GetMapper ());
           mapper->SetInput (data);
           // Modify the actor
-          act.actor->SetMapper (mapper);
+          act->actor->SetMapper (mapper);
         }
         else
 #endif
         {
-          vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act.actor->GetMapper ());
+          vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
+#if VTK_MAJOR_VERSION < 6
+          mapper->SetInput (data);
+#else
           mapper->SetInputData (data);
+#endif
           // Modify the actor
-          act.actor->SetMapper (mapper);
+          act->actor->SetMapper (mapper);
         }
-        act.actor->Modified ();
+        act->actor->Modified ();
       }
     }
     else
     {
-      for (auto &actor : *cloud_actors_)
+      for (it = cloud_actors_->begin (); it != cloud_actors_->end (); ++it)
       {
-        CloudActor &act = actor.second;
+        CloudActor *act = &(*it).second;
         // Check for out of bounds
-        if (index >= static_cast<int> (act.color_handlers.size ()))
+        if (index >= static_cast<int> (act->color_handlers.size ()))
           continue;
 
         // Save the color handler index for later usage
-        act.color_handler_index_ = index;
+        act->color_handler_index_ = index;
 
         // Get the new color
-        PointCloudColorHandler<pcl::PCLPointCloud2>::ConstPtr color_handler = act.color_handlers[index];
+        PointCloudColorHandler<pcl::PCLPointCloud2>::ConstPtr color_handler = act->color_handlers[index];
 
-        auto scalars = color_handler->getColor ();
+        vtkSmartPointer<vtkDataArray> scalars;
+        color_handler->getColor (scalars);
         double minmax[2];
         scalars->GetRange (minmax);
         // Update the data
-        vtkPolyData *data = static_cast<vtkPolyData*>(act.actor->GetMapper ()->GetInput ());
+        vtkPolyData *data = static_cast<vtkPolyData*>(act->actor->GetMapper ()->GetInput ());
         data->GetPointData ()->SetScalars (scalars);
         // Modify the mapper
 #if VTK_RENDERING_BACKEND_OPENGL_VERSION < 2
         if (use_vbos_)
         {
-          vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act.actor->GetMapper ());
+          vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act->actor->GetMapper ());
           mapper->SetScalarRange (minmax);
           mapper->SetScalarModeToUsePointData ();
           mapper->SetInput (data);
           // Modify the actor
-          act.actor->SetMapper (mapper);
+          act->actor->SetMapper (mapper);
         }
         else
 #endif
         {
-          vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act.actor->GetMapper ());
+          vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
           mapper->SetScalarRange (minmax);
           mapper->SetScalarModeToUsePointData ();
+#if VTK_MAJOR_VERSION < 6
+          mapper->SetInput (data);
+#else
           mapper->SetInputData (data);
+#endif
           // Modify the actor
-          act.actor->SetMapper (mapper);
+          act->actor->SetMapper (mapper);
         }
-        act.actor->Modified ();
+        act->actor->Modified ();
       }
     }
 
@@ -786,29 +796,29 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     case 'l': case 'L':
     {
       // Iterate over the entire actors list and extract the geomotry/color handlers list
-      for (auto &actor : *cloud_actors_)
+      for (CloudActorMap::iterator it = cloud_actors_->begin (); it != cloud_actors_->end (); ++it)
       {
         std::list<std::string> geometry_handlers_list, color_handlers_list;
-        CloudActor *act = &actor.second;
-        for (auto &geometry_handler : act->geometry_handlers)
-          geometry_handlers_list.push_back (geometry_handler->getFieldName ());
-        for (auto &color_handler : act->color_handlers)
-          color_handlers_list.push_back (color_handler->getFieldName ());
+        CloudActor *act = &(*it).second;
+        for (size_t i = 0; i < act->geometry_handlers.size (); ++i)
+          geometry_handlers_list.push_back (act->geometry_handlers[i]->getFieldName ());
+        for (size_t i = 0; i < act->color_handlers.size (); ++i)
+          color_handlers_list.push_back (act->color_handlers[i]->getFieldName ());
 
         if (!geometry_handlers_list.empty ())
         {
           int i = 0;
-          pcl::console::print_info ("List of available geometry handlers for actor "); pcl::console::print_value ("%s: ", actor.first.c_str ());
-          for (auto &git : geometry_handlers_list)
-            pcl::console::print_value ("%s(%d) ", git.c_str (), ++i);
+          pcl::console::print_info ("List of available geometry handlers for actor "); pcl::console::print_value ("%s: ", (*it).first.c_str ());
+          for (std::list<std::string>::iterator git = geometry_handlers_list.begin (); git != geometry_handlers_list.end (); ++git)
+            pcl::console::print_value ("%s(%d) ", (*git).c_str (), ++i);
           pcl::console::print_info ("\n");
         }
         if (!color_handlers_list.empty ())
         {
           int i = 0;
-          pcl::console::print_info ("List of available color handlers for actor "); pcl::console::print_value ("%s: ", actor.first.c_str ());
-          for (auto &cit : color_handlers_list)
-            pcl::console::print_value ("%s(%d) ", cit.c_str (), ++i);
+          pcl::console::print_info ("List of available color handlers for actor "); pcl::console::print_value ("%s: ", (*it).first.c_str ());
+          for (std::list<std::string>::iterator cit = color_handlers_list.begin (); cit != color_handlers_list.end (); ++cit)
+            pcl::console::print_value ("%s(%d) ", (*cit).c_str (), ++i);
           pcl::console::print_info ("\n");
         }
       }
@@ -853,7 +863,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     case 'j': case 'J':
     {
       char cam_fn[80], snapshot_fn[80];
-      unsigned t = static_cast<unsigned> (time (nullptr));
+      unsigned t = static_cast<unsigned> (time (0));
       sprintf (snapshot_fn, "screenshot-%d.png" , t);
       saveScreenshot (snapshot_fn);
 
@@ -866,14 +876,21 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     // display current camera settings/parameters
     case 'c': case 'C':
     {
-      Camera cam (*CurrentRenderer->GetActiveCamera (), *Interactor->GetRenderWindow ());
-      std::cerr <<  "Clipping plane [near,far] "  << cam.clip[0] << ", " << cam.clip[1] << std::endl <<
-                    "Focal point [x,y,z] " << cam.focal[0] << ", " << cam.focal[1] << ", " << cam.focal[2] << std::endl <<
-                    "Position [x,y,z] " << cam.pos[0] << ", " << cam.pos[1] << ", " << cam.pos[2] << std::endl <<
-                    "View up [x,y,z] " << cam.view[0]  << ", " << cam.view[1]  << ", " << cam.view[2] << std::endl <<
-                    "Camera view angle [degrees] " << rad2deg (cam.fovy) << std::endl <<
-                    "Window size [x,y] " << cam.window_size[0] << ", " << cam.window_size[1] << std::endl <<
-                    "Window position [x,y] " << cam.window_pos[0] << ", " << cam.window_pos[1] << std::endl;
+      vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
+      double clip[2], focal[3], pos[3], view[3];
+      cam->GetClippingRange (clip);
+      cam->GetFocalPoint (focal);
+      cam->GetPosition (pos);
+      cam->GetViewUp (view);
+      int *win_pos = Interactor->GetRenderWindow ()->GetPosition ();
+      int *win_size = Interactor->GetRenderWindow ()->GetSize ();
+      std::cerr <<  "Clipping plane [near,far] "  << clip[0] << ", " << clip[1] << endl <<
+                    "Focal point [x,y,z] " << focal[0] << ", " << focal[1] << ", " << focal[2] << endl <<
+                    "Position [x,y,z] " << pos[0] << ", " << pos[1] << ", " << pos[2] << endl <<
+                    "View up [x,y,z] " << view[0]  << ", " << view[1]  << ", " << view[2] << endl <<
+                    "Camera view angle [degrees] " << cam->GetViewAngle () << endl <<
+                    "Window size [x,y] " << win_size[0] << ", " << win_size[1] << endl <<
+                    "Window position [x,y] " << win_pos[0] << ", " << win_pos[1] << endl;
       break;
     }
     case '=':
@@ -968,12 +985,12 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
       else
       {
         AnimState = VTKIS_ANIM_ON;
-        vtkAssemblyPath *path = nullptr;
+        vtkAssemblyPath *path = NULL;
         Interactor->GetPicker ()->Pick (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1], 0.0, CurrentRenderer);
         vtkAbstractPropPicker *picker;
         if ((picker = vtkAbstractPropPicker::SafeDownCast (Interactor->GetPicker ())))
           path = picker->GetPath ();
-        if (path)
+        if (path != NULL)
           Interactor->FlyTo (CurrentRenderer, picker->GetPickPosition ());
         AnimState = VTKIS_ANIM_OFF;
       }
@@ -1060,7 +1077,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
       if (!keymod)
       {
         FindPokedRenderer(Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
-        if(CurrentRenderer)
+        if(CurrentRenderer != 0)
           CurrentRenderer->ResetCamera ();
         else
           PCL_WARN ("no current renderer on the interactor style.");
@@ -1165,17 +1182,19 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
 void
 pcl::visualization::PCLVisualizerInteractorStyle::updateLookUpTableDisplay (bool add_lut)
 {
+  CloudActorMap::iterator am_it;
+  ShapeActorMap::iterator sm_it;
   bool actor_found = false;
 
   if (!lut_enabled_ && !add_lut)
     return;
 
-  if (!lut_actor_id_.empty())  // Search if provided actor id is in CloudActorMap or ShapeActorMap
+  if (lut_actor_id_ != "")  // Search if provided actor id is in CloudActorMap or ShapeActorMap
   {
-    auto am_it = cloud_actors_->find (lut_actor_id_);
+    am_it = cloud_actors_->find (lut_actor_id_);
     if (am_it == cloud_actors_->end ())
     {
-      auto sm_it = shape_actors_->find (lut_actor_id_);
+      sm_it = shape_actors_->find (lut_actor_id_);
       if (sm_it == shape_actors_->end ())
       {
         PCL_WARN ("[updateLookUpTableDisplay] Could not find any actor with id <%s>!\n", lut_actor_id_.c_str ());
@@ -1226,19 +1245,19 @@ pcl::visualization::PCLVisualizerInteractorStyle::updateLookUpTableDisplay (bool
       actor_found = true;
     }
   }
-  else  // lut_actor_id_.empty(), the user did not specify which cloud/shape LUT should be displayed
+  else  // lut_actor_id_ == "", the user did not specify which cloud/shape LUT should be displayed
   // Circling through all clouds/shapes and displaying first LUT found
   {
-    for (const auto &actor : *cloud_actors_)
+    for (am_it = cloud_actors_->begin (); am_it != cloud_actors_->end (); ++am_it)
     {
-      const auto &act = actor.second;
-      if (!act.actor->GetMapper ()->GetLookupTable ())
+      CloudActor *act = & (*am_it).second;
+      if (!act->actor->GetMapper ()->GetLookupTable ())
         continue;
 
-      if (!act.actor->GetMapper ()->GetInput ()->GetPointData ()->GetScalars ())
+      if (!act->actor->GetMapper ()->GetInput ()->GetPointData ()->GetScalars ())
         continue;
 
-      vtkScalarsToColors* lut = act.actor->GetMapper ()->GetLookupTable ();
+      vtkScalarsToColors* lut = act->actor->GetMapper ()->GetLookupTable ();
       lut_actor_->SetLookupTable (lut);
       lut_actor_->Modified ();
       actor_found = true;
@@ -1247,10 +1266,10 @@ pcl::visualization::PCLVisualizerInteractorStyle::updateLookUpTableDisplay (bool
 
     if (!actor_found)
     {
-      for (const auto &shape_actor : *shape_actors_)
+      for (sm_it = shape_actors_->begin (); sm_it != shape_actors_->end (); ++sm_it)
       {
-        const vtkSmartPointer<vtkProp> *act = &shape_actor.second;
-        const vtkSmartPointer<vtkActor> actor = vtkActor::SafeDownCast (*act);
+        vtkSmartPointer<vtkProp> *act = & (*sm_it).second;
+        vtkSmartPointer<vtkActor> actor = vtkActor::SafeDownCast (*act);
         if (!actor)
           continue;
 
@@ -1530,8 +1549,8 @@ pcl::visualization::PCLHistogramVisualizerInteractorStyle::OnTimer ()
     return;
   }
 
-  for (auto &win : wins_)
-    win.second.ren_->Render ();
+  for (RenWinInteractMap::iterator am_it = wins_.begin (); am_it != wins_.end (); ++am_it)
+    (*am_it).second.ren_->Render ();
 }
 
 namespace pcl

@@ -64,7 +64,7 @@ pcl::modeler::RenderWindow::RenderWindow(RenderWindowItem* render_window_item, Q
 pcl::modeler::RenderWindow::~RenderWindow()
 {
   DockWidget* dock_widget = dynamic_cast<DockWidget*>(parent());
-  if (dock_widget != nullptr)
+  if (dock_widget != NULL)
   {
     MainWindow::getInstance().removeDockWidget(dock_widget);
     dock_widget->deleteLater();
@@ -83,7 +83,7 @@ pcl::modeler::RenderWindow::initRenderer()
 
   // FPS callback
   //vtkSmartPointer<vtkTextActor> txt = vtkSmartPointer<vtkTextActor>::New ();
-  //using FPSCallback = pcl::visualization::FPSCallback;
+  //typedef pcl::visualization::FPSCallback FPSCallback;
   //vtkSmartPointer<FPSCallback> update_fps = vtkSmartPointer<FPSCallback>::New ();
   //update_fps->setTextActor (txt);
   //renderer->AddObserver (vtkCommand::EndEvent, update_fps);
@@ -115,7 +115,7 @@ void
 pcl::modeler::RenderWindow::setActive(bool flag)
 {
   DockWidget* dock_widget = dynamic_cast<DockWidget*>(parent());
-  if (dock_widget != nullptr)
+  if (dock_widget != NULL)
     dock_widget->setFocusBasedStyle(flag);
 
   return;
@@ -126,7 +126,7 @@ void
 pcl::modeler::RenderWindow::setTitle(const QString& title)
 {
   DockWidget* dock_widget = dynamic_cast<DockWidget*>(parent());
-  if (dock_widget != nullptr)
+  if (dock_widget != NULL)
     dock_widget->setWindowTitle(title);
 
   return;

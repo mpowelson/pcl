@@ -34,21 +34,19 @@
  *
  */
 
-#pragma once
-
 #include <pcl/pcl_config.h>
 #ifdef HAVE_OPENNI
 
+#ifndef OPENNI_OPENNI_H_
+#define OPENNI_OPENNI_H_
+#include <string>
+#include <vector>
+#include <map>
 #include "openni.h"
 #include "openni_exception.h"
 #include "openni_device.h"
 #include <pcl/io/boost.h>
 #include <pcl/pcl_macros.h>
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace openni_wrapper
 {
@@ -68,7 +66,7 @@ namespace openni_wrapper
      * @author Suat Gedikli
      * @brief virtual Destructor that never throws an exception
      */
-    ~OpenNIDriver () noexcept;
+    ~OpenNIDriver () throw ();
 
     /**
      * @author Suat Gedikli
@@ -98,7 +96,7 @@ namespace openni_wrapper
      * @param[in] stream whether the device should be created as a streaming or trigger-based device.
      * @return the shared_ptr to the newly created virtual device.
      */
-    OpenNIDevice::Ptr createVirtualDevice (const std::string& path, bool repeat, bool stream) const;
+    boost::shared_ptr<OpenNIDevice> createVirtualDevice (const std::string& path, bool repeat, bool stream) const;
 
     /**
      * @author Suat Gedikli
@@ -106,7 +104,7 @@ namespace openni_wrapper
      * @param[in] index index of the device to be retrieved.
      * @return shared_ptr to the device, null if no matching device found.
      */
-    OpenNIDevice::Ptr getDeviceByIndex (unsigned index) const;
+    boost::shared_ptr<OpenNIDevice> getDeviceByIndex (unsigned index) const;
 
     /**
      * @author Suat Gedikli
@@ -114,8 +112,8 @@ namespace openni_wrapper
      * @param[in] serial_number the serial number of the device to be retrieved.
      * @return shared_ptr to the device, null if no matching device found.
      */
-    OpenNIDevice::Ptr getDeviceBySerialNumber (const std::string& serial_number) const;
-
+    boost::shared_ptr<OpenNIDevice> getDeviceBySerialNumber (const std::string& serial_number) const;
+    
 #ifndef _WIN32
     /**
      * @author Suat Gedikli
@@ -124,7 +122,7 @@ namespace openni_wrapper
      * @param[in] address the USB address
      * @return shared_ptr to the device, null if no matching device found.
      */
-    OpenNIDevice::Ptr getDeviceByAddress (unsigned char bus, unsigned char address) const;
+    boost::shared_ptr<OpenNIDevice> getDeviceByAddress (unsigned char bus, unsigned char address) const;
 #endif
 
     /**
@@ -214,18 +212,18 @@ namespace openni_wrapper
       DeviceContext (const xn::NodeInfo & device_node);
       DeviceContext (const DeviceContext&);
       xn::NodeInfo device_node;
-      std::shared_ptr<xn::NodeInfo> image_node;
-      std::shared_ptr<xn::NodeInfo> depth_node;
-      std::shared_ptr<xn::NodeInfo> ir_node;
+      boost::shared_ptr<xn::NodeInfo> image_node;
+      boost::shared_ptr<xn::NodeInfo> depth_node;
+      boost::shared_ptr<xn::NodeInfo> ir_node;
       boost::weak_ptr<OpenNIDevice> device;
     } ;
 
     OpenNIDriver ();
-    OpenNIDevice::Ptr getDevice (unsigned index) const;
+    boost::shared_ptr<OpenNIDevice> getDevice (unsigned index) const;
 
 #ifndef _WIN32
     // workaround to get additional device nformation like serial number, vendor and product name, until Primesense fix this
-    void getDeviceInfos () noexcept;
+    void getDeviceInfos () throw ();
 #endif
 
     mutable std::vector<DeviceContext> device_context_;
@@ -249,4 +247,5 @@ namespace openni_wrapper
     return static_cast<unsigned> (device_context_.size ());
   }
 } // namespace
+#endif
 #endif

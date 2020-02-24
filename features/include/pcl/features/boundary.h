@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_BOUNDARY_H_
+#define PCL_BOUNDARY_H_
 
 #include <pcl/features/eigen.h>
 #include <pcl/features/feature.h>
@@ -80,8 +81,8 @@ namespace pcl
   class BoundaryEstimation: public FeatureFromNormals<PointInT, PointNT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<BoundaryEstimation<PointInT, PointNT, PointOutT> >;
-      using ConstPtr = shared_ptr<const BoundaryEstimation<PointInT, PointNT, PointOutT> >;
+      typedef boost::shared_ptr<BoundaryEstimation<PointInT, PointNT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const BoundaryEstimation<PointInT, PointNT, PointOutT> > ConstPtr;
 
       using Feature<PointInT, PointOutT>::feature_name_;
       using Feature<PointInT, PointOutT>::getClassName;
@@ -94,7 +95,7 @@ namespace pcl
       using Feature<PointInT, PointOutT>::surface_;
       using FeatureFromNormals<PointInT, PointNT, PointOutT>::normals_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
     public:
       /** \brief Empty constructor. 
@@ -172,7 +173,7 @@ namespace pcl
         * \param[out] output the resultant point cloud model dataset that contains boundary point estimates
         */
       void 
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
 
       /** \brief The decision boundary (angle threshold) that marks points as boundary or regular. (default \f$\pi / 2.0\f$) */
       float angle_threshold_;
@@ -182,3 +183,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/boundary.hpp>
 #endif
+
+#endif  //#ifndef PCL_BOUNDARY_H_

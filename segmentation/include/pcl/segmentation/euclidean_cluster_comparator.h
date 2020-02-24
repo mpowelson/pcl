@@ -37,7 +37,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SEGMENTATION_EUCLIDEAN_CLUSTER_COMPARATOR_H_
+#define PCL_SEGMENTATION_EUCLIDEAN_CLUSTER_COMPARATOR_H_
 
 #include <pcl/segmentation/boost.h>
 #include <pcl/segmentation/comparator.h>
@@ -58,25 +59,26 @@ namespace pcl
         using typename Comparator<PointT>::PointCloud;
         using typename Comparator<PointT>::PointCloudConstPtr;
 
-        using PointCloudL = pcl::PointCloud<PointLT>;
-        using PointCloudLPtr = typename PointCloudL::Ptr;
-        using PointCloudLConstPtr = typename PointCloudL::ConstPtr;
+        typedef typename pcl::PointCloud<PointLT> PointCloudL;
+        typedef typename PointCloudL::Ptr PointCloudLPtr;
+        typedef typename PointCloudL::ConstPtr PointCloudLConstPtr;
 
-        using Ptr = shared_ptr<EuclideanClusterComparator<PointT, PointLT> >;
-        using ConstPtr = shared_ptr<const EuclideanClusterComparator<PointT, PointLT> >;
+        typedef boost::shared_ptr<EuclideanClusterComparator<PointT, PointLT> > Ptr;
+        typedef boost::shared_ptr<const EuclideanClusterComparator<PointT, PointLT> > ConstPtr;
 
-        using ExcludeLabelSet = std::set<std::uint32_t>;
-        using ExcludeLabelSetPtr = shared_ptr<ExcludeLabelSet>;
-        using ExcludeLabelSetConstPtr = shared_ptr<const ExcludeLabelSet>;
+        typedef std::set<uint32_t> ExcludeLabelSet;
+        typedef boost::shared_ptr<ExcludeLabelSet> ExcludeLabelSetPtr;
+        typedef boost::shared_ptr<const ExcludeLabelSet> ExcludeLabelSetConstPtr;
 
         /** \brief Default constructor for EuclideanClusterComparator. */
         EuclideanClusterComparator ()
           : distance_threshold_ (0.005f)
           , depth_dependent_ ()
+          , z_axis_ ()
         {}
 
-        void
-        setInputCloud (const PointCloudConstPtr& cloud) override
+        virtual void
+        setInputCloud (const PointCloudConstPtr& cloud)
         {
           input_ = cloud;
           Eigen::Matrix3f rot = input_->sensor_orientation_.toRotationMatrix ();
@@ -129,20 +131,20 @@ namespace pcl
           * \param idx1 The first index for the comparison
           * \param idx2 The second index for the comparison
           */
-        bool
-        compare (int idx1, int idx2) const override
+        virtual bool
+        compare (int idx1, int idx2) const
         {
           if (labels_ && exclude_labels_)
           {
             assert (labels_->size () == input_->size ());
-            const std::uint32_t &label1 = (*labels_)[idx1].label;
-            const std::uint32_t &label2 = (*labels_)[idx2].label;
+            const uint32_t &label1 = (*labels_)[idx1].label;
+            const uint32_t &label2 = (*labels_)[idx2].label;
 
-            const std::set<std::uint32_t>::const_iterator it1 = exclude_labels_->find (label1);
+            const std::set<uint32_t>::const_iterator it1 = exclude_labels_->find (label1);
             if (it1 == exclude_labels_->end ())
               return false;
 
-            const std::set<std::uint32_t>::const_iterator it2 = exclude_labels_->find (label2);
+            const std::set<uint32_t>::const_iterator it2 = exclude_labels_->find (label2);
             if (it2 == exclude_labels_->end ())
               return false;
           }
@@ -200,17 +202,17 @@ namespace pcl
 
     public:
 
-      using PointCloudN = pcl::PointCloud<PointNT>;
-      using PointCloudNPtr = typename PointCloudN::Ptr;
-      using PointCloudNConstPtr = typename PointCloudN::ConstPtr;
+      typedef typename pcl::PointCloud<PointNT> PointCloudN;
+      typedef typename PointCloudN::Ptr PointCloudNPtr;
+      typedef typename PointCloudN::ConstPtr PointCloudNConstPtr;
 
-      using Ptr = shared_ptr<EuclideanClusterComparator<PointT, PointNT, PointLT> >;
-      using ConstPtr = shared_ptr<const EuclideanClusterComparator<PointT, PointNT, PointLT> >;
+      typedef boost::shared_ptr<EuclideanClusterComparator<PointT, PointNT, PointLT> > Ptr;
+      typedef boost::shared_ptr<const EuclideanClusterComparator<PointT, PointNT, PointLT> > ConstPtr;
 
       using experimental::EuclideanClusterComparator<PointT, PointLT>::setExcludeLabels;
 
       /** \brief Default constructor for EuclideanClusterComparator. */
-      [[deprecated("remove PointNT from template parameters")]]
+      PCL_DEPRECATED ("Remove PointNT from template parameters.")
       EuclideanClusterComparator ()
         : normals_ ()
         , angular_threshold_ (0.0f)
@@ -219,39 +221,47 @@ namespace pcl
       /** \brief Provide a pointer to the input normals.
        * \param[in] normals the input normal cloud
        */
-      [[deprecated("EuclideadClusterComparator never actually used normals and angular threshold, this function has no effect on the behavior of the comparator. It is deprecated and will be removed in future releases.")]]
       inline void
+      PCL_DEPRECATED ("EuclideadClusterComparator never actually used normals and angular threshold, "
+                      "this function has no effect on the behavior of the comparator. Therefore it is "
+                      "deprecated and will be removed in future releases.")
       setInputNormals (const PointCloudNConstPtr& normals) { normals_ = normals; }
 
       /** \brief Get the input normals. */
-      [[deprecated("EuclideadClusterComparator never actually used normals and angular threshold, this function has no effect on the behavior of the comparator. It is deprecated and will be removed in future releases.")]]
       inline PointCloudNConstPtr
+      PCL_DEPRECATED ("EuclideadClusterComparator never actually used normals and angular threshold, "
+                      "this function has no effect on the behavior of the comparator. Therefore it is "
+                      "deprecated and will be removed in future releases.")
       getInputNormals () const { return (normals_); }
 
       /** \brief Set the tolerance in radians for difference in normal direction between neighboring points, to be considered part of the same plane.
         * \param[in] angular_threshold the tolerance in radians
         */
-      [[deprecated("EuclideadClusterComparator never actually used normals and angular threshold, this function has no effect on the behavior of the comparator. It is deprecated and will be removed in future releases.")]]
       inline void
+      PCL_DEPRECATED ("EuclideadClusterComparator never actually used normals and angular threshold, "
+                      "this function has no effect on the behavior of the comparator. Therefore it is "
+                      "deprecated and will be removed in future releases.")
       setAngularThreshold (float angular_threshold)
       {
         angular_threshold_ = std::cos (angular_threshold);
       }
 
       /** \brief Get the angular threshold in radians for difference in normal direction between neighboring points, to be considered part of the same plane. */
-      [[deprecated("EuclideadClusterComparator never actually used normals and angular threshold, this function has no effect on the behavior of the comparator. It is deprecated and will be removed in future releases.")]]
       inline float
+      PCL_DEPRECATED ("EuclideadClusterComparator never actually used normals and angular threshold, "
+                      "this function has no effect on the behavior of the comparator. Therefore it is "
+                      "deprecated and will be removed in future releases.")
       getAngularThreshold () const { return (std::acos (angular_threshold_) ); }
 
       /** \brief Set labels in the label cloud to exclude.
         * \param[in] exclude_labels a vector of bools corresponding to whether or not a given label should be considered
         */
-      [[deprecated("use setExcludeLabels(const ExcludeLabelSetConstPtr &) instead")]]
       void
+      PCL_DEPRECATED ("Use setExcludeLabels (const ExcludeLabelSetConstPtr &) instead")
       setExcludeLabels (const std::vector<bool>& exclude_labels)
       {
-        exclude_labels_ = boost::make_shared<std::set<std::uint32_t> > ();
-        for (std::size_t i = 0; i < exclude_labels.size (); ++i)
+        exclude_labels_ = boost::make_shared<std::set<uint32_t> > ();
+        for (uint32_t i = 0; i < exclude_labels.size (); ++i)
           if (exclude_labels[i])
             exclude_labels_->insert (i);
       }
@@ -267,3 +277,5 @@ namespace pcl
   class EuclideanClusterComparator<PointT, PointLT, deprecated::T>
     : public experimental::EuclideanClusterComparator<PointT, PointLT> {};
 }
+
+#endif // PCL_SEGMENTATION_PLANE_COEFFICIENT_COMPARATOR_H_

@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_VFH_ESTIMATOR_H_
+#define REC_FRAMEWORK_VFH_ESTIMATOR_H_
 
 #include <pcl/apps/3d_rec_framework/feature_wrapper/global/global_estimator.h>
 #include <pcl/apps/3d_rec_framework/feature_wrapper/normal_estimator.h>
@@ -19,7 +20,7 @@ namespace pcl
       class VFHEstimation : public GlobalEstimator<PointInT, FeatureT>
       {
 
-        using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
+        typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
         using GlobalEstimator<PointInT, FeatureT>::normal_estimator_;
         using GlobalEstimator<PointInT, FeatureT>::normals_;
 
@@ -27,7 +28,7 @@ namespace pcl
         void
         estimate (PointInTPtr & in, PointInTPtr & processed,
                   typename pcl::PointCloud<FeatureT>::CloudVectorType & signatures,
-                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids) override
+                  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > & centroids)
         {
 
           if (!normal_estimator_)
@@ -39,7 +40,7 @@ namespace pcl
           normals_.reset(new pcl::PointCloud<pcl::Normal>);
           normal_estimator_->estimate (in, processed, normals_);
 
-          using VFHEstimation = pcl::VFHEstimation<PointInT, pcl::Normal, FeatureT>;
+          typedef typename pcl::VFHEstimation<PointInT, pcl::Normal, FeatureT> VFHEstimation;
           pcl::PointCloud<FeatureT> vfh_signature;
 
           VFHEstimation vfh;
@@ -63,10 +64,12 @@ namespace pcl
         }
 
         bool
-        computedNormals () override
+        computedNormals ()
         {
           return true;
         }
       };
   }
 }
+
+#endif /* REC_FRAMEWORK_VFH_ESTIMATOR_H_ */

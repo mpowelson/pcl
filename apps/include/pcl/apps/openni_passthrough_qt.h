@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_APPS_OPENNI_PASSTHROUGH_QT_
+#define PCL_APPS_OPENNI_PASSTHROUGH_QT_
 
 #ifdef __GNUC__
 #pragma GCC system_header
@@ -47,3 +48,5 @@
 #include <QMutex>
 #include <QTimer>
 #include <QObject>
+
+#endif    // PCL_APPS_OPENNI_PASSTHROUGH_QT_

@@ -14,7 +14,8 @@
 ////////////////////////////////////////////////////////////////
 */
 
-#pragma once
+#ifndef OPENNURBS_ANNOTATION2_H_INC
+#define OPENNURBS_ANNOTATION2_H_INC
 
 #if defined(ON_OS_WINDOWS_GDI)
 
@@ -2337,3 +2338,9 @@ public:
   ON_wString m_fontface;
   int m_display;       // some future display flags - 
 };
+
+
+
+#endif
+
+

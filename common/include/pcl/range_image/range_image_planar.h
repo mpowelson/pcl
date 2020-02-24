@@ -35,7 +35,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef PCL_RANGE_IMAGE_PLANAR_H_
+#define PCL_RANGE_IMAGE_PLANAR_H_
 
 #include <pcl/range_image/range_image.h>
 
@@ -52,24 +53,24 @@ namespace pcl
   {
     public:
       // =====TYPEDEFS=====
-      using BaseClass = RangeImage;
-      using Ptr = shared_ptr<RangeImagePlanar>;
-      using ConstPtr = shared_ptr<const RangeImagePlanar>;
+      typedef RangeImage BaseClass;
+      typedef boost::shared_ptr<RangeImagePlanar> Ptr;
+      typedef boost::shared_ptr<const RangeImagePlanar> ConstPtr;
       
       // =====CONSTRUCTOR & DESTRUCTOR=====
       /** Constructor */
       PCL_EXPORTS RangeImagePlanar ();
       /** Destructor */
-      PCL_EXPORTS ~RangeImagePlanar ();
+      PCL_EXPORTS virtual ~RangeImagePlanar ();
 
       /** Return a newly created RangeImagePlanar.
        *  Reimplementation to return an image of the same type. */
-      RangeImage* 
-      getNew () const override { return new RangeImagePlanar; }
+      virtual RangeImage* 
+      getNew () const { return new RangeImagePlanar; }
 
       /** Copy *this to other. Derived version - also copying additional RangeImagePlanar members */
-      PCL_EXPORTS void
-      copyTo (RangeImage& other) const override;
+      PCL_EXPORTS virtual void
+      copyTo (RangeImage& other) const;
       
       // =====PUBLIC METHODS=====
       /** \brief Get a boost shared pointer of a copy of this */
@@ -154,8 +155,8 @@ namespace pcl
         * \param point the resulting 3D point
         * \note Implementation according to planar range images (compared to spherical as in the original)
         */
-      inline void
-      calculate3DPoint (float image_x, float image_y, float range, Eigen::Vector3f& point) const override;
+      virtual inline void
+      calculate3DPoint (float image_x, float image_y, float range, Eigen::Vector3f& point) const;
       
       /** \brief Calculate the image point and range from the given 3D point
         * \param point the resulting 3D point
@@ -164,8 +165,8 @@ namespace pcl
         * \param range the resulting range
         * \note Implementation according to planar range images (compared to spherical as in the original)
         */
-      inline void 
-      getImagePoint (const Eigen::Vector3f& point, float& image_x, float& image_y, float& range) const override;
+      virtual inline void 
+      getImagePoint (const Eigen::Vector3f& point, float& image_x, float& image_y, float& range) const;
       
       /** Get a sub part of the complete image as a new range image.
         * \param sub_image_image_offset_x - The x coordinate of the top left pixel of the sub image.
@@ -180,13 +181,13 @@ namespace pcl
         *                         is combine_pixels times the old one
         * \param sub_image - the output image
         */
-      PCL_EXPORTS void
+      PCL_EXPORTS virtual void
       getSubImage (int sub_image_image_offset_x, int sub_image_image_offset_y, int sub_image_width,
-                   int sub_image_height, int combine_pixels, RangeImage& sub_image) const override;
+                   int sub_image_height, int combine_pixels, RangeImage& sub_image) const;
       
       //! Get a range image with half the resolution
-      PCL_EXPORTS void 
-      getHalfImage (RangeImage& half_image) const override;
+      PCL_EXPORTS virtual void 
+      getHalfImage (RangeImage& half_image) const;
       
       //! Getter for the focal length in X
       inline float
@@ -214,3 +215,5 @@ namespace pcl
 
 
 #include <pcl/range_image/impl/range_image_planar.hpp>  // Definitions of templated and inline functions
+
+#endif  //#ifndef PCL_RANGE_IMAGE_H_

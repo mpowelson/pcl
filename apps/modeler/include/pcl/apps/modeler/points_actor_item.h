@@ -33,8 +33,8 @@
  *
  *
  */
-
-#pragma once
+#ifndef PCL_MODELER_POINTS_ACTOR_ITEM_H_
+#define PCL_MODELER_POINTS_ACTOR_ITEM_H_
 
 #include <pcl/apps/modeler/channel_actor_item.h>
 #include <pcl/visualization/point_cloud_handlers.h>
@@ -49,31 +49,33 @@ namespace pcl
     {
       public:
         PointsActorItem(QTreeWidgetItem* parent,
-                        const CloudMesh::Ptr& cloud_mesh,
+                        const boost::shared_ptr<CloudMesh>& cloud_mesh,
                         const vtkSmartPointer<vtkRenderWindow>& render_window);
         ~PointsActorItem ();
 
-        std::string
-        getItemName() const override {return "Points Actor Item";}
+        virtual std::string
+        getItemName() const {return "Points Actor Item";}
 
       protected:
-        void
-        initImpl() override;
+        virtual void
+        initImpl();
 
-        void
-        updateImpl() override;
+        virtual void
+        updateImpl();
 
-        void
-        prepareContextMenu(QMenu* menu) const override;
+        virtual void
+        prepareContextMenu(QMenu* menu) const;
 
-        void
-        prepareProperties(ParameterDialog* parameter_dialog) override;
+        virtual void
+        prepareProperties(ParameterDialog* parameter_dialog);
 
-        void
-        setProperties() override;
+        virtual void
+        setProperties();
 
       private:
 
     };
   }
 }
+
+#endif // PCL_MODELER_POINTS_ACTOR_ITEM_H_

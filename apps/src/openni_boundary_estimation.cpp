@@ -32,7 +32,7 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *
+ *	
  */
 
 #include <pcl/point_cloud.h>
@@ -47,14 +47,9 @@
 #include <pcl/common/time.h>
 #include <pcl/visualization/cloud_viewer.h>
 
-#include <mutex>
-#include <thread>
-
-using namespace std::chrono_literals;
-
-using ColorHandler = pcl::visualization::PointCloudColorHandler<pcl::PCLPointCloud2>;
-using ColorHandlerPtr = ColorHandler::Ptr;
-using ColorHandlerConstPtr = ColorHandler::ConstPtr;
+typedef pcl::visualization::PointCloudColorHandler<pcl::PCLPointCloud2> ColorHandler;
+typedef ColorHandler::Ptr ColorHandlerPtr;
+typedef ColorHandler::ConstPtr ColorHandlerConstPtr;
 
 #define FPS_CALC(_WHAT_) \
 do \
@@ -74,9 +69,9 @@ do \
 class OpenNIIntegralImageNormalEstimation
 {
   public:
-    using Cloud = pcl::PointCloud<pcl::PointXYZRGBNormal>;
-    using CloudPtr = Cloud::Ptr;
-    using CloudConstPtr = Cloud::ConstPtr;
+    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> Cloud;
+    typedef Cloud::Ptr CloudPtr;
+    typedef Cloud::ConstPtr CloudConstPtr;
 
     OpenNIIntegralImageNormalEstimation (const std::string& device_id = "")
       : viewer ("PCL OpenNI NormalEstimation Viewer") 
@@ -98,7 +93,7 @@ class OpenNIIntegralImageNormalEstimation
     void 
     cloud_cb (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& cloud)
     {
-      std::lock_guard<std::mutex> lock (mtx_);
+      boost::mutex::scoped_lock lock (mtx_);
       //lock while we set our cloud;
       FPS_CALC ("computation");
 
@@ -125,10 +120,10 @@ class OpenNIIntegralImageNormalEstimation
     void
     viz_cb (pcl::visualization::PCLVisualizer& viz)
     {
-      std::lock_guard<std::mutex> lock (mtx_);
+      boost::mutex::scoped_lock lock (mtx_);
       if (!cloud_)
       {
-        std::this_thread::sleep_for(1s);
+        boost::this_thread::sleep(boost::posix_time::seconds(1));
         return;
       }
 
@@ -157,21 +152,21 @@ class OpenNIIntegralImageNormalEstimation
     void
     run ()
     {
-      pcl::OpenNIGrabber interface {device_id_};
+      pcl::Grabber* interface = new pcl::OpenNIGrabber (device_id_);
 
-      std::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &)> f = [this] (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& cloud) { cloud_cb (cloud); };
-      boost::signals2::connection c = interface.registerCallback (f);
+      boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &)> f = boost::bind (&OpenNIIntegralImageNormalEstimation::cloud_cb, this, _1);
+      boost::signals2::connection c = interface->registerCallback (f);
+     
+      viewer.runOnVisualizationThread (boost::bind(&OpenNIIntegralImageNormalEstimation::viz_cb, this, _1), "viz_cb");
 
-      viewer.runOnVisualizationThread ([this] (pcl::visualization::PCLVisualizer& viz) { viz_cb (viz); }, "viz_cb");
-
-      interface.start ();
+      interface->start ();
       
       while (!viewer.wasStopped ())
       {
-        std::this_thread::sleep_for(1s);
+        boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
 
-      interface.stop ();
+      interface->stop ();
     }
 
     pcl::ApproximateVoxelGrid<pcl::PointXYZRGBNormal> pass_;
@@ -179,7 +174,7 @@ class OpenNIIntegralImageNormalEstimation
     pcl::BoundaryEstimation<pcl::PointXYZRGBNormal, pcl::PointXYZRGBNormal, pcl::Boundary> be_;
     pcl::visualization::CloudViewer viewer;
     std::string device_id_;
-    std::mutex mtx_;
+    boost::mutex mtx_;
     // Data
     pcl::PointCloud<pcl::Boundary>::Ptr boundaries_;
     CloudPtr cloud_, cloud_pass_;
@@ -196,15 +191,15 @@ usage (char ** argv)
   {
     for (unsigned deviceIdx = 0; deviceIdx < driver.getNumberDevices (); ++deviceIdx)
     {
-      std::cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx) << ", product: " << driver.getProductName (deviceIdx)
-              << ", connected: " << driver.getBus (deviceIdx) << " @ " << driver.getAddress (deviceIdx) << ", serial number: \'" << driver.getSerialNumber (deviceIdx) << "\'" << std::endl;
-      std::cout << "device_id may be #1, #2, ... for the first second etc device in the list or" << std::endl
-           << "                 bus@address for the device connected to a specific usb-bus / address combination (works only in Linux) or" << std::endl
-           << "                 <serial-number> (only in Linux and for devices which provide serial numbers)"  << std::endl;
+      cout << "Device: " << deviceIdx + 1 << ", vendor: " << driver.getVendorName (deviceIdx) << ", product: " << driver.getProductName (deviceIdx)
+              << ", connected: " << driver.getBus (deviceIdx) << " @ " << driver.getAddress (deviceIdx) << ", serial number: \'" << driver.getSerialNumber (deviceIdx) << "\'" << endl;
+      cout << "device_id may be #1, #2, ... for the first second etc device in the list or" << endl
+           << "                 bus@address for the device connected to a specific usb-bus / address combination (works only in Linux) or" << endl
+           << "                 <serial-number> (only in Linux and for devices which provide serial numbers)"  << endl;
     }
   }
   else
-    std::cout << "No devices connected." << std::endl;
+    cout << "No devices connected." << endl;
 }
 
 int 

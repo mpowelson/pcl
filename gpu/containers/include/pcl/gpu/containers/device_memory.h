@@ -34,7 +34,8 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
-#pragma once
+#ifndef PCL_GPU_CONTAINERS_DEVICE_MEMORY_HPP_
+#define PCL_GPU_CONTAINERS_DEVICE_MEMORY_HPP_
 
 #include <pcl/pcl_exports.h>
 #include <pcl/gpu/containers/kernel_containers.h>
@@ -63,13 +64,13 @@ namespace pcl
             /** \brief Allocates internal buffer in GPU memory
               * \param sizeBytes_arg amount of memory to allocate
               * */
-            DeviceMemory(std::size_t sizeBytes_arg);
+            DeviceMemory(size_t sizeBytes_arg);
 
             /** \brief Initializes with user allocated buffer. Reference counting is disabled in this case.
               * \param ptr_arg pointer to buffer
               * \param sizeBytes_arg buffer size
               * */
-            DeviceMemory(void *ptr_arg, std::size_t sizeBytes_arg);
+            DeviceMemory(void *ptr_arg, size_t sizeBytes_arg);
 
             /** \brief Copy constructor. Just increments reference counter. */
             DeviceMemory(const DeviceMemory& other_arg);
@@ -80,7 +81,7 @@ namespace pcl
              /** \brief Allocates internal buffer in GPU memory. If internal buffer was created before the function recreates it with new size. If new and old sizes are equal it does nothing.               
                * \param sizeBytes_arg buffer size
                * */
-            void create(std::size_t sizeBytes_arg);
+            void create(size_t sizeBytes_arg);
 
             /** \brief Decrements reference counter and releases internal buffer if needed. */
             void release();
@@ -94,7 +95,7 @@ namespace pcl
               * \param host_ptr_arg pointer to buffer to upload               
               * \param sizeBytes_arg buffer size
               * */
-            void upload(const void *host_ptr_arg, std::size_t sizeBytes_arg);
+            void upload(const void *host_ptr_arg, size_t sizeBytes_arg);
             
             /** \brief Downloads data from internal buffer to CPU memory
               * \param host_ptr_arg pointer to buffer to download               
@@ -118,14 +119,14 @@ namespace pcl
             /** \brief Returns true if unallocated otherwise false. */
             bool empty() const;
             
-            std::size_t sizeBytes() const;
+            size_t sizeBytes() const;
         
         private:
             /** \brief Device pointer. */
             void *data_;
 
             /** \brief Allocated size in bytes. */
-            std::size_t sizeBytes_;
+            size_t sizeBytes_;
         
             /** \brief Pointer to reference counter in CPU memory. */
             int* refcount_;
@@ -161,7 +162,7 @@ namespace pcl
               * \param data_arg pointer to buffer
               * \param step_arg stride between two consecutive rows in bytes
               * */
-            DeviceMemory2D(int rows_arg, int colsBytes_arg, void *data_arg, std::size_t step_arg);
+            DeviceMemory2D(int rows_arg, int colsBytes_arg, void *data_arg, size_t step_arg);
 
             /** \brief Copy constructor. Just increments reference counter. */
             DeviceMemory2D(const DeviceMemory2D& other_arg);
@@ -189,13 +190,13 @@ namespace pcl
               * \param rows_arg number of rows to upload
               * \param colsBytes_arg width of host buffer in bytes
               * */
-            void upload(const void *host_ptr_arg, std::size_t host_step_arg, int rows_arg, int colsBytes_arg);
+            void upload(const void *host_ptr_arg, size_t host_step_arg, int rows_arg, int colsBytes_arg);
 
             /** \brief Downloads data from internal buffer to CPU memory. User is responsible for correct host buffer size.
               * \param host_ptr_arg pointer to host buffer to download               
               * \param host_step_arg stride between two consecutive rows in bytes for host buffer             
               * */
-            void download(void *host_ptr_arg, std::size_t host_step_arg) const;
+            void download(void *host_ptr_arg, size_t host_step_arg) const;
 
             /** \brief Performs swap of data pointed with another device memory. 
               * \param other_arg device memory to swap with   
@@ -228,13 +229,13 @@ namespace pcl
             int rows() const;
 
             /** \brief Returns stride between two consecutive rows in bytes for internal buffer. Step is stored always and everywhere in bytes!!! */
-            std::size_t step() const;
+            size_t step() const;
         private:
             /** \brief Device pointer. */
             void *data_;
 
             /** \brief Stride between two consecutive rows in bytes for internal buffer. Step is stored always and everywhere in bytes!!! */
-            std::size_t step_;
+            size_t step_;
 
             /** \brief Width of the buffer in bytes. */
             int colsBytes_;
@@ -255,3 +256,5 @@ namespace pcl
 }
 
 #include <pcl/gpu/containers/impl/device_memory.hpp>
+
+#endif /* PCL_GPU_CONTAINERS_DEVICE_MEMORY_HPP_ */

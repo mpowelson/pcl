@@ -56,11 +56,9 @@
 #include <vtkPointData.h>
 #include <vtkHedgeHog.h>
 #include <cstdio>
-#include <thread>
 #include <vector>
 
 using namespace std;
-using namespace std::chrono_literals;
 using namespace pcl;
 using namespace io;
 using namespace console;
@@ -117,8 +115,8 @@ main (int argc, char** argv)
 
   printf ("The following parameter values will be used:\n");
   for ( int i = 0 ; i < num_params ; ++i )
-    std::cout << "  " << parameter_names[i] << " = " << parameters[i] << std::endl;
-  std::cout << std::endl;
+    cout << "  " << parameter_names[i] << " = " << parameters[i] << endl;
+  cout << endl;
 
   run (parameters[0], parameters[1], parameters[2]);
 
@@ -144,7 +142,7 @@ void update (CallbackParameters* params)
 
   // Build the vtk objects visualizing the lines between the opps
   const list<ObjRecRANSAC::OrientedPointPair>& opps = params->objrec_.getSampledOrientedPointPairs ();
-  std::cout << "There is (are) " << opps.size () << " oriented point pair(s).\n";
+  cout << "There is (are) " << opps.size () << " oriented point pair(s).\n";
   // The opps points
   vtkSmartPointer<vtkPolyData> vtk_opps = vtkSmartPointer<vtkPolyData>::New ();
   vtkSmartPointer<vtkPoints> vtk_opps_points = vtkSmartPointer<vtkPoints>::New ();
@@ -157,14 +155,14 @@ void update (CallbackParameters* params)
   vtkIdType ids[2] = {0, 1};
 
   // Insert the points and compute the lines
-  for (const auto &opp : opps)
+  for ( list<ObjRecRANSAC::OrientedPointPair>::const_iterator it = opps.begin () ; it != opps.end () ; ++it )
   {
-    vtk_opps_points->SetPoint (ids[0], opp.p1_[0], opp.p1_[1], opp.p1_[2]);
-    vtk_opps_points->SetPoint (ids[1], opp.p2_[0], opp.p2_[1], opp.p2_[2]);
+    vtk_opps_points->SetPoint (ids[0], it->p1_[0], it->p1_[1], it->p1_[2]);
+    vtk_opps_points->SetPoint (ids[1], it->p2_[0], it->p2_[1], it->p2_[2]);
     vtk_opps_lines->InsertNextCell (2, ids);
 
-    vtk_normals->SetTuple3 (ids[0], opp.n1_[0], opp.n1_[1], opp.n1_[2]);
-    vtk_normals->SetTuple3 (ids[1], opp.n2_[0], opp.n2_[1], opp.n2_[2]);
+    vtk_normals->SetTuple3 (ids[0], it->n1_[0], it->n1_[1], it->n1_[2]);
+    vtk_normals->SetTuple3 (ids[1], it->n2_[0], it->n2_[1], it->n2_[2]);
 
     ids[0] += 2;
     ids[1] += 2;
@@ -176,7 +174,11 @@ void update (CallbackParameters* params)
   vtkSmartPointer<vtkHedgeHog> vtk_hh = vtkSmartPointer<vtkHedgeHog>::New ();
   vtk_hh->SetVectorModeToUseNormal ();
   vtk_hh->SetScaleFactor (0.5f*params->objrec_.getPairWidth ());
+#if VTK_MAJOR_VERSION < 6
+  vtk_hh->SetInput (vtk_opps);
+#else
   vtk_hh->SetInputData (vtk_opps);
+#endif
   vtk_hh->Update ();
 
   // The lines
@@ -242,7 +244,7 @@ void run (float pair_width, float voxel_size, float max_coplanarity_angle)
   {
     //main loop of the visualizer
     viz.spinOnce (100);
-    std::this_thread::sleep_for(100ms);
+    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
   }
 }
 
@@ -250,7 +252,7 @@ void run (float pair_width, float voxel_size, float max_coplanarity_angle)
 
 bool vtk_to_pointcloud (const char* file_name, PointCloud<PointXYZ>& pcl_points, PointCloud<Normal>& pcl_normals)
 {
-  std::size_t len = strlen (file_name);
+  size_t len = strlen (file_name);
   if ( file_name[len-3] != 'v' || file_name[len-2] != 't' || file_name[len-1] != 'k' )
   {
     fprintf (stderr, "ERROR: we need a .vtk object!\n");

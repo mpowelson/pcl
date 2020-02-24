@@ -38,28 +38,28 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SAMPLE_CONSENSUS_RANSAC_H_
+#define PCL_SAMPLE_CONSENSUS_RANSAC_H_
 
 #include <pcl/sample_consensus/sac.h>
 #include <pcl/sample_consensus/sac_model.h>
 
 namespace pcl
 {
-  /** \brief @b RandomSampleConsensus represents an implementation of the RANSAC (RANdom SAmple Consensus) algorithm, as 
+  /** \brief @b RandomSampleConsensus represents an implementation of the RANSAC (RAndom SAmple Consensus) algorithm, as 
     * described in: "Random Sample Consensus: A Paradigm for Model Fitting with Applications to Image Analysis and 
     * Automated Cartography", Martin A. Fischler and Robert C. Bolles, Comm. Of the ACM 24: 381–395, June 1981.
-    * A parallel variant is available, enable with setNumberOfThreads. Default is non-parallel.
     * \author Radu B. Rusu
     * \ingroup sample_consensus
     */
   template <typename PointT>
   class RandomSampleConsensus : public SampleConsensus<PointT>
   {
-    using SampleConsensusModelPtr = typename SampleConsensusModel<PointT>::Ptr;
+    typedef typename SampleConsensusModel<PointT>::Ptr SampleConsensusModelPtr;
 
     public:
-      using Ptr = shared_ptr<RandomSampleConsensus<PointT> >;
-      using ConstPtr = shared_ptr<const RandomSampleConsensus<PointT> >;
+      typedef boost::shared_ptr<RandomSampleConsensus> Ptr;
+      typedef boost::shared_ptr<const RandomSampleConsensus> ConstPtr;
 
       using SampleConsensus<PointT>::max_iterations_;
       using SampleConsensus<PointT>::threshold_;
@@ -69,7 +69,6 @@ namespace pcl
       using SampleConsensus<PointT>::model_coefficients_;
       using SampleConsensus<PointT>::inliers_;
       using SampleConsensus<PointT>::probability_;
-      using SampleConsensus<PointT>::threads_;
 
       /** \brief RANSAC (RAndom SAmple Consensus) main constructor
         * \param[in] model a Sample Consensus model
@@ -96,10 +95,13 @@ namespace pcl
         * \param[in] debug_verbosity_level enable/disable on-screen debug information and set the verbosity level
         */
       bool 
-      computeModel (int debug_verbosity_level = 0) override;
+      computeModel (int debug_verbosity_level = 0);
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/sample_consensus/impl/ransac.hpp>
 #endif
+
+#endif  //#ifndef PCL_SAMPLE_CONSENSUS_RANSAC_H_
+

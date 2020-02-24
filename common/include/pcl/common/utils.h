@@ -36,7 +36,8 @@
  * $Id$
  */
 
-#pragma once
+#ifndef PCL_UTILS
+#define PCL_UTILS
 
 #include <limits>
 
@@ -53,7 +54,9 @@ namespace pcl
     template<typename T> bool 
     equal (T val1, T val2, T eps = std::numeric_limits<T>::min ())
     {
-      return (std::fabs (val1 - val2) < eps);
+      return (fabs (val1 - val2) < eps);
     }
   }
 }
+
+#endif

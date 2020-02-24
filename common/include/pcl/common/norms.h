@@ -36,7 +36,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_COMMON_NORMS_H_
+#define PCL_COMMON_NORMS_H_
 
 /**
   * \file norms.h
@@ -196,3 +197,5 @@ namespace pcl
 }
 /*@}*/
 #include <pcl/common/impl/norms.hpp>
+
+#endif  //#ifndef PCL_NORMS_H_

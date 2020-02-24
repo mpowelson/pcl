@@ -34,7 +34,7 @@ Object::getActors ()
 void
 Object::render (vtkRenderer* renderer)
 {
-  std::lock_guard<std::mutex> lock (actors_mutex_);
+  boost::mutex::scoped_lock lock (actors_mutex_);
   // Iterate over the objects actors
   actors_->InitTraversal ();
   for (vtkIdType i = 0; i < actors_->GetNumberOfItems (); i++)
@@ -55,7 +55,7 @@ Object::render (vtkRenderer* renderer)
 bool
 Object::hasActor (vtkActor *actor)
 {
-  std::lock_guard<std::mutex> lock (actors_mutex_);
+  boost::mutex::scoped_lock lock (actors_mutex_);
 
   return actors_->IsItemPresent (actor);
 }
@@ -64,7 +64,7 @@ void
 Object::addActor (vtkActor *actor)
 {
 //  Scene::instance ()->lock ();
-  std::lock_guard<std::mutex> lock (actors_mutex_);
+  boost::mutex::scoped_lock lock (actors_mutex_);
 
   if (!actors_->IsItemPresent (actor))
     actors_->AddItem (actor);
@@ -100,7 +100,7 @@ Object::removeActor (vtkActor *actor)
 {
 //  Scene::instance ()->lock ();
   //std::cout << "Removing Actor" << std::endl;
-  std::lock_guard<std::mutex> lock (actors_mutex_);
+  boost::mutex::scoped_lock lock (actors_mutex_);
   actors_->RemoveItem (actor);
 
   std::map<vtkActor*, std::set<vtkRenderer*> >::iterator actor_it;
@@ -108,7 +108,8 @@ Object::removeActor (vtkActor *actor)
 
   if (actor_it != associated_renderers_.end ())
   {
-    for (auto renderer_it = associated_renderers_[actor].cbegin (); renderer_it != associated_renderers_[actor].cend ();
+    std::set<vtkRenderer*>::iterator renderer_it;
+    for (renderer_it = associated_renderers_[actor].begin (); renderer_it != associated_renderers_[actor].end ();
         ++renderer_it)
     {
       (*renderer_it)->RemoveActor (actor);

@@ -33,16 +33,14 @@
  *
  *
  */
-
-#pragma once
-
-#include <QTreeWidgetItem>
+#ifndef PCL_MODELER_CHANNEL_ACTOR_ITEM_H_
+#define PCL_MODELER_CHANNEL_ACTOR_ITEM_H_
 
 #include <vtkSmartPointer.h>
-
+#include <boost/shared_ptr.hpp>
 #include <pcl/common/eigen.h>
+#include <pcl/apps/modeler/qt.h>
 #include <pcl/apps/modeler/abstract_item.h>
-#include <pcl/apps/modeler/cloud_mesh.h>
 
 class vtkActor;
 class vtkPolyData;
@@ -54,11 +52,13 @@ namespace pcl
 {
   namespace modeler
   {
+    class CloudMesh;
+
     class ChannelActorItem : public QTreeWidgetItem, public AbstractItem
     {
       public:
         ChannelActorItem(QTreeWidgetItem* parent,
-                         const CloudMesh::Ptr& cloud_mesh,
+                         const boost::shared_ptr<CloudMesh>& cloud_mesh,
                          const vtkSmartPointer<vtkRenderWindow>& render_window,
                          const vtkSmartPointer<vtkActor>& actor,
                          const std::string& channel_name);
@@ -86,10 +86,10 @@ namespace pcl
         virtual void
         updateImpl() = 0;
 
-        void
-        prepareContextMenu(QMenu* menu) const override;
+        virtual void
+        prepareContextMenu(QMenu* menu) const;
 
-        CloudMesh::Ptr                    cloud_mesh_;
+        boost::shared_ptr<CloudMesh>      cloud_mesh_;
         vtkSmartPointer<vtkPolyData>      poly_data_;
         vtkSmartPointer<vtkRenderWindow>  render_window_;
         std::string                       color_scheme_;
@@ -100,3 +100,5 @@ namespace pcl
     };
   }
 }
+
+#endif // PCL_MODELER_CHANNEL_ACTOR_ITEM_H_

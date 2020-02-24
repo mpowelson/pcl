@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef PCL_MESSAGE_IMAGE_H
+#define PCL_MESSAGE_IMAGE_H
 #include <string>
 #include <vector>
 #include <ostream>
@@ -15,23 +15,27 @@ namespace pcl
 {
   struct PCLImage
   {
+    PCLImage () : header (), height (0), width (0), encoding (),
+               is_bigendian (0), step (0), data ()
+    {}
+
      ::pcl::PCLHeader  header;
 
-    std::uint32_t height = 0;
-    std::uint32_t width = 0;
+    pcl::uint32_t height;
+    pcl::uint32_t width;
     std::string encoding;
 
-    std::uint8_t is_bigendian = 0;
-    std::uint32_t step = 0;
+    pcl::uint8_t is_bigendian;
+    pcl::uint32_t step;
 
-    std::vector<std::uint8_t> data;
+    std::vector<pcl::uint8_t> data;
 
-    using Ptr = shared_ptr< ::pcl::PCLImage>;
-    using ConstPtr = shared_ptr<const ::pcl::PCLImage>;
+    typedef boost::shared_ptr< ::pcl::PCLImage> Ptr;
+    typedef boost::shared_ptr< ::pcl::PCLImage  const> ConstPtr;
   }; // struct PCLImage
 
-  using PCLImagePtr = PCLImage::Ptr;
-  using PCLImageConstPtr = PCLImage::ConstPtr;
+  typedef boost::shared_ptr< ::pcl::PCLImage> PCLImagePtr;
+  typedef boost::shared_ptr< ::pcl::PCLImage const> PCLImageConstPtr;
 
   inline std::ostream& operator<<(std::ostream& s, const  ::pcl::PCLImage & v)
   {
@@ -48,7 +52,7 @@ namespace pcl
     s << "step: ";
     s << "  " << v.step << std::endl;
     s << "data[]" << std::endl;
-    for (std::size_t i = 0; i < v.data.size (); ++i)
+    for (size_t i = 0; i < v.data.size (); ++i)
     {
       s << "  data[" << i << "]: ";
       s << "  " << v.data[i] << std::endl;
@@ -56,3 +60,6 @@ namespace pcl
     return (s);
   }
 } // namespace pcl
+
+#endif // PCL_MESSAGE_IMAGE_H
+

@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_GPU_PEOPLE_CUDA_DEVICE_H_
+#define PCL_GPU_PEOPLE_CUDA_DEVICE_H_
 
 #include <cuda_runtime.h>
 
@@ -74,3 +75,5 @@ namespace pcl
     }
   }
 }
+
+#endif /* PCL_GPU_PEOPLE_CUDA_DEVICE_H_ */

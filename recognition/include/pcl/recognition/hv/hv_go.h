@@ -5,25 +5,16 @@
  *      Author: aitor
  */
 
-#pragma once
-
-#include <random>
-
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-
-//includes required by mets.hh
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
+#ifndef GO_H_
+#define GO_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/recognition/hv/hypotheses_verification.h>
 #include <pcl/common/common.h>
 #include <pcl/recognition/3rdparty/metslib/mets.hh>
 #include <pcl/features/normal_3d.h>
-
-#include <memory>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
 
 namespace pcl
 {
@@ -55,9 +46,7 @@ namespace pcl
           int id_;
       };
 
-      using RecognitionModelPtr = std::shared_ptr<RecognitionModel>;
-
-      using SAOptimizerT = GlobalHypothesesVerification<ModelT, SceneT>;
+      typedef GlobalHypothesesVerification<ModelT, SceneT> SAOptimizerT;
       class SAModel: public mets::evaluable_solution
       {
         public:
@@ -66,12 +55,12 @@ namespace pcl
           mets::gol_type cost_;
 
           //Evaluates the current solution
-          mets::gol_type cost_function() const override
+          mets::gol_type cost_function() const
           {
             return cost_;
           }
 
-          void copy_from(const mets::copyable& o) override
+          void copy_from(const mets::copyable& o)
           {
             const SAModel& s = dynamic_cast<const SAModel&> (o);
             solution_ = s.solution_;
@@ -131,7 +120,7 @@ namespace pcl
           {
           }
 
-          mets::gol_type evaluate(const mets::feasible_solution& /*cs*/) const override
+          mets::gol_type evaluate(const mets::feasible_solution& /*cs*/) const
           {
             return static_cast<mets::gol_type>(0);
           }
@@ -142,7 +131,7 @@ namespace pcl
             return model.apply_and_evaluate (index_, !model.solution_[index_]);
           }
 
-          void apply(mets::feasible_solution& /*s*/) const override
+          void apply(mets::feasible_solution& /*s*/) const
           {
           }
 
@@ -157,7 +146,7 @@ namespace pcl
       {
         public:
           std::vector<move*> moves_m;
-          using iterator = typename std::vector<move *>::iterator;
+          typedef typename std::vector<move*>::iterator iterator;
           iterator begin()
           {
             return moves_m.begin ();
@@ -182,7 +171,7 @@ namespace pcl
 
           void refresh(mets::feasible_solution& /*s*/)
           {
-            std::shuffle (moves_m.begin (), moves_m.end (), std::mt19937(std::random_device()()));
+            std::random_shuffle (moves_m.begin (), moves_m.end ());
           }
 
       };
@@ -197,7 +186,7 @@ namespace pcl
       using HypothesisVerification<ModelT, SceneT>::inliers_threshold_;
 
       //class attributes
-      using NormalEstimator_ = pcl::NormalEstimation<SceneT, pcl::Normal>;
+      typedef typename pcl::NormalEstimation<SceneT, pcl::Normal> NormalEstimator_;
       pcl::PointCloud<pcl::Normal>::Ptr scene_normals_;
       pcl::PointCloud<pcl::PointXYZI>::Ptr clusters_cloud_;
 
@@ -208,8 +197,8 @@ namespace pcl
       std::vector<int> explained_by_RM_; //represents the points of scene_cloud_ that are explained by the recognition models
       std::vector<float> explained_by_RM_distance_weighted; //represents the points of scene_cloud_ that are explained by the recognition models
       std::vector<float> unexplained_by_RM_neighboorhods; //represents the points of scene_cloud_ that are not explained by the active hypotheses in the neighboorhod of the recognition models
-      std::vector<RecognitionModelPtr> recognition_models_;
-      std::vector<std::size_t> indices_;
+      std::vector<boost::shared_ptr<RecognitionModel> > recognition_models_;
+      std::vector<size_t> indices_;
 
       float regularizer_;
       float clutter_regularizer_;
@@ -287,7 +276,7 @@ namespace pcl
 
           float add_to_unexplained = 0.f;
 
-          for (std::size_t i = 0; i < unexplained_.size (); i++)
+          for (size_t i = 0; i < unexplained_.size (); i++)
           {
 
             bool prev_unexplained = (unexplained_by_RM[unexplained_[i]] > 0) && (explained_by_RM[unexplained_[i]] == 0);
@@ -307,21 +296,21 @@ namespace pcl
             }
           }
 
-          for (const int &i : explained)
+          for (size_t i = 0; i < explained.size (); i++)
           {
             if (val < 0)
             {
               //the hypothesis is being removed, check that there are no points that become unexplained and have clutter unexplained hypotheses
-              if ((explained_by_RM[i] == 0) && (unexplained_by_RM[i] > 0))
+              if ((explained_by_RM[explained[i]] == 0) && (unexplained_by_RM[explained[i]] > 0))
               {
-                add_to_unexplained += unexplained_by_RM[i]; //the points become unexplained
+                add_to_unexplained += unexplained_by_RM[explained[i]]; //the points become unexplained
               }
             } else
             {
               //std::cout << "being added..." << add_to_unexplained << " " << unexplained_by_RM[explained[i]] << std::endl;
-              if ((explained_by_RM[i] == 1) && (unexplained_by_RM[i] > 0))
+              if ((explained_by_RM[explained[i]] == 1) && (unexplained_by_RM[explained[i]] > 0))
               { //the only hypothesis explaining that point
-                add_to_unexplained -= unexplained_by_RM[i]; //the points are not unexplained any longer because this hypothesis explains them
+                add_to_unexplained -= unexplained_by_RM[explained[i]]; //the points are not unexplained any longer because this hypothesis explains them
               }
             }
           }
@@ -337,7 +326,7 @@ namespace pcl
         float add_to_explained = 0.f;
         int add_to_duplicity_ = 0;
 
-        for (std::size_t i = 0; i < vec.size (); i++)
+        for (size_t i = 0; i < vec.size (); i++)
         {
           bool prev_dup = explained_[vec[i]] > 1;
 
@@ -365,17 +354,17 @@ namespace pcl
 
       void updateCMDuplicity(std::vector<int> & vec, std::vector<int> & occupancy_vec, float sign) {
         int add_to_duplicity_ = 0;
-        for (const int &i : vec)
+        for (size_t i = 0; i < vec.size (); i++)
         {
-          bool prev_dup = occupancy_vec[i] > 1;
-          occupancy_vec[i] += static_cast<int> (sign);
-          if ((occupancy_vec[i] > 1) && prev_dup)
+          bool prev_dup = occupancy_vec[vec[i]] > 1;
+          occupancy_vec[vec[i]] += static_cast<int> (sign);
+          if ((occupancy_vec[vec[i]] > 1) && prev_dup)
           { //its still a duplicate, we are adding
             add_to_duplicity_ += static_cast<int> (sign); //so, just add or remove one
-          } else if ((occupancy_vec[i] == 1) && prev_dup)
+          } else if ((occupancy_vec[vec[i]] == 1) && prev_dup)
           { //if was duplicate before, now its not, remove 2, we are removing the hypothesis
             add_to_duplicity_ -= 2;
-          } else if ((occupancy_vec[i] > 1) && !prev_dup)
+          } else if ((occupancy_vec[vec[i]] > 1) && !prev_dup)
           { //it was not a duplicate but it is now, add 2, we are adding a conflicting hypothesis for the point
             add_to_duplicity_ += 2;
           }
@@ -389,7 +378,7 @@ namespace pcl
         float explained_info = 0;
         int duplicity = 0;
 
-        for (std::size_t i = 0; i < explained_.size (); i++)
+        for (size_t i = 0; i < explained_.size (); i++)
         {
           if (explained_[i] > 0)
             explained_info += explained_by_RM_distance_weighted[i];
@@ -403,10 +392,10 @@ namespace pcl
         return explained_info;
       }
 
-      float getTotalBadInformation(std::vector<RecognitionModelPtr> & recog_models)
+      float getTotalBadInformation(std::vector<boost::shared_ptr<RecognitionModel> > & recog_models)
       {
         float bad_info = 0;
-        for (std::size_t i = 0; i < recog_models.size (); i++)
+        for (size_t i = 0; i < recog_models.size (); i++)
           bad_info += recog_models[i]->outliers_weight_ * static_cast<float> (recog_models[i]->bad_information_);
 
         return bad_info;
@@ -415,7 +404,7 @@ namespace pcl
       float getUnexplainedInformationInNeighborhood(std::vector<float> & unexplained, std::vector<int> & explained)
       {
         float unexplained_sum = 0.f;
-        for (std::size_t i = 0; i < unexplained.size (); i++)
+        for (size_t i = 0; i < unexplained.size (); i++)
         {
           if (unexplained[i] > 0 && explained[i] == 0)
             unexplained_sum += unexplained[i];
@@ -432,10 +421,11 @@ namespace pcl
       evaluateSolution(const std::vector<bool> & active, int changed);
 
       bool
-      addModel(typename pcl::PointCloud<ModelT>::ConstPtr & model, typename pcl::PointCloud<ModelT>::ConstPtr & complete_model, RecognitionModelPtr & recog_model);
+      addModel(typename pcl::PointCloud<ModelT>::ConstPtr & model, typename pcl::PointCloud<ModelT>::ConstPtr & complete_model,
+          boost::shared_ptr<RecognitionModel> & recog_model);
 
       void
-      computeClutterCue(RecognitionModelPtr & recog_model);
+      computeClutterCue(boost::shared_ptr<RecognitionModel> & recog_model);
 
       void
       SAOptimize(std::vector<int> & cc_indices, std::vector<bool> & sub_solution);
@@ -456,7 +446,7 @@ namespace pcl
       }
 
       void
-      verify() override;
+      verify();
       
       void setResolutionOccupancyGrid(float r)
       {
@@ -503,3 +493,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/recognition/impl/hv/hv_go.hpp>
 #endif
+
+#endif /* GO_H_ */

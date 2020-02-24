@@ -37,13 +37,15 @@
 /// @details A set of useful typedefs, forward declarations and constants.
 /// @author  Yue Li and Matthew Hielsberg
 
-#pragma once
 
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
+#ifndef LOCAL_TYPES_H_
+#define LOCAL_TYPES_H_
 
 #include <vector>
-#include <memory>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 
 // Forward declaration for commonly used objects
 class Command;
@@ -55,54 +57,54 @@ class Cloud;
 // Some helpful typedef's for commonly used objects
 
 /// The type for the 3D points in the point cloud.
-using Point3D = pcl::PointXYZRGBA;
+typedef pcl::PointXYZRGBA Point3D;
 
 /// The type used as internal representation of a cloud object.
-using Cloud3D = pcl::PointCloud<Point3D>;
+typedef pcl::PointCloud<Point3D> Cloud3D;
 
 /// The type for the 3D point vector in the point cloud.
-using Point3DVector = pcl::PointCloud<Point3D>::VectorType;
+typedef pcl::PointCloud<Point3D>::VectorType Point3DVector;
 
-/// The type for std shared pointer pointing to a PCL cloud object.
-using PclCloudPtr = Cloud3D::Ptr;
+/// The type for boost shared pointer pointing to a PCL cloud object.
+typedef Cloud3D::Ptr PclCloudPtr;
 
-/// The type for std shared pointer pointing to a cloud object
-using CloudPtr = std::shared_ptr<Cloud>;
+/// The type for boost shared pointer pointing to a cloud object
+typedef boost::shared_ptr<Cloud> CloudPtr;
 
-/// The type for std shared pointer pointing to a constant cloud
+/// The type for boost shared pointer pointing to a constant cloud
 /// object
-using ConstCloudPtr = std::shared_ptr<const Cloud>;
+typedef boost::shared_ptr<const Cloud> ConstCloudPtr;
 
-/// The type for std shared pointer pointing to a selection buffer
-using SelectionPtr = std::shared_ptr<Selection>;
+/// The type for boost shared pointer pointing to a selection buffer
+typedef boost::shared_ptr<Selection> SelectionPtr;
 
-/// The type for std shared pointer pointing to a constant selection
+/// The type for boost shared pointer pointing to a constant selection
 /// buffer
-using ConstSelectionPtr = std::shared_ptr<const Selection>;
+typedef boost::shared_ptr<const Selection> ConstSelectionPtr;
 
-/// The type for std shared pointer pointing to a copy buffer
-using CopyBufferPtr = std::shared_ptr<CopyBuffer>;
+/// The type for boost shared pointer pointing to a copy buffer
+typedef boost::shared_ptr<CopyBuffer> CopyBufferPtr;
 
-/// The type for std shared pointer pointing to a constant copy
+/// The type for boost shared pointer pointing to a constant copy
 /// buffer
-using ConstCopyBufferPtr = std::shared_ptr<const CopyBuffer>;
+typedef boost::shared_ptr<const CopyBuffer> ConstCopyBufferPtr;
 
-/// The type for std shared pointer pointing to a command object
-using CommandPtr = std::shared_ptr<Command>;
+/// The type for boost shared pointer pointing to a command object
+typedef boost::shared_ptr<Command> CommandPtr;
 
 /// The type used for vectors holding the indices of points in a cloud
-using IndexVector = std::vector<unsigned int>;
+typedef std::vector<unsigned int> IndexVector;
 
 /// The type used for vectors holding the constant indices of points in
 /// a cloud
-using ConstIndexVector = std::vector<const int>;
+typedef std::vector<const int> ConstIndexVector;
 
-/// The type for std shared pointer pointing to a command queue
+/// The type for boost shared pointer pointing to a command queue
 /// object
-using CommandQueuePtr = std::shared_ptr<CommandQueue>;
+typedef boost::shared_ptr<CommandQueue> CommandQueuePtr;
 
 /// The type for bit masks used for recognizing key pressed by user.
-using BitMask = unsigned int;
+typedef unsigned int BitMask;
 
 /// ID's for the key modifiers.
 enum KeyModifier
@@ -189,3 +191,7 @@ const float DISPLAY_Z_TRANSLATION = -2.0f;
 
 /// The radius of the trackball given as a percentage of the screen width
 const float TRACKBALL_RADIUS_SCALE = 0.4f;
+
+
+
+#endif // LOCAL_TYPES_H_

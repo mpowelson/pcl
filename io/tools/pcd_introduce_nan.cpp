@@ -39,10 +39,10 @@
 #include <pcl/io/pcd_io.h>
 
 /** @brief PCL point object */
-using PointT = pcl::PointXYZRGBA;
+typedef pcl::PointXYZRGBA PointT;
 
 /** @brief PCL Point cloud object */
-using PointCloudT = pcl::PointCloud<PointT>;
+typedef pcl::PointCloud<PointT> PointCloudT;
 
 int
 main (int argc,
@@ -63,7 +63,7 @@ main (int argc,
   if (pcl::io::loadPCDFile (argv[1], *cloud) != 0)
     return (-1);
 
-  for (auto &point : *cloud)
+  for (PointCloudT::iterator cloud_it (cloud->begin ()); cloud_it != cloud->end (); ++cloud_it)
   {
     int random = 1 + (rand () % (int) (100));
     int random_xyz = 1 + (rand () % (int) (3 - 1 + 1));
@@ -71,11 +71,11 @@ main (int argc,
     if (random < percentage_of_NaN)
     {
       if (random_xyz == 1)
-        point.x = std::numeric_limits<double>::quiet_NaN ();
+        cloud_it->x = std::numeric_limits<double>::quiet_NaN ();
       else if (random_xyz == 2)
-        point.y = std::numeric_limits<double>::quiet_NaN ();
+        cloud_it->y = std::numeric_limits<double>::quiet_NaN ();
       else
-        point.z = std::numeric_limits<double>::quiet_NaN ();
+        cloud_it->z = std::numeric_limits<double>::quiet_NaN ();
     }
   }
 

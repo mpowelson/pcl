@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_IO_VTK_IO_H_
+#define PCL_IO_VTK_IO_H_
 
 #include <pcl/pcl_macros.h>
 #include <pcl/PCLPointCloud2.h>
@@ -70,3 +71,5 @@ namespace pcl
     saveVTKFile (const std::string &file_name, const pcl::PCLPointCloud2 &cloud, unsigned precision = 5);
   }
 }
+
+#endif  //#ifndef PCL_IO_VTK_IO_H_

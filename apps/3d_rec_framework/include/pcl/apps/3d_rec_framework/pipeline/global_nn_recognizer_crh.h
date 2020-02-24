@@ -5,7 +5,8 @@
  *      Author: aitor
  */
 
-#pragma once
+#ifndef REC_FRAMEWORK_GLOBAL_RECOGNIZER_CRH_H_
+#define REC_FRAMEWORK_GLOBAL_RECOGNIZER_CRH_H_
 
 #include <flann/flann.h>
 #include <pcl/common/common.h>
@@ -49,12 +50,12 @@ namespace pcl
         }
       } sortIndexScoresOp;
 
-      using PointInTPtr = typename pcl::PointCloud<PointInT>::Ptr;
-      using ConstPointInTPtr = typename pcl::PointCloud<PointInT>::ConstPtr;
+      typedef typename pcl::PointCloud<PointInT>::Ptr PointInTPtr;
+      typedef typename pcl::PointCloud<PointInT>::ConstPtr ConstPointInTPtr;
 
-      using DistT = Distance<float>;
-      using ModelT = Model<PointInT>;
-      using CRHPointCloud = pcl::PointCloud<pcl::Histogram<90> >;
+      typedef Distance<float> DistT;
+      typedef Model<PointInT> ModelT;
+      typedef pcl::PointCloud<pcl::Histogram<90> > CRHPointCloud;
 
       /** \brief Directory where the trained structure will be saved */
       std::string training_dir_;
@@ -63,13 +64,13 @@ namespace pcl
       PointInTPtr input_;
 
       /** \brief Model data source */
-      std::shared_ptr<pcl::rec_3d_framework::Source<PointInT>> source_;
+      typename boost::shared_ptr<pcl::rec_3d_framework::Source<PointInT> > source_;
 
       /** \brief Computes a feature */
-      std::shared_ptr<CRHEstimation<PointInT, FeatureT>> crh_estimator_;
+      typename boost::shared_ptr<CRHEstimation<PointInT, FeatureT> > crh_estimator_;
 
       /** \brief Hypotheses verification algorithm */
-      std::shared_ptr<HypothesisVerification<PointInT, PointInT>> hv_algorithm_;
+      typename boost::shared_ptr<HypothesisVerification<PointInT, PointInT> > hv_algorithm_;
 
       /** \brief Descriptor name */
       std::string descr_name_;
@@ -95,7 +96,7 @@ namespace pcl
 
       bool use_cache_;
       std::map<std::pair<std::string, int>, Eigen::Matrix4f,
-               std::less<>,
+               std::less<std::pair<std::string, int> >,
                Eigen::aligned_allocator<std::pair<const std::pair<std::string, int>, Eigen::Matrix4f> > > poses_cache_;
       std::map<std::pair<std::string, int>, Eigen::Vector3f > centroids_cache_;
 
@@ -113,8 +114,8 @@ namespace pcl
 
         flann::Matrix<float> flann_data (new float[models.size () * models[0].descr.size ()], models.size (), models[0].descr.size ());
 
-        for (std::size_t i = 0; i < data.rows; ++i)
-          for (std::size_t j = 0; j < data.cols; ++j)
+        for (size_t i = 0; i < data.rows; ++i)
+          for (size_t j = 0; j < data.cols; ++j)
           {
             flann_data.ptr ()[i * data.cols + j] = models[i].descr[j];
           }
@@ -139,8 +140,8 @@ namespace pcl
 
       int NN_;
 
-      std::shared_ptr<std::vector<ModelT>> models_;
-      std::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>> transforms_;
+      boost::shared_ptr<std::vector<ModelT> > models_;
+      boost::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > > transforms_;
 
     public:
 
@@ -187,7 +188,7 @@ namespace pcl
        * \brief Sets the model data source_
        */
       void
-      setDataSource (std::shared_ptr<Source<PointInT>>& source)
+      setDataSource (typename boost::shared_ptr<Source<PointInT> > & source)
       {
         source_ = source;
       }
@@ -197,7 +198,7 @@ namespace pcl
        */
 
       void
-      setFeatureEstimator (std::shared_ptr<CRHEstimation<PointInT, FeatureT>>& feat)
+      setFeatureEstimator (typename boost::shared_ptr<CRHEstimation<PointInT, FeatureT> > & feat)
       {
         crh_estimator_ = feat;
       }
@@ -206,7 +207,7 @@ namespace pcl
        * \brief Sets the HV algorithm
        */
       void
-      setHVAlgorithm (std::shared_ptr<HypothesisVerification<PointInT, PointInT>>& alg)
+      setHVAlgorithm (typename boost::shared_ptr<HypothesisVerification<PointInT, PointInT> > & alg)
       {
         hv_algorithm_ = alg;
       }
@@ -245,13 +246,13 @@ namespace pcl
       void
       recognize ();
 
-      std::shared_ptr<std::vector<ModelT>>
+      boost::shared_ptr<std::vector<ModelT> >
       getModels ()
       {
        return models_;
       }
 
-      std::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>>
+      boost::shared_ptr<std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > >
       getTransforms ()
       {
        return transforms_;
@@ -268,3 +269,4 @@ namespace pcl
     };
   }
 }
+#endif /* REC_FRAMEWORK_GLOBAL_PIPELINE_H_ */

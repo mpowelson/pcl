@@ -37,7 +37,8 @@
  *  $Id$
  */
 
-#pragma once
+#ifndef PCL_MULTISCALE_FEATURE_PERSISTENCE_H_
+#define PCL_MULTISCALE_FEATURE_PERSISTENCE_H_
 
 #include <pcl/pcl_base.h>
 #include <pcl/features/feature.h>
@@ -63,12 +64,12 @@ namespace pcl
   class MultiscaleFeaturePersistence : public PCLBase<PointSource>
   {
     public:
-      using Ptr = shared_ptr<MultiscaleFeaturePersistence<PointSource, PointFeature> >;
-      using ConstPtr = shared_ptr<const MultiscaleFeaturePersistence<PointSource, PointFeature> >;
-      using FeatureCloud = pcl::PointCloud<PointFeature>;
-      using FeatureCloudPtr = typename pcl::PointCloud<PointFeature>::Ptr;
-      using FeatureEstimatorPtr = typename pcl::Feature<PointSource, PointFeature>::Ptr;
-      using FeatureRepresentationConstPtr = typename pcl::PointRepresentation<PointFeature>::ConstPtr;
+      typedef boost::shared_ptr<MultiscaleFeaturePersistence<PointSource, PointFeature> > Ptr;
+      typedef boost::shared_ptr<const MultiscaleFeaturePersistence<PointSource, PointFeature> > ConstPtr;
+      typedef pcl::PointCloud<PointFeature> FeatureCloud;
+      typedef typename pcl::PointCloud<PointFeature>::Ptr FeatureCloudPtr;
+      typedef typename pcl::Feature<PointSource, PointFeature>::Ptr FeatureEstimatorPtr;
+      typedef boost::shared_ptr<const pcl::PointRepresentation <PointFeature> > FeatureRepresentationConstPtr;
 
       using pcl::PCLBase<PointSource>::input_;
 
@@ -76,7 +77,7 @@ namespace pcl
       MultiscaleFeaturePersistence ();
       
       /** \brief Empty destructor */
-      ~MultiscaleFeaturePersistence () {}
+      virtual ~MultiscaleFeaturePersistence () {}
 
       /** \brief Method that calls computeFeatureAtScale () for each scale parameter */
       void
@@ -89,7 +90,7 @@ namespace pcl
        */
       void
       determinePersistentFeatures (FeatureCloud &output_features,
-                                   shared_ptr<std::vector<int> > &output_indices);
+                                   boost::shared_ptr<std::vector<int> > &output_indices);
 
       /** \brief Method for setting the scale parameters for the algorithm
        * \param scale_values vector of scales to determine the characteristic of each scaling step
@@ -196,7 +197,7 @@ namespace pcl
       /** \brief Two structures in which to hold the results of the unique feature extraction process.
        * They are superfluous with respect to each other, but improve the time performance of the algorithm
        */
-      std::vector<std::list<std::size_t> > unique_features_indices_;
+      std::vector<std::list<size_t> > unique_features_indices_;
       std::vector<std::vector<bool> > unique_features_table_;
   };
 }
@@ -204,3 +205,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/multiscale_feature_persistence.hpp>
 #endif
+
+#endif /* PCL_MULTISCALE_FEATURE_PERSISTENCE_H_ */

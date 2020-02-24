@@ -36,9 +36,6 @@
  * $Id: distances.cpp 527 2011-04-17 23:57:26Z rusu $
  *
  */
-
-#include <limits>
-
 #include <pcl/common/common.h>
 #include <pcl/console/print.h>
 
@@ -47,17 +44,19 @@ void
 pcl::getMinMax (const pcl::PCLPointCloud2 &cloud, int,
                 const std::string &field_name, float &min_p, float &max_p)
 {
-  min_p = std::numeric_limits<float>::max();
-  max_p = -std::numeric_limits<float>::max();
+  min_p = FLT_MAX;
+  max_p = -FLT_MAX;
 
-  const auto result = std::find_if(cloud.fields.begin (), cloud.fields.end (),
-      [&field_name](const auto& field) { return field.name == field_name; });
-  if (result == cloud.fields.end ())
+  int field_idx = -1;
+  for (size_t d = 0; d < cloud.fields.size (); ++d)
+    if (cloud.fields[d].name == field_name)
+      field_idx = static_cast<int>(d);
+
+  if (field_idx == -1)
   {
     PCL_ERROR ("[getMinMax] Invalid field (%s) given!\n", field_name.c_str ());
     return;
   }
-  const auto field_idx = std::distance(cloud.fields.begin (), result);
 
   for (unsigned int i = 0; i < cloud.fields[field_idx].count; ++i)
   {
@@ -75,10 +74,10 @@ pcl::getMeanStdDev (const std::vector<float> &values, double &mean, double &stdd
 {
   double sum = 0, sq_sum = 0;
 
-  for (const float &value : values)
+  for (size_t i = 0; i < values.size (); ++i)
   {
-    sum += value;
-    sq_sum += value * value;
+    sum += values[i];
+    sq_sum += values[i] * values[i];
   }
   mean = sum / static_cast<double>(values.size ());
   double variance = (sq_sum - sum * sum / static_cast<double>(values.size ())) / (static_cast<double>(values.size ()) - 1);

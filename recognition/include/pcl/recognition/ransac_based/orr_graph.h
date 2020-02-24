@@ -43,7 +43,8 @@
  *      Author: papazov
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_ORR_GRAPH_H_
+#define PCL_RECOGNITION_ORR_GRAPH_H_
 
 #include <vector>
 
@@ -106,7 +107,7 @@ namespace pcl
             static inline bool
             compare (const Node* a, const Node* b)
             {
-              return a->fitness_ > b->fitness_;
+              return (static_cast<bool> (a->fitness_ > b->fitness_));
             }
 
             friend class ORRGraph;
@@ -142,7 +143,7 @@ namespace pcl
           for ( typename std::vector<Node*>::iterator nit = nodes_.begin () ; nit != nodes_.end () ; ++nit )
             delete *nit;
 
-          nodes_.resize (static_cast<std::size_t> (n));
+          nodes_.resize (static_cast<size_t> (n));
 
           for ( int i = 0 ; i < n ; ++i )
             nodes_[i] = new Node (i);
@@ -220,3 +221,5 @@ namespace pcl
     };
   } // namespace recognition
 } // namespace pcl
+
+#endif /* PCL_RECOGNITION_ORR_GRAPH_H_ */

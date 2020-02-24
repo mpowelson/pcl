@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OBJECT_RECOGNITION_H_
+#define OBJECT_RECOGNITION_H_
 
 #include "typedefs.h"
 #include "load_clouds.h"
@@ -62,10 +63,10 @@ class ObjectRecognition
     void 
     populateDatabase (const std::vector<std::string> & filenames)
     {
-      std::size_t n = filenames.size ();
+      size_t n = filenames.size ();
       models_.resize (n);
       descriptors_ = GlobalDescriptorsPtr (new GlobalDescriptors);
-      for (std::size_t i = 0; i < n; ++i)
+      for (size_t i = 0; i < n; ++i)
       {
         const std::string & filename = filenames[i];
         if (filename.compare (filename.size ()-4, 4, ".pcd") == 0)
@@ -197,3 +198,5 @@ class ObjectRecognition
     GlobalDescriptorsPtr descriptors_;
     pcl::KdTreeFLANN<GlobalDescriptorT>::Ptr kdtree_;
 };
+
+#endif

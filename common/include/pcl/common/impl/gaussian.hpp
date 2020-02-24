@@ -42,9 +42,9 @@
 
 #include <pcl/exceptions.h>
 
-template <typename PointT> void
+template <typename PointT> void 
 pcl::GaussianKernel::convolveRows(const pcl::PointCloud<PointT> &input,
-                                  std::function <float (const PointT& p)> field_accessor,
+                                  boost::function <float (const PointT& p)> field_accessor,
                                   const Eigen::VectorXf& kernel,
                                   pcl::PointCloud<float> &output) const
 {
@@ -75,9 +75,9 @@ pcl::GaussianKernel::convolveRows(const pcl::PointCloud<PointT> &input,
   }
 }
 
-template <typename PointT> void
+template <typename PointT> void 
 pcl::GaussianKernel::convolveCols(const pcl::PointCloud<PointT> &input,
-                                  std::function <float (const PointT& p)> field_accessor,
+                                  boost::function <float (const PointT& p)> field_accessor,
                                   const Eigen::VectorXf& kernel,
                                   pcl::PointCloud<float> &output) const
 {

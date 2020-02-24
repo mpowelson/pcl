@@ -35,9 +35,8 @@
  *
  */
 
-#pragma once
-
-#include <pcl/pcl_macros.h>
+#ifndef PCL_BOX_CLIPPER3D_H_
+#define PCL_BOX_CLIPPER3D_H_
 #include "clipper3D.h"
 
 namespace pcl
@@ -53,8 +52,8 @@ namespace pcl
   {
     public:
 
-      using Ptr = shared_ptr<BoxClipper3D<PointT> >;
-      using ConstPtr = shared_ptr<const BoxClipper3D<PointT> >;
+      typedef boost::shared_ptr< BoxClipper3D<PointT> > Ptr;
+      typedef boost::shared_ptr< const BoxClipper3D<PointT> > ConstPtr;
 
 
       /**
@@ -89,25 +88,25 @@ namespace pcl
       /**
         * \brief virtual destructor
         */
-      ~BoxClipper3D () noexcept;
+      virtual ~BoxClipper3D () throw ();
 
-      bool
-      clipPoint3D (const PointT& point) const override;
+      virtual bool
+      clipPoint3D (const PointT& point) const;
 
-      bool
-      clipLineSegment3D (PointT& from, PointT& to) const override;
+      virtual bool
+      clipLineSegment3D (PointT& from, PointT& to) const;
 
-      void
-      clipPlanarPolygon3D (std::vector<PointT, Eigen::aligned_allocator<PointT> >& polygon) const override;
+      virtual void
+      clipPlanarPolygon3D (std::vector<PointT, Eigen::aligned_allocator<PointT> >& polygon) const;
 
-      void
-      clipPlanarPolygon3D (const std::vector<PointT, Eigen::aligned_allocator<PointT> >& polygon, std::vector<PointT, Eigen::aligned_allocator<PointT> >& clipped_polygon) const override;
+      virtual void
+      clipPlanarPolygon3D (const std::vector<PointT, Eigen::aligned_allocator<PointT> >& polygon, std::vector<PointT, Eigen::aligned_allocator<PointT> >& clipped_polygon) const;
 
-      void
-      clipPointCloud3D (const pcl::PointCloud<PointT> &cloud_in, std::vector<int>& clipped, const std::vector<int>& indices = std::vector<int> ()) const override;
+      virtual void
+      clipPointCloud3D (const pcl::PointCloud<PointT> &cloud_in, std::vector<int>& clipped, const std::vector<int>& indices = std::vector<int> ()) const;
 
-      Clipper3D<PointT>*
-      clone () const override;
+      virtual Clipper3D<PointT>*
+      clone () const;
 
     protected:
       float getDistance (const PointT& point) const;
@@ -119,8 +118,10 @@ namespace pcl
       Eigen::Affine3f transformation_;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
 #include <pcl/filters/impl/box_clipper3D.hpp>
+
+#endif // PCL_BOX_CLIPPER3D_H_

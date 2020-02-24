@@ -55,8 +55,9 @@ template <typename FeatureT> inline typename pcl::PointCloud<FeatureT>::ConstPtr
 pcl::registration::CorrespondenceRejectorFeatures::getSourceFeature (const std::string &key)
 {
   if (features_map_.count (key) == 0)
-    return (nullptr);
-  return (boost::static_pointer_cast<FeatureContainer<FeatureT> > (features_map_[key])->getSourceFeature ());
+    return (boost::shared_ptr<pcl::PointCloud<const FeatureT> > ());
+  else
+    return (boost::static_pointer_cast<FeatureContainer<FeatureT> > (features_map_[key])->getSourceFeature ());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,8 +75,9 @@ template <typename FeatureT> inline typename pcl::PointCloud<FeatureT>::ConstPtr
 pcl::registration::CorrespondenceRejectorFeatures::getTargetFeature (const std::string &key)
 {
   if (features_map_.count (key) == 0)
-    return (nullptr);
-  return (boost::static_pointer_cast<FeatureContainer<FeatureT> > (features_map_[key])->getTargetFeature ());
+    return (boost::shared_ptr<const pcl::PointCloud<FeatureT> > ());
+  else
+    return (boost::static_pointer_cast<FeatureContainer<FeatureT> > (features_map_[key])->getTargetFeature ());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

@@ -35,13 +35,11 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SURFACE_GRID_PROJECTION_H_
+#define PCL_SURFACE_GRID_PROJECTION_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/surface/boost.h>
 #include <pcl/surface/reconstruction.h>
-
-#include <unordered_map>
 
 namespace pcl
 {
@@ -74,28 +72,28 @@ namespace pcl
   class GridProjection : public SurfaceReconstruction<PointNT>
   {
     public:
-      using Ptr = shared_ptr<GridProjection<PointNT> >;
-      using ConstPtr = shared_ptr<const GridProjection<PointNT> >;
+      typedef boost::shared_ptr<GridProjection<PointNT> > Ptr;
+      typedef boost::shared_ptr<const GridProjection<PointNT> > ConstPtr;
 
       using SurfaceReconstruction<PointNT>::input_;
       using SurfaceReconstruction<PointNT>::tree_;
 
-      using PointCloudPtr = typename pcl::PointCloud<PointNT>::Ptr;
+      typedef typename pcl::PointCloud<PointNT>::Ptr PointCloudPtr;
 
-      using KdTree = pcl::KdTree<PointNT>;
-      using KdTreePtr = typename KdTree::Ptr;
+      typedef typename pcl::KdTree<PointNT> KdTree;
+      typedef typename pcl::KdTree<PointNT>::Ptr KdTreePtr;
 
       /** \brief Data leaf. */
       struct Leaf
       {
-        Leaf () {}
+        Leaf () : data_indices (), pt_on_surface (), vect_at_grid_pt () {}
 
         std::vector<int> data_indices;
         Eigen::Vector4f pt_on_surface; 
         Eigen::Vector3f vect_at_grid_pt;
       };
 
-      typedef std::unordered_map<int, Leaf, std::hash<int>, std::equal_to<>, Eigen::aligned_allocator<std::pair<const int, Leaf>>> HashMap;
+      typedef boost::unordered_map<int, Leaf, boost::hash<int>, std::equal_to<int>, Eigen::aligned_allocator<int> > HashMap;
 
       /** \brief Constructor. */ 
       GridProjection ();
@@ -215,7 +213,7 @@ namespace pcl
         * \param[out] output the resultant polygonal mesh
         */
       void 
-      performReconstruction (pcl::PolygonMesh &output) override;
+      performReconstruction (pcl::PolygonMesh &output);
 
       /** \brief Create the surface. 
         *
@@ -229,7 +227,7 @@ namespace pcl
         */
       void 
       performReconstruction (pcl::PointCloud<PointNT> &points, 
-                             std::vector<pcl::Vertices> &polygons) override;
+                             std::vector<pcl::Vertices> &polygons);
 
       /** \brief When the input data points don't fill into the 1*1*1 box, 
         * scale them so that they can be filled in the unit box. Otherwise, 
@@ -497,9 +495,12 @@ namespace pcl
       boost::dynamic_bitset<> occupied_cell_list_;
 
       /** \brief Class get name method. */
-      std::string getClassName () const override { return ("GridProjection"); }
+      std::string getClassName () const { return ("GridProjection"); }
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
+
+#endif  // PCL_SURFACE_GRID_PROJECTION_H_
+ 

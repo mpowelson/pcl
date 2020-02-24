@@ -35,11 +35,12 @@
  *
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_DOTMOD
+#define PCL_RECOGNITION_DOTMOD
 
 #include <vector>
 #include <cstddef>
-#include <cstring>
+#include <string.h>
 #include <pcl/pcl_macros.h>
 #include <pcl/recognition/dot_modality.h>
 #include <pcl/recognition/dense_quantized_multi_mod_template.h>
@@ -51,9 +52,9 @@ namespace pcl
 
   struct DOTMODDetection
   {
-    std::size_t bin_x;
-    std::size_t bin_y;
-    std::size_t template_id;
+    size_t bin_x;
+    size_t bin_y;
+    size_t template_id;
     float score;
   };
 
@@ -65,8 +66,8 @@ namespace pcl
   {
     public:
       /** \brief Constructor */
-      DOTMOD (std::size_t template_width,
-              std::size_t template_height);
+      DOTMOD (size_t template_width,
+              size_t template_height);
 
       /** \brief Destructor */
       virtual ~DOTMOD ();
@@ -78,26 +79,26 @@ namespace pcl
         * \param template_anker_y
         * \param region
         */
-      std::size_t 
+      size_t 
       createAndAddTemplate (const std::vector<DOTModality*> & modalities,
                             const std::vector<MaskMap*> & masks,
-                            std::size_t template_anker_x,
-                            std::size_t template_anker_y,
+                            size_t template_anker_x,
+                            size_t template_anker_y,
                             const RegionXY & region);
 
       void
       detectTemplates (const std::vector<DOTModality*> & modalities,
                        float template_response_threshold,
                        std::vector<DOTMODDetection> & detections,
-                       const std::size_t bin_size) const;
+                       const size_t bin_size) const;
 
       inline const DenseQuantizedMultiModTemplate &
-      getTemplate (std::size_t template_id) const
+      getTemplate (size_t template_id) const
       { 
         return (templates_[template_id]);
       }
 
-      inline std::size_t
+      inline size_t
       getNumOfTemplates ()
       {
         return (templates_.size ());
@@ -118,11 +119,13 @@ namespace pcl
 
     private:
       /** template width */
-      std::size_t template_width_;
+      size_t template_width_;
       /** template height */
-      std::size_t template_height_;
+      size_t template_height_;
       /** template storage */
       std::vector<DenseQuantizedMultiModTemplate> templates_;
   };
 
 }
+
+#endif 

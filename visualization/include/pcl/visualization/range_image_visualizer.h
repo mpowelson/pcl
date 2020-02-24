@@ -34,10 +34,12 @@
  *
  */
 
-#pragma once
+#include <pcl/pcl_config.h>
+
+#ifndef PCL_VISUALIZATION_RANGE_IMAGE_VISUALIZER_H_
+#define PCL_VISUALIZATION_RANGE_IMAGE_VISUALIZER_H_
 
 // PCL includes
-#include <pcl/pcl_config.h>
 #include <pcl/range_image/range_image.h>
 #include <pcl/visualization/image_viewer.h>
 
@@ -111,3 +113,5 @@ namespace pcl
     };
   }
 }
+
+#endif  //#define PCL_VISUALIZATION_RANGE_IMAGE_VISUALIZER_H_

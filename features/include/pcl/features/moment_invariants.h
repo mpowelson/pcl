@@ -38,7 +38,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MOMENT_INVARIANTS_H_
+#define PCL_MOMENT_INVARIANTS_H_
 
 #include <pcl/features/feature.h>
 
@@ -55,8 +56,8 @@ namespace pcl
   class MomentInvariantsEstimation: public Feature<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<MomentInvariantsEstimation<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr<const MomentInvariantsEstimation<PointInT, PointOutT> >;
+      typedef boost::shared_ptr<MomentInvariantsEstimation<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const MomentInvariantsEstimation<PointInT, PointOutT> > ConstPtr;
       using Feature<PointInT, PointOutT>::feature_name_;
       using Feature<PointInT, PointOutT>::getClassName;
       using Feature<PointInT, PointOutT>::indices_;
@@ -65,10 +66,10 @@ namespace pcl
       using Feature<PointInT, PointOutT>::surface_;
       using Feature<PointInT, PointOutT>::input_;
 
-      using PointCloudOut = typename Feature<PointInT, PointOutT>::PointCloudOut;
+      typedef typename Feature<PointInT, PointOutT>::PointCloudOut PointCloudOut;
 
       /** \brief Empty constructor. */
-      MomentInvariantsEstimation ()
+      MomentInvariantsEstimation () : xyz_centroid_ (), temp_pt_ ()
       {
         feature_name_ = "MomentInvariantsEstimation";
       };
@@ -102,7 +103,7 @@ namespace pcl
         * \param[out] output the resultant point cloud model dataset that contains the moment invariants
         */
       void 
-      computeFeature (PointCloudOut &output) override;
+      computeFeature (PointCloudOut &output);
     private:
       /** \brief 16-bytes aligned placeholder for the XYZ centroid of a surface patch. */
       Eigen::Vector4f xyz_centroid_;
@@ -115,3 +116,5 @@ namespace pcl
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/features/impl/moment_invariants.hpp>
 #endif
+
+#endif  //#ifndef PCL_MOMENT_INVARIANTS_H_

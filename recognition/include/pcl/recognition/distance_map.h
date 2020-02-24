@@ -35,7 +35,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_RECOGNITION_DISTANCE_MAP
+#define PCL_RECOGNITION_DISTANCE_MAP
 
 namespace pcl
 {
@@ -52,14 +53,14 @@ namespace pcl
       virtual ~DistanceMap () {}
 
       /** \brief Returns the width of the map. */
-      inline std::size_t 
+      inline size_t 
       getWidth () const
       {
         return (width_); 
       }
 
       /** \brief Returns the height of the map. */
-      inline std::size_t 
+      inline size_t 
       getHeight () const
       { 
         return (height_); 
@@ -77,7 +78,7 @@ namespace pcl
         * \param[in] height the new height of the map.
         */
       void 
-      resize (const std::size_t width, const std::size_t height)
+      resize (const size_t width, const size_t height)
       {
         data_.resize (width*height);
         width_ = width;
@@ -89,7 +90,7 @@ namespace pcl
         * \param[in] row_index the row index of the element to access.
         */
       inline float & 
-      operator() (const std::size_t col_index, const std::size_t row_index)
+      operator() (const size_t col_index, const size_t row_index)
       {
         return (data_[row_index*width_ + col_index]);
       }
@@ -99,7 +100,7 @@ namespace pcl
         * \param[in] row_index the row index of the element to access.
         */
       inline const float & 
-      operator() (const std::size_t col_index, const std::size_t row_index) const
+      operator() (const size_t col_index, const size_t row_index) const
       {
         return (data_[row_index*width_ + col_index]);
       }
@@ -108,9 +109,12 @@ namespace pcl
       /** \brief The storage for the distance map data. */
       std::vector<float> data_;
       /** \brief The width of the map. */
-      std::size_t width_;
+      size_t width_;
       /** \brief The height of the map. */
-      std::size_t height_;
+      size_t height_;
   };
 
 }
+
+
+#endif 

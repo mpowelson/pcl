@@ -34,7 +34,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_MODELER_NORMAL_ESTIMATION_WORKER_H_
+#define PCL_MODELER_NORMAL_ESTIMATION_WORKER_H_
 
 #include <pcl/apps/modeler/abstract_worker.h>
 
@@ -47,21 +48,21 @@ namespace pcl
     class NormalEstimationWorker : public AbstractWorker 
     {
       public:
-        NormalEstimationWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent = nullptr);
-        ~NormalEstimationWorker();
+        NormalEstimationWorker(const QList<CloudMeshItem*>& cloud_mesh_items, QWidget* parent = 0);
+        ~NormalEstimationWorker(void);
 
       protected:
-        std::string
-        getName () const override { return ("Normal Estimation"); }
+        virtual std::string
+        getName () const { return ("Normal Estimation"); }
 
-        void
-        initParameters(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        initParameters(CloudMeshItem* cloud_mesh_item);
 
-        void
-        setupParameters() override;
+        virtual void
+        setupParameters();
 
-        void
-        processImpl(CloudMeshItem* cloud_mesh_item) override;
+        virtual void
+        processImpl(CloudMeshItem* cloud_mesh_item);
 
       private:
         double x_min_, x_max_;
@@ -74,3 +75,4 @@ namespace pcl
   }
 }
 
+#endif // PCL_MODELER_NORMAL_ESTIMATION_WORKER_H_

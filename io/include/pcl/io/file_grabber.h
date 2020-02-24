@@ -40,6 +40,8 @@
  */
 
 #pragma once
+#ifndef PCL_IO_FILE_GRABBER_H_
+#define PCL_IO_FILE_GRABBER_H_
 
 #include <pcl/point_cloud.h>
 
@@ -61,25 +63,30 @@ namespace pcl
      *  Note that in the future, this could easily be modified to do caching
      *  \param[in] idx The frame to load
      */
-    virtual const typename pcl::PointCloud<PointT>::ConstPtr
-    operator[] (std::size_t idx) const = 0;
+    virtual const boost::shared_ptr< const pcl::PointCloud<PointT> >
+    operator[] (size_t idx) const = 0;
 
     /** \brief size Returns the number of clouds currently loaded by the grabber */
-    virtual std::size_t
+    virtual size_t
     size () const = 0;
     
     /** \brief at Returns the idx-th cloud in the dataset, with bounds checking
      *  \param[in] idx The frame to load
      */
-    virtual const typename pcl::PointCloud<PointT>::ConstPtr
-    at (std::size_t idx) const
+    virtual const boost::shared_ptr< const pcl::PointCloud<PointT> >
+    at (size_t idx) const
     {
       if (idx >= size ())
       {
         // Throw error 
         throw pcl::IOException ("[pcl::FileGrabber] Attempted to access element which is out of bounds!");
       }
-      return (operator[] (idx));
+      else
+      {
+        return (operator[] (idx));
+      }
     }
   };
 }
+#endif//PCL_IO_FILE_GRABBER_H_
+

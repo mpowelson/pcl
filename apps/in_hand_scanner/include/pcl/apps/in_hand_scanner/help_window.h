@@ -38,7 +38,9 @@
  *
  */
 
-#pragma once
+
+#ifndef PCL_APPS_IN_HAND_SCANNER_HELP_WINDOW_H
+#define PCL_APPS_IN_HAND_SCANNER_HELP_WINDOW_H
 
 #include <QDialog>
 
@@ -56,7 +58,7 @@ namespace pcl
       Q_OBJECT
 
       public:
-        explicit HelpWindow (QWidget* parent = nullptr);
+        explicit HelpWindow (QWidget* parent = 0);
         ~HelpWindow ();
 
       private:
@@ -64,3 +66,5 @@ namespace pcl
     };
   } // End namespace ihs
 } // End namespace pcl
+
+#endif // PCL_APPS_IN_HAND_SCANNER_HELP_WINDOW_H

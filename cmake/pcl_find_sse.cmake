@@ -7,13 +7,7 @@ macro(PCL_CHECK_FOR_SSE)
     if(NOT CMAKE_CROSSCOMPILING)
         # Test GCC/G++ and CLANG
         if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-            include(CheckCXXCompilerFlag)
-            check_cxx_compiler_flag("-march=native" HAVE_MARCH)
-            if(HAVE_MARCH)
-                list(APPEND SSE_FLAGS "-march=native")
-            else()
-                list(APPEND SSE_FLAGS "-mtune=native")
-            endif()
+            list(APPEND SSE_FLAGS "-march=native")
             message(STATUS "Using CPU native flags for SSE optimization: ${SSE_FLAGS}")
         endif()
     endif()
@@ -53,7 +47,7 @@ macro(PCL_CHECK_FOR_SSE)
 
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
         set(CMAKE_REQUIRED_FLAGS "-msse4.2")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <emmintrin.h>
@@ -77,7 +71,7 @@ macro(PCL_CHECK_FOR_SSE)
 
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
         set(CMAKE_REQUIRED_FLAGS "-msse4.1")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <smmintrin.h>
@@ -96,7 +90,7 @@ macro(PCL_CHECK_FOR_SSE)
 
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
         set(CMAKE_REQUIRED_FLAGS "-mssse3")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <tmmintrin.h>
@@ -113,7 +107,7 @@ macro(PCL_CHECK_FOR_SSE)
 
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
         set(CMAKE_REQUIRED_FLAGS "-msse3")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <pmmintrin.h>
@@ -132,7 +126,7 @@ macro(PCL_CHECK_FOR_SSE)
         set(CMAKE_REQUIRED_FLAGS "-msse2")
     elseif(MSVC AND NOT CMAKE_CL_64)
         set(CMAKE_REQUIRED_FLAGS "/arch:SSE2")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <emmintrin.h>
@@ -151,7 +145,7 @@ macro(PCL_CHECK_FOR_SSE)
         set(CMAKE_REQUIRED_FLAGS "-msse")
     elseif(MSVC AND NOT CMAKE_CL_64)
         set(CMAKE_REQUIRED_FLAGS "/arch:SSE")
-    endif()
+    endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     check_cxx_source_runs("
         #include <xmmintrin.h>
@@ -192,19 +186,19 @@ macro(PCL_CHECK_FOR_SSE)
             list(APPEND SSE_FLAGS "/arch:SSE2")
         elseif(HAVE_SSE_EXTENSIONS)
             list(APPEND SSE_FLAGS "/arch:SSE")
-        endif()
+        endif(HAVE_SSE2_EXTENSIONS)
     endif()
 
     if(MSVC)
         if(HAVE_SSSE3_EXTENSIONS)
-            set(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSSE3__")
+            SET(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSSE3__")
         endif()
         if(HAVE_SSE2_EXTENSIONS)
-            set(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSE2__")
+            SET(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSE2__")
         endif()
         if(HAVE_SSE_EXTENSIONS)
-            set(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSE__")
+            SET(SSE_DEFINITIONS "${SSE_DEFINITIONS} -D__SSE__")
         endif()
     endif()
     string(REPLACE ";" " " SSE_FLAGS_STR "${SSE_FLAGS}")
-endmacro()
+endmacro(PCL_CHECK_FOR_SSE)

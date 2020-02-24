@@ -60,5 +60,5 @@ main(int argc, char *argv[])
   //QApplication::setWindowIcon(QIcon(":/pceditor.icns"));
   MainWindow main_window(argc, argv);
   main_window.show();
-  return (QApplication::exec());
+  return (app.exec());
 }

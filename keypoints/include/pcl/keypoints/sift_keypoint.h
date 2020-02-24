@@ -33,7 +33,8 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SIFT_KEYPOINT_H_
+#define PCL_SIFT_KEYPOINT_H_
 
 #include <pcl/keypoints/keypoint.h>
 
@@ -93,12 +94,12 @@ namespace pcl
   class SIFTKeypoint : public Keypoint<PointInT, PointOutT>
   {
     public:
-      using Ptr = shared_ptr<SIFTKeypoint<PointInT, PointOutT> >;
-      using ConstPtr = shared_ptr<const SIFTKeypoint<PointInT, PointOutT> >;
+      typedef boost::shared_ptr<SIFTKeypoint<PointInT, PointOutT> > Ptr;
+      typedef boost::shared_ptr<const SIFTKeypoint<PointInT, PointOutT> > ConstPtr;
 
-      using PointCloudIn = typename Keypoint<PointInT, PointOutT>::PointCloudIn;
-      using PointCloudOut = typename Keypoint<PointInT, PointOutT>::PointCloudOut;
-      using KdTree = typename Keypoint<PointInT, PointOutT>::KdTree;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudIn PointCloudIn;
+      typedef typename Keypoint<PointInT, PointOutT>::PointCloudOut PointCloudOut;
+      typedef typename Keypoint<PointInT, PointOutT>::KdTree KdTree;
 
       using Keypoint<PointInT, PointOutT>::name_;
       using Keypoint<PointInT, PointOutT>::input_;
@@ -110,7 +111,7 @@ namespace pcl
       /** \brief Empty constructor. */
       SIFTKeypoint () : min_scale_ (0.0), nr_octaves_ (0), nr_scales_per_octave_ (0), 
         min_contrast_ (-std::numeric_limits<float>::max ()), scale_idx_ (-1), 
-        getFieldValue_ ()
+        out_fields_ (), getFieldValue_ ()
       {
         name_ = "SIFTKeypoint";
       }
@@ -131,14 +132,14 @@ namespace pcl
 
     protected:
       bool
-      initCompute () override;
+      initCompute ();
 
       /** \brief Detect the SIFT keypoints for a set of points given in setInputCloud () using the spatial locator in 
         * setSearchMethod ().
         * \param output the resultant cloud of keypoints
         */
       void 
-      detectKeypoints (PointCloudOut &output) override;
+      detectKeypoints (PointCloudOut &output);
 
     private:
       /** \brief Detect the SIFT keypoints for a given point cloud for a single octave.
@@ -201,3 +202,5 @@ namespace pcl
 }
 
 #include <pcl/keypoints/impl/sift_keypoint.hpp>
+
+#endif // #ifndef PCL_SIFT_KEYPOINT_H_

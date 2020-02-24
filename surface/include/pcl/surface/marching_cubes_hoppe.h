@@ -33,9 +33,9 @@
  *
  */
 
-#pragma once
+#ifndef PCL_SURFACE_MARCHING_CUBES_HOPPE_H_
+#define PCL_SURFACE_MARCHING_CUBES_HOPPE_H_
 
-#include <pcl/pcl_macros.h>
 #include <pcl/surface/boost.h>
 #include <pcl/surface/marching_cubes.h>
 
@@ -52,8 +52,8 @@ namespace pcl
   class MarchingCubesHoppe : public MarchingCubes<PointNT>
   {
     public:
-      using Ptr = shared_ptr<MarchingCubesHoppe<PointNT> >;
-      using ConstPtr = shared_ptr<const MarchingCubesHoppe<PointNT> >;
+      typedef boost::shared_ptr<MarchingCubesHoppe<PointNT> > Ptr;
+      typedef boost::shared_ptr<const MarchingCubesHoppe<PointNT> > ConstPtr;
 
       using SurfaceReconstruction<PointNT>::input_;
       using SurfaceReconstruction<PointNT>::tree_;
@@ -65,10 +65,10 @@ namespace pcl
       using MarchingCubes<PointNT>::upper_boundary_;
       using MarchingCubes<PointNT>::lower_boundary_;
 
-      using PointCloudPtr = typename pcl::PointCloud<PointNT>::Ptr;
+      typedef typename pcl::PointCloud<PointNT>::Ptr PointCloudPtr;
 
-      using KdTree = pcl::KdTree<PointNT>;
-      using KdTreePtr = typename KdTree::Ptr;
+      typedef typename pcl::KdTree<PointNT> KdTree;
+      typedef typename pcl::KdTree<PointNT>::Ptr KdTreePtr;
 
 
       /** \brief Constructor. */
@@ -86,7 +86,7 @@ namespace pcl
       /** \brief Convert the point cloud into voxel data.
         */
       void
-      voxelizeData () override;
+      voxelizeData ();
 
       /** \brief Method that sets the distance for ignoring voxels which are far from point cloud.
         * If the distance is negative, then the distance functions would be calculated in all voxels;
@@ -111,10 +111,13 @@ namespace pcl
       float dist_ignore_;
 
     public:
-      PCL_MAKE_ALIGNED_OPERATOR_NEW
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 }
 
 #ifdef PCL_NO_PRECOMPILE
 #include <pcl/surface/impl/marching_cubes_hoppe.hpp>
 #endif
+
+#endif  // PCL_SURFACE_MARCHING_CUBES_HOPPE_H_
+
