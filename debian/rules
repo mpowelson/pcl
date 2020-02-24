@@ -36,6 +36,7 @@ override_dh_auto_configure:
 	-DBUILD_tools=ON -DBUILD_tracking=ON -DBUILD_visualization=ON   \
 	-DBUILD_apps_cloud_composer=OFF -DBUILD_apps_modeler=ON            \
 	-DBUILD_apps_point_cloud_editor=ON -DBUILD_apps_in_hand_scanner=ON \
+        -BUILD_surface_on_nurbs=ON \
 	$(BUILD_DOC)
 
 override_dh_install:
