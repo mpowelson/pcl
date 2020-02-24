@@ -37,6 +37,7 @@ override_dh_auto_configure:
 	-DBUILD_apps_cloud_composer=OFF -DBUILD_apps_modeler=ON            \
 	-DBUILD_apps_point_cloud_editor=ON -DBUILD_apps_in_hand_scanner=ON \
         -BUILD_surface_on_nurbs=ON \
+	-DCMAKE_INSTALL_PREFIX=/opt/ros-industrial/system \
 	$(BUILD_DOC)
 
 override_dh_install:
@@ -67,14 +68,14 @@ override_dh_install:
 		pcl_stereo_ground_segmentation pcl_train_unary_classifier \
 		pcl_unary_classifier_segment pcl_vlp_viewer pcl_openni2_viewer \
 		pcl_openni_organized_multi_plane_segmentation; do \
-	cmd="dh_link -p pcl-tools usr/share/man/man1/pcl_pointclouds.1 usr/share/man/man1/$$i.1"; \
+	cmd="dh_link -p pcl-tools opt/ros-industrial/system/share/man/man1/pcl_pointclouds.1 opt/ros-industrial/system/share/man/man1/$$i.1"; \
 	echo $$cmd; $$cmd; \
 	done
 		
 	dh_install
 
 #override_dh_shlibdeps:
-#	dh_shlibdeps -v -Xusr/bin/pcl_* -Lpcl-tools -l:$(CURDIR)/debian/usr/lib/${DEB_HOST_MULTIARCH}/cloud_composer_plugins: -ppcl --- -xpcl-tools -v
+#	dh_shlibdeps -v -Xopt/ros-industrial/system/bin/pcl_* -Lpcl-tools -l:$(CURDIR)/debian/opt/ros-industrial/system/lib/${DEB_HOST_MULTIARCH}/cloud_composer_plugins: -ppcl --- -xpcl-tools -v
 
 override_dh_installchangelogs:
 	dh_installchangelogs -plibpcl-common1.9 CHANGES.md
@@ -86,7 +87,7 @@ override_dh_installchangelogs:
 		libpcl-search1.9 libpcl-segmentation1.9 libpcl-stereo1.9 \
 		libpcl-surface1.9 libpcl-tracking1.9 libpcl-visualization1.9 \
 		pcl-tools libpcl-doc; do \
-	cmd="dh_link -p$$i usr/share/doc/libpcl-common1.9/changelog.gz usr/share/doc/$$i/changelog.gz"; \
+	cmd="dh_link -p$$i opt/ros_industrial/system/share/doc/libpcl-common1.9/changelog.gz opt/ros_industrial/system/share/doc/$$i/changelog.gz"; \
 	echo $$cmd; $$cmd; \
 	done
 	dh_installchangelogs

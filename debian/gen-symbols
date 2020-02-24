@@ -17,7 +17,7 @@ PKGS="${PKGS} libpcl-visualization"
 for pkg in ${PKGS}; do
     f=`echo ${pkg} | sed 's|-|_|g'`
     pkgkde-gensymbols -p${pkg}${V} -v${V} -Osymbols-${pkg}.${ARCH} \
-	-edebian/${pkg}${V}/usr/lib/*/${f}.so.${V}
+	-edebian/${pkg}${V}/opt/ros-industrial/system/lib/*/${f}.so.${V}
     pkgkde-symbolshelper create -o debian/${pkg}${V}.symbols -v ${V} \
 	symbols-${pkg}.${ARCH}
 done

@@ -1,1 +1,1 @@
-usr/lib/*/libpcl_apps.so.* opt/ros_industrial/system/*/
+opt/ros-industrial/system/lib/*/libpcl_apps.so.* 

@@ -1,5 +1,5 @@
 #! /usr/bin/dh-exec
-usr/include/*
-usr/lib/*/pkgconfig/*
-usr/share/pcl*/* usr/lib/${DEB_HOST_MULTIARCH}/cmake/pcl/
-usr/lib/*/libpcl_*.so
+opt/ros-industrial/system/include/*
+opt/ros-industrial/system/lib/*/pkgconfig/*
+opt/ros-industrial/system/share/pcl*/* opt/ros-industrial/system/lib/${DEB_HOST_MULTIARCH}/cmake/pcl/
+opt/ros-industrial/system/lib/*/libpcl_*.so
