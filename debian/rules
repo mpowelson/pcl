@@ -68,7 +68,7 @@ override_dh_install:
 		pcl_stereo_ground_segmentation pcl_train_unary_classifier \
 		pcl_unary_classifier_segment pcl_vlp_viewer pcl_openni2_viewer \
 		pcl_openni_organized_multi_plane_segmentation; do \
-        cmd="dh_link -p pcl-tools opt/ros-industrial/share/man/man1/pcl_pointclouds.1 opt/ros-industrial/system/share/man/man1/$$i.1"; \
+        cmd="dh_link -p pcl-tools opt/ros-industrial/pcl-1.8/share/man/man1/pcl_pointclouds.1 opt/ros-industrial/pcl-1.8/share/man/man1/$$i.1"; \
 	echo $$cmd; $$cmd; \
 	done
 		
