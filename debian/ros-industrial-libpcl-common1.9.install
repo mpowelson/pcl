@@ -1,1 +1,1 @@
-opt/ros-industrial/lib/*/libpcl_common.so.*
+opt/ros-industrial/pcl-1.8/lib/*/libpcl_common.so.*

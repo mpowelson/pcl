@@ -1,1 +1,1 @@
-opt/ros-industrial/lib/*/libpcl_stereo.so.*
+opt/ros-industrial/pcl-1.8/lib/*/libpcl_stereo.so.*

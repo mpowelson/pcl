@@ -1,1 +1,1 @@
-opt/ros-industrial/lib/*/libpcl_filters.so.*
+opt/ros-industrial/pcl-1.8/lib/*/libpcl_filters.so.*
