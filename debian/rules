@@ -37,7 +37,7 @@ override_dh_auto_configure:
 	-DBUILD_apps_cloud_composer=OFF -DBUILD_apps_modeler=ON            \
 	-DBUILD_apps_point_cloud_editor=ON -DBUILD_apps_in_hand_scanner=ON \
         -BUILD_surface_on_nurbs=ON \
-        -DCMAKE_INSTALL_PREFIX=/opt/ros-industrial \
+        -DCMAKE_INSTALL_PREFIX="/opt/ros-industrial/pcl-1.8" \
 	$(BUILD_DOC)
 
 override_dh_install:
@@ -78,7 +78,7 @@ override_dh_install:
 #	dh_shlibdeps -v -Xopt/ros-industrial/system/bin/pcl_* -Lpcl-tools -l:$(CURDIR)/debian/opt/ros-industrial/system/lib/${DEB_HOST_MULTIARCH}/cloud_composer_plugins: -ppcl --- -xpcl-tools -v
 
 override_dh_shlibdeps:
-        dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(CURDIR)/debian/tmp/opt/ros_industrial/vtk-7.1/lib -l$(CURDIR)/debian/tmp/opt/ros_industrial/vtk-7.1/lib/x86_64-linux-gnu/
+        dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(CURDIR)/debian/tmp/opt/ros_industrial/pcl-1.8/lib -l$(CURDIR)/debian/tmp/opt/ros_industrial/pcl1.8/lib/x86_64-linux-gnu/
 
 override_dh_installchangelogs:
 	dh_installchangelogs -plibpcl-common1.9 CHANGES.md
