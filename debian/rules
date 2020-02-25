@@ -93,7 +93,7 @@ override_dh_installchangelogs:
         cmd="dh_link -p$$i opt/ros_industrial/pcl-1.9/share/doc/ros-industrial-libpcl-common1.9/changelog.gz opt/ros_industrial/pcl-1.9/share/doc/$$i/changelog.gz"; \
 	echo $$cmd; $$cmd; \
 	done
-	dh_installchangelogs
+#	dh_installchangelogs
 
 
 %:
