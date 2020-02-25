@@ -1,0 +1,2 @@
+opt/ros-industrial/lib/*/libpcl_io.so.*
+opt/ros-industrial/lib/*/libpcl_io_ply.so.*
