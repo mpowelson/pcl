@@ -5,19 +5,19 @@ set -e
 ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
 V=1.6
 
-PKGS="libpcl-common libpcl-features libpcl-filters"
-PKGS="${PKGS} libpcl-geometry libpcl-io"
-PKGS="${PKGS} libpcl-io-ply libpcl-kdtree"
-PKGS="${PKGS} libpcl-keypoints libpcl-octree"
-PKGS="${PKGS} libpcl-registration libpcl-sample-consensus"
-PKGS="${PKGS} libpcl-search libpcl-segmentation"
-PKGS="${PKGS} libpcl-surface libpcl-tracking"
-PKGS="${PKGS} libpcl-visualization"
+PKGS="ros-industrial-libpcl-common ros-industrial-libpcl-features ros-industrial-libpcl-filters"
+PKGS="${PKGS} ros-industrial-libpcl-geometry ros-industrial-libpcl-io"
+PKGS="${PKGS} ros-industrial-libpcl-io-ply ros-industrial-libpcl-kdtree"
+PKGS="${PKGS} ros-industrial-libpcl-keypoints ros-industrial-libpcl-octree"
+PKGS="${PKGS} ros-industrial-libpcl-registration ros-industrial-libpcl-sample-consensus"
+PKGS="${PKGS} ros-industrial-libpcl-search ros-industrial-libpcl-segmentation"
+PKGS="${PKGS} ros-industrial-libpcl-surface ros-industrial-libpcl-tracking"
+PKGS="${PKGS} ros-industrial-libpcl-visualization"
 
 for pkg in ${PKGS}; do
     f=`echo ${pkg} | sed 's|-|_|g'`
     pkgkde-gensymbols -p${pkg}${V} -v${V} -Osymbols-${pkg}.${ARCH} \
-	-edebian/${pkg}${V}/usr/lib/*/${f}.so.${V}
+        -edebian/${pkg}${V}/opt/ros-industrial/pcl-1.9/lib/*/${f}.so.${V}
     pkgkde-symbolshelper create -o debian/${pkg}${V}.symbols -v ${V} \
 	symbols-${pkg}.${ARCH}
 done

@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 11), dh-exec,
 	       libboost-iostreams-dev,
 	       libeigen3-dev,
 	       libflann-dev,
-	       libvtk7-dev,
+               ros-industrial-libvtk7-dev,
 	       libqhull-dev,
 	       libopenni-dev [!s390x !alpha !hppa !hurd-i386 !ia64 !kfreebsd-any !m68k !riscv64 !sh4 !sparc64],
 	       libopenni2-dev [!hurd-i386 !hppa !kfreebsd-any],
@@ -25,7 +25,7 @@ Build-Depends: debhelper (>= 11), dh-exec,
 	       libxmu-dev,
 	       libxi-dev,
 	       libpcap-dev,
-	       libvtk7-qt-dev,
+               ros-industrial-libvtk7-qt-dev,
 Build-Depends-Indep: doxygen,
 		     doxygen-latex
 Standards-Version: 4.2.1
@@ -34,39 +34,39 @@ Vcs-Git: https://salsa.debian.org/science-team/pcl.git
 Rules-Requires-Root: no
 Homepage: http://www.pointclouds.org/
 
-Package: libpcl-dev
+Package: ros-industrial-libpcl-dev
 Architecture: any
 Section: libdevel
 Depends: libboost-all-dev,
 	 libeigen3-dev,
 	 libflann-dev,
-	 libvtk7-dev,
+	 ros-industrial-libvtk7-dev,
 	 libqhull-dev,
-	 libvtk7-qt-dev,
+         ros-industrial-libvtk7-qt-dev,
 	 libopenni-dev [!s390x !alpha !hppa !hurd-i386 !ia64 !kfreebsd-any !m68k !riscv64 !sh4 !sparc64],
 	 libopenni2-dev [!hurd-i386 !hppa !kfreebsd-any],
-	 libpcl-apps1.9 (= ${binary:Version}),
-	 libpcl-common1.9 (= ${binary:Version}),
-	 libpcl-features1.9 (= ${binary:Version}),
-	 libpcl-filters1.9 (= ${binary:Version}),
-	 libpcl-io1.9 (= ${binary:Version}),
-	 libpcl-kdtree1.9 (= ${binary:Version}),
-	 libpcl-keypoints1.9 (= ${binary:Version}),
-	 libpcl-ml1.9 (= ${binary:Version}),
-	 libpcl-octree1.9 (= ${binary:Version}),
-	 libpcl-outofcore1.9 (= ${binary:Version}),
-	 libpcl-people1.9 (= ${binary:Version}),
-	 libpcl-recognition1.9 (= ${binary:Version}),
-	 libpcl-registration1.9 (= ${binary:Version}),
-	 libpcl-sample-consensus1.9 (= ${binary:Version}),
-	 libpcl-search1.9 (= ${binary:Version}),
-	 libpcl-segmentation1.9 (= ${binary:Version}),
-	 libpcl-stereo1.9 (= ${binary:Version}),
-	 libpcl-surface1.9 (= ${binary:Version}),
-	 libpcl-tracking1.9 (= ${binary:Version}),
-	 libpcl-visualization1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-apps1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-common1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-features1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-filters1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-io1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-kdtree1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-keypoints1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-ml1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-octree1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-outofcore1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-people1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-recognition1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-registration1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-sample-consensus1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-search1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-segmentation1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-stereo1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-surface1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-tracking1.9 (= ${binary:Version}),
+         ros-industrial-libpcl-visualization1.9 (= ${binary:Version}),
 	 ${misc:Depends}
-Suggests: libpcl-doc
+Suggests: ros-industrial-libpcl-doc
 Description: Point Cloud Library - development files
  The Point Cloud Library (PCL) is a standalone, large scale, open
  project for 2D/3D image and point cloud processing.
@@ -78,7 +78,7 @@ Description: Point Cloud Library - development files
  This package contains development files (headers and shared library
  symbolic link).
 
-Package: libpcl-apps1.9
+Package: ros-industrial-libpcl-apps1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -92,7 +92,7 @@ Description: Point Cloud Library - apps library
  This package contains the libraries needed to run applications depending 
  on PCL apps.
 
-Package: libpcl-common1.9
+Package: ros-industrial-libpcl-common1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -108,7 +108,7 @@ Description: Point Cloud Library - common library
  .
  This package contains the PCL common library.
 
-Package: libpcl-features1.9
+Package: ros-industrial-libpcl-features1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -124,7 +124,7 @@ Description: Point Cloud Library - features library
  .
  This package contains the PCL features library.
 
-Package: libpcl-filters1.9
+Package: ros-industrial-libpcl-filters1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -140,7 +140,7 @@ Description: Point Cloud Library - filters library
  .
  This package contains the PCL filters library.
 
-Package: libpcl-io1.9
+Package: ros-industrial-libpcl-io1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -157,7 +157,7 @@ Description: Point Cloud Library - I/O library
  This package contains the libraries needed to run applications 
  depending on PCL io.
 
-Package: libpcl-kdtree1.9
+Package: ros-industrial-libpcl-kdtree1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -173,7 +173,7 @@ Description: Point Cloud Library - kdtree library
  .
  This package contains the PCL kdtree library.
 
-Package: libpcl-keypoints1.9
+Package: ros-industrial-libpcl-keypoints1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -189,7 +189,7 @@ Description: Point Cloud Library - keypoints library
  .
  This package contains the PCL keypoints library.
 
-Package: libpcl-ml1.9
+Package: ros-industrial-libpcl-ml1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -205,7 +205,7 @@ Description: Point Cloud Library - ml library
  .
  This package contains the PCL ml library.
 
-Package: libpcl-octree1.9
+Package: ros-industrial-libpcl-octree1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -221,7 +221,7 @@ Description: Point Cloud Library - octree library
  .
  This package contains the PCL octree library.
 
-Package: libpcl-outofcore1.9
+Package: ros-industrial-libpcl-outofcore1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -235,7 +235,7 @@ Description: Point Cloud Library - outofcore library
  This package contains the libraries needed to run applications 
  depending on PCL outofcore.
 
-Package: libpcl-people1.9
+Package: ros-industrial-libpcl-people1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -249,7 +249,7 @@ Description: Point Cloud Library - people library
  This package contains the libraries needed to run applications 
  depending on PCL people.
 
-Package: libpcl-recognition1.9
+Package: ros-industrial-libpcl-recognition1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -263,7 +263,7 @@ Description: Point Cloud Library - recognition library
  This package contains the libraries needed to run applications 
  depending on PCL recognition.
 
-Package: libpcl-registration1.9
+Package: ros-industrial-libpcl-registration1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -279,7 +279,7 @@ Description: Point Cloud Library - registration library
  .
  This package contains the PCL registration library.
 
-Package: libpcl-sample-consensus1.9
+Package: ros-industrial-libpcl-sample-consensus1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -295,7 +295,7 @@ Description: Point Cloud Library - sample consensus library
  .
  This package contains the PCL sample consensus library.
 
-Package: libpcl-search1.9
+Package: ros-industrial-libpcl-search1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -311,7 +311,7 @@ Description: Point Cloud Library - search library
  .
  This package contains the PCL search library.
 
-Package: libpcl-segmentation1.9
+Package: ros-industrial-libpcl-segmentation1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -327,7 +327,7 @@ Description: Point Cloud Library - segmentation library
  .
  This package contains the PCL segmentation library.
 
-Package: libpcl-stereo1.9
+Package: ros-industrial-libpcl-stereo1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -343,7 +343,7 @@ Description: Point Cloud Library - stereo library
  .
  This package contains the PCL stereo library.
 
-Package: libpcl-surface1.9
+Package: ros-industrial-libpcl-surface1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -359,7 +359,7 @@ Description: Point Cloud Library - surface library
  .
  This package contains the PCL surface library.
 
-Package: libpcl-tracking1.9
+Package: ros-industrial-libpcl-tracking1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -375,7 +375,7 @@ Description: Point Cloud Library - tracking library
  .
  This package contains the PCL tracking library.
 
-Package: libpcl-visualization1.9
+Package: ros-industrial-libpcl-visualization1.9
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -406,7 +406,7 @@ Description: Point Cloud Library - point cloud processing tools
  .
  This package gathers tools bundled with PCL to process point clouds.
 
-Package: libpcl-doc
+Package: ros-industrial-libpcl-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}, libjs-jquery

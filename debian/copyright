@@ -533,7 +533,7 @@ License: Expat
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 License: GPL-2
- See /usr/share/common-licenses/GPL-2.
+ See /opt/ros-industrial/pcl-1.9/share/common-licenses/GPL-2.
 
 License: Open-Source
  Redistribution and use in source and binary forms, with or without
